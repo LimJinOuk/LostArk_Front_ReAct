@@ -1,133 +1,155 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// --- 데이터 정의 ---
-const ARK_DATA = {
-    진화: [
-        // 1단계
-        [{ name: '치명', lv: '10/30', pt: '1P', active: true }, { name: '특화', lv: '30/30', pt: '1P', active: true }, { name: '제압', lv: '0/30', pt: '1P' }, { name: '신속', lv: '0/30', pt: '1P' }, { name: '인내', lv: '0/30', pt: '1P' }, { name: '숙련', lv: '0/30', pt: '1P' }],
-        // 2단계 (비어있음)
-        [],
-        // 3단계
-        [null, null, null, { name: '한계 돌파', lv: '3/3', pt: '10P', active: true }, { name: '최적화 훈련', lv: '0/2', pt: '10P' }, { name: '축복의 여신', lv: '0/3', pt: '10P' }],
-        // 4단계
-        [null, null, { name: '일격', lv: '2/2', pt: '10P', active: true, type: 'cyan' }, null, null, null],
-        // 5단계
-        [null, null, null, { name: '입식 타격가', lv: '2/2', pt: '15P', active: true }]
-    ],
-    깨달음: [
-        // 1단계
-        [null, null, { name: '버스트 강화', lv: '1/1', pt: '24P', active: true }],
-        // 2단계 (비어있음)
-        [],
-        // 3단계
-        [null, null, { name: '오브 압축', lv: '3/3', pt: '8P', active: true }],
-        // 4단계 (비어있음)
-        [],
-        // 5단계
-        [null, { name: '에너지 강화', lv: '2/5', pt: '2P', active: true, type: 'cyan' }, { name: '검기 압축', lv: '3/3', pt: '8P', active: true, type: 'cyan' }]
-    ],
-    도약: [
-        // 1단계
-        [{ name: '초월적인 힘', lv: '4/5', pt: '4P', active: true }, { name: '충전된 분노', lv: '0/5', pt: '4P' }, { name: '각성 증폭기', lv: '0/3', pt: '2P' }, { name: '풀려난 힘', lv: '5/5', pt: '4P', active: true }, { name: '잠재력 해방', lv: '0/5', pt: '4P' }, { name: '즉각적인 주문', lv: '2/3', pt: '2P', active: true, type: 'cyan' }],
-        // 2단계 (비어있음)
-        [],
-        // 3단계
-        [null, null, { name: '악몽의 춤사위', lv: '3/1', pt: '10P', active: true }]
-    ]
-};
+// API 응답 데이터 인터페이스
+interface NodeData {
+    id: string;
+    category: '진화' | '깨달음' | '도약';
+    name: string;
+    level: number;
+    maxLevel: number;
+    points: string;
+    row: number; // 1~4행
+    col: number; // 1~6열
+    type: 'orange' | 'cyan';
+}
 
-// --- 서브 컴포넌트 ---
-const Node = ({ data }: { data: any }) => {
-    if (!data) return <div className="w-14 h-20" />; // 빈 공간 처리
-
-    return (
-        <div className={`flex flex-col items-center gap-2 transition-all ${data.active ? 'opacity-100' : 'opacity-20'}`}>
-            <div className="relative">
-                <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center
-          ${data.active
-                    ? (data.type === 'cyan' ? 'bg-cyan-500/80 border-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.6)]' : 'bg-orange-500/80 border-orange-300 shadow-[0_0_15px_rgba(249,115,22,0.6)]')
-                    : 'bg-zinc-900 border-zinc-800'}`}>
-                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="currentColor">
-                        <path d="M12 2L15 8L22 9L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9L9 8L12 2Z" />
-                    </svg>
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-zinc-950 border border-white/10 px-1.5 py-0.5 rounded text-[7px] font-black text-zinc-400">
-                        {data.pt}
-                    </div>
-                </div>
-            </div>
-            <div className="text-center">
-                <p className="text-[9px] font-black text-zinc-500 leading-none mb-1">Lv. {data.lv}</p>
-                <p className={`text-[11px] font-black tracking-tighter whitespace-nowrap ${data.active ? 'text-zinc-100' : 'text-zinc-600'}`}>
-                    {data.name}
-                </p>
-            </div>
-        </div>
-    );
-};
-
-// --- 메인 컴포넌트 ---
 export const ArkPassiveTab = () => {
-    const [tab, setTab] = useState<'진화' | '깨달음' | '도약'>('진화');
+    const [activeTab, setActiveTab] = useState<'진화' | '깨달음' | '도약'>('진화');
+    const [nodes, setNodes] = useState<NodeData[]>([]); // API 전체 데이터
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // 1. API 호출 시뮬레이션
+    useEffect(() => {
+        const fetchNodes = async () => {
+            setIsLoading(true);
+            try {
+                // 실제 환경에서는 fetch('/api/ark-passive') 등을 사용하세요.
+                // 아래는 사진 레이아웃을 반영한 예시 데이터입니다.
+                const mockData: NodeData[] = [
+                    { id: 'v1', category: '진화', name: '치명', level: 10, maxLevel: 30, points: '1P', row: 1, col: 1, type: 'orange' },
+                    { id: 'v2', category: '진화', name: '특화', level: 30, maxLevel: 30, points: '1P', row: 1, col: 2, type: 'orange' },
+                    { id: 'v3', category: '진화', name: '한계 돌파', level: 3, maxLevel: 3, points: '10P', row: 2, col: 4, type: 'orange' },
+                    { id: 'v4', category: '진화', name: '일격', level: 2, maxLevel: 2, points: '10P', row: 3, col: 3, type: 'cyan' },
+                    { id: 'v5', category: '진화', name: '입식 타격가', level: 2, maxLevel: 2, points: '15P', row: 4, col: 4, type: 'orange' },
+                    // 깨달음 탭 예시
+                    { id: 'e1', category: '깨달음', name: '버스트 강화', level: 1, maxLevel: 1, points: '24P', row: 1, col: 4, type: 'orange' },
+                    { id: 'e2', category: '깨달음', name: '오브 압축', level: 3, maxLevel: 3, points: '8P', row: 2, col: 4, type: 'orange' },
+                ];
+                setNodes(mockData);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchNodes();
+    }, []);
+
+    // 2. 현재 탭에 해당하는 노드만 필터링
+    const currentNodes = nodes.filter(n => n.category === activeTab);
+    const selectedNode = nodes.find(n => n.id === selectedId);
+
+    // 3. 레벨 변경 API 호출 (Optimistic Update)
+    const updateLevel = async (delta: number) => {
+        if (!selectedId) return;
+
+        // 로컬 상태 먼저 변경 (즉각적인 피드백)
+        setNodes(prev => prev.map(n => n.id === selectedId
+            ? { ...n, level: Math.max(0, Math.min(n.maxLevel, n.level + delta)) }
+            : n
+        ));
+
+        // 여기서 실제 API PUT/PATCH 요청을 보내세요.
+        // await api.updateNodeLevel(selectedId, newLevel);
+    };
+
+    if (isLoading) return <div className="text-zinc-500 font-black p-20 text-center">데이터 로딩 중...</div>;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* 보드 영역 */}
-            <div className="lg:col-span-9 bg-zinc-900/20 rounded-[2.5rem] border border-white/5 p-10 relative min-h-[700px]">
-                {/* 탭 버튼 */}
-                <div className="flex bg-zinc-950 p-1 rounded-xl border border-white/5 w-fit mb-16">
-                    {(['진화', '깨달음', '도약'] as const).map((t) => (
-                        <button
-                            key={t}
-                            onClick={() => setTab(t)}
-                            className={`px-8 py-2.5 rounded-lg text-xs font-black transition-all ${tab === t ? 'bg-zinc-800 text-white' : 'text-zinc-600'}`}
-                        >
-                            {t}
-                        </button>
+        <div className="relative bg-[#0a0a0a] p-10 rounded-[3rem] border border-zinc-900 min-h-[850px] w-full select-none">
+
+            {/* 상단 탭 내비게이션 */}
+            <div className="flex bg-zinc-950 p-1.5 rounded-2xl border border-zinc-900 w-fit mb-20">
+                {['진화', '깨달음', '도약'].map((tab) => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab as any)}
+                        className={`px-10 py-2.5 rounded-xl text-xs font-black transition-all ${activeTab === tab ? 'bg-zinc-800 text-white shadow-lg' : 'text-zinc-600 hover:text-zinc-400'}`}
+                    >
+                        {tab}
+                    </button>
+                ))}
+            </div>
+
+            <div className="relative pl-20">
+                {/* 수직 단계 숫자 (1-4행 일직선 정렬) */}
+                <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-zinc-800 flex flex-col justify-between py-[40px]">
+                    {[1, 2, 3, 4].map((num) => (
+                        <div key={num} className="relative -left-4 w-8 h-8 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center text-[10px] font-black text-zinc-600 z-10">
+                            {num}
+                        </div>
                     ))}
                 </div>
 
-                <div className="relative">
-                    {/* 단계 표시줄 */}
-                    <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-zinc-800/50 flex flex-col justify-between py-6">
-                        {[1, 2, 3, 4].map((n) => (
-                            <div key={n} className="relative -left-3 w-6 h-6 bg-zinc-900 border border-white/10 rounded flex items-center justify-center text-[10px] font-black text-zinc-600">
-                                {n}
-                            </div>
-                        ))}
-                    </div>
+                {/* 4행 6열 그리드 */}
+                <div className="grid grid-rows-4 grid-cols-6 gap-y-[120px] gap-x-6">
+                    {Array.from({ length: 24 }).map((_, i) => {
+                        const row = Math.floor(i / 6) + 1;
+                        const col = (i % 6) + 1;
+                        const node = currentNodes.find(n => n.row === row && n.col === col);
 
-                    {/* 노드 그리드 */}
-                    <div className="pl-12 space-y-12">
-                        {ARK_DATA[tab].map((row, rIdx) => (
-                            <div key={rIdx} className="grid grid-cols-6 gap-4 min-h-[80px]">
-                                {row.map((node, nIdx) => (
-                                    <Node key={nIdx} data={node} />
-                                ))}
+                        return (
+                            <div key={i} className="flex justify-center items-center h-20">
+                                {node ? (
+                                    <div onClick={() => setSelectedId(node.id)} className="group cursor-pointer flex flex-col items-center gap-3 transition-all active:scale-95">
+                                        <div className="relative">
+                                            <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center transition-all duration-300
+                        ${node.level > 0
+                                                ? (node.type === 'cyan' ? 'border-cyan-400 bg-cyan-400/10 shadow-[0_0_20px_rgba(34,211,238,0.4)]' : 'border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.4)]')
+                                                : 'border-zinc-800 bg-zinc-900 opacity-30 group-hover:opacity-100'}`}>
+                                                <span className={`text-2xl font-light ${node.level > 0 ? (node.type === 'cyan' ? 'text-cyan-300' : 'text-orange-300') : 'text-zinc-700'}`}>+</span>
+                                                <div className="absolute -top-3 px-1.5 py-0.5 bg-black border border-white/20 rounded text-[9px] font-black text-zinc-400">{node.points}</div>
+                                            </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-black text-zinc-500 italic uppercase">Lv. {node.level} / {node.maxLevel}</p>
+                                            <p className={`text-[12px] font-black tracking-tighter ${node.level > 0 ? 'text-zinc-100' : 'text-zinc-600'}`}>{node.name}</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="w-16 h-16 opacity-0" />
+                                )}
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* 포인트 요약 영역 */}
-            <div className="lg:col-span-3">
-                <div className="bg-zinc-900/40 rounded-[2rem] border border-white/5 p-8 space-y-8">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest">포인트</h3>
-                    <div className="space-y-8">
-                        {[{ l: '진화', p: 77 }, { l: '깨달음', p: 84 }, { l: '도약', p: 70 }].map((item) => (
-                            <div key={item.l} className="space-y-3">
-                                <div className="flex justify-between text-[11px] font-black uppercase">
-                                    <span className="text-zinc-500">{item.l}</span>
-                                    <span className="text-zinc-100">{item.p}%</span>
+            {/* 조절 모달 */}
+            <AnimatePresence>
+                {selectedId && selectedNode && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedId(null)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-[320px] bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-10 shadow-2xl">
+                            <div className="flex flex-col items-center gap-8">
+                                <div className={`w-20 h-20 rounded-full border-2 flex items-center justify-center ${selectedNode.type === 'cyan' ? 'border-cyan-400 text-cyan-400' : 'border-orange-500 text-orange-500'}`}>
+                                    <span className="text-4xl font-light">+</span>
                                 </div>
-                                <div className="h-1 bg-zinc-950 rounded-full overflow-hidden shadow-inner">
-                                    <div className="h-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]" style={{ width: `${item.p}%` }} />
+                                <div className="text-center">
+                                    <h4 className="text-xl font-black text-white">{selectedNode.name}</h4>
+                                    <p className="text-[10px] text-zinc-500 font-bold italic mt-1">API DATA SYNC</p>
                                 </div>
+                                <div className="flex items-center gap-6 w-full">
+                                    <button onClick={() => updateLevel(-1)} className="flex-1 h-14 bg-zinc-800 rounded-2xl text-white text-2xl active:scale-90">-</button>
+                                    <span className="text-2xl font-black text-white w-8 text-center">{selectedNode.level}</span>
+                                    <button onClick={() => updateLevel(1)} className="flex-1 h-14 bg-zinc-800 rounded-2xl text-white text-2xl active:scale-90">+</button>
+                                </div>
+                                <button onClick={() => setSelectedId(null)} className="w-full py-4 bg-zinc-100 text-black rounded-2xl font-black text-xs">확인</button>
                             </div>
-                        ))}
+                        </motion.div>
                     </div>
-                </div>
-            </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
