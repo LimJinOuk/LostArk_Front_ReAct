@@ -1,4 +1,3 @@
-
 import { RaidInfo, MariItem, CharacterInfo } from './types';
 
 export const RAIDS: RaidInfo[] = [

@@ -88,18 +88,6 @@ export default function App() {
                       exit={{ opacity: 0 }}
                       className="space-y-20"
                   >
-                    <div className="flex justify-between items-end border-b-2 border-slate-200 dark:border-white/10 pb-12">
-                      <div className="space-y-4">
-                        <p className="text-indigo-500 font-black tracking-[0.3em] uppercase text-sm">Arkesia Profile</p>
-                        <h2 className="text-7xl font-black tracking-tighter italic leading-none">CHARACTER</h2>
-                      </div>
-                      <button
-                          onClick={() => setActivePage('simulator')}
-                          className="px-12 py-6 bg-midnight dark:bg-white text-white dark:text-void rounded-[2rem] font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl"
-                      >
-                        Open Simulator
-                      </button>
-                    </div>
                     <div className="transform scale-105 origin-top">
                       <CharacterCard character={characterData} />
                     </div>
