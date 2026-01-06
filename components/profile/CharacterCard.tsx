@@ -37,7 +37,7 @@ export const CharacterCard: React.FC<{ character: CharacterInfo }> = ({ characte
     };
 
   return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <CharacterHeader character={character} />
         <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
