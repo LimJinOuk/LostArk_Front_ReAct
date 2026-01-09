@@ -19,7 +19,7 @@ const ProfilePage = () => {
             setError(null);
             try {
                 // 백엔드 API 호출 (이전에 확인한 /stat 엔드포인트)
-                const response = await fetch(`http://localhost:8080/stat?name=${encodeURIComponent(characterName)}`);
+                const response = await fetch(`/stat?name=${encodeURIComponent(characterName)}`);
 
                 if (!response.ok) {
                     throw new Error('캐릭터 정보를 불러올 수 없습니다.');
@@ -68,21 +68,6 @@ const ProfilePage = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex items-center justify-between px-4">
-                <div>
-                    <h2 className="text-2xl font-black tracking-tight dark:text-white uppercase">CHARACTER PROFILE</h2>
-                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1 italic">
-                        {character.CharacterName} 의 실시간 데이터
-                    </p>
-                </div>
-                <div className="flex items-center gap-2 bg-zinc-900/50 px-4 py-2 rounded-xl border border-white/5">
-                    <Info size={14} className="text-indigo-400" />
-                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">
-                        레벨: {character.ItemAvgLevel}
-                    </span>
-                </div>
-            </div>
-
             {/* 실제 받아온 데이터를 CharacterCard에 전달 */}
             <CharacterCard character={character} />
 

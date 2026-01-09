@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
 
         // ✅ 검색 페이지로 캐릭터 이름을 파라미터로 넘기며 이동
         // 예: /search?name=치킨버거사주세요
-        navigate(`/profile?name=${encodeURIComponent(q)}`);
+        navigate(`/profilePage?name=${encodeURIComponent(q)}`);
     };
 
     return (
