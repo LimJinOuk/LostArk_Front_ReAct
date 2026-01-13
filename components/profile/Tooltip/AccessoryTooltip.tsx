@@ -18,148 +18,139 @@ interface TooltipProps {
 const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
     if (!data) return null;
 
-    // --- 1. 데이터 추출 영역 ---
     const elements = Object.values(data) as any[];
 
-    // 헤더 정보
+    // 데이터 추출
     const itemName = cleanText(data.Element_000?.value || "");
     const titleInfo = data.Element_001?.value || {};
     const quality = titleInfo.qualityValue ?? -1;
     const itemGradeName = titleInfo.leftStr0?.split(' ')[0] || "고대";
-    const itemGradeFull = titleInfo.leftStr0; // "고대 목걸이"
+    const itemGradeFull = titleInfo.leftStr0;
     const itemLevelAndTier = cleanText(titleInfo.leftStr2 || "");
     const itemIcon = titleInfo.slotData?.iconPath;
 
-    // 1. [거래/귀속 정보]
     const bindingInfo = cleanText(data.Element_002?.value || "");
     const tradeInfo = cleanText(data.Element_003?.value || "").replace('|', '');
 
-    // 2. [기본 효과] - 힘/민/지/체
     const baseEffectObj = elements.find((el: any) =>
         el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000) === '기본 효과'
     );
-
-    // 3. [연마/팔찌/특수 효과] - 장신구의 핵심 옵션
     const specialEffectObj = elements.find((el: any) =>
         el?.type === 'ItemPartBox' &&
         ["연마 효과", "팔찌 효과", "특수 효과", "추가 효과"].includes(cleanText(el?.value?.Element_000))
     );
-
-    // 4. [아크 패시브] - 깨달음/도약/진화 포인트
     const arcPassiveObj = elements.find((el: any) =>
         el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000).includes('아크 패시브')
     );
-
-    // 5. [어빌리티 스톤/무작위 각인]
     const randomEffectObj = elements.find((el: any) => el?.value?.topStr === "무작위 각인 효과");
 
-    // 등급별 테마 (제공해주신 방어구 테마와 통일)
+    // 인게임 등급별 테마 (방어구와 통일)
     const themes: any = {
-        '고대': 'from-[#3d3325] to-[#1a1a1c] text-[#e9d2a6] border-[#e9d2a6]/30',
-        '유물': 'from-[#412608] to-[#1a1a1c] text-[#f99200] border-[#f99200]/30',
-        '전설': 'from-[#362e15] to-[#1a1a1c] text-[#f9ae00] border-[#f9ae00]/30',
+        '고대': { bg: 'from-[#2a1a12] via-[#111111] to-[#111111]', text: 'text-[#e7a15d]', border: 'border-[#a6632d]/40' },
+        '유물': { bg: 'from-[#412608] via-[#111111] to-[#111111]', text: 'text-[#f99200]', border: 'border-[#f99200]/30' },
+        '전설': { bg: 'from-[#362e15] via-[#111111] to-[#111111]', text: 'text-[#f9ae00]', border: 'border-[#f9ae00]/30' },
     };
     const theme = themes[itemGradeName] || themes['고대'];
 
+    const getQualityColor = (q: number) => {
+        if (q === 100) return '#FF8000';
+        if (q >= 90) return '#CE43FB';
+        if (q >= 70) return '#00B0FA';
+        if (q >= 30) return '#00D100';
+        return '#919191';
+    };
+
     return (
-        <div className={`z-[9999] w-80 bg-[#121213] border border-white/10 rounded shadow-2xl overflow-hidden ${className}`}>
+        <div className={`z-[9999] w-[340px] bg-[#111111] border border-[#333] rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden font-sans ${className}`}>
 
             {/* --- 상단 헤더 섹션 --- */}
-            <div className={`p-4 bg-gradient-to-br ${theme.split(' ').slice(0, 2).join(' ')} border-b border-white/10`}>
-                <div className="flex gap-4 items-start">
-                    <div className="relative shrink-0">
-                        <div className="p-0.5 rounded-lg bg-gradient-to-br from-white/20 to-transparent border border-white/20 shadow-lg">
-                            <img src={itemIcon} className="w-14 h-14 rounded-md object-cover" alt="" />
+            <div className={`p-4 bg-gradient-to-br ${theme.bg} border-b border-white/5`}>
+                <div className="flex gap-4 items-center">
+                    {/* 아이콘: 박스 풀 사이즈 */}
+                    <div className="relative shrink-0 w-[58px] h-[58px]">
+                        <div className={`w-full h-full overflow-hidden rounded-md border ${theme.border} bg-black`}>
+                            <img src={itemIcon} className="w-full h-full object-cover transform scale-[1.02]" alt="" />
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h4 className={`text-[18px] font-black leading-tight drop-shadow-md truncate ${theme.split(' ')[2]}`}>
+                        <h4 className={`text-[19px] font-bold leading-tight drop-shadow-md truncate ${theme.text}`}>
                             {itemName}
                         </h4>
-                        <div className="mt-1.5 space-y-0.5">
-                            <div className="text-[12px] font-bold text-white/70">{cleanText(itemGradeFull)}</div>
-                            <div className="text-[11px] font-medium text-white/40">{itemLevelAndTier}</div>
+                        <div className="mt-1">
+                            <div className="text-[13px] font-medium text-[#c6c6c6]">{cleanText(itemGradeFull)}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="p-4 space-y-5">
-                {/* 1. 거래 및 귀속 정보 (추가됨) */}
-                {(bindingInfo || tradeInfo) && (
-                    <div className="text-[11px] leading-tight space-y-0.5 border-b border-white/5 pb-3">
-                        <div className="text-white/60">{bindingInfo}</div>
-                        <div className="text-emerald-400 font-bold">{tradeInfo}</div>
+            <div className="p-4 space-y-5 bg-[#111111]">
+                {/* 1. 거래 및 귀속 정보 / 아이템 레벨 / 아크 패시브 */}
+                <div className="space-y-1 pb-3 border-b border-white/5">
+                    <div className="text-[12px] text-[#a9a9a9]">{bindingInfo}</div>
+                    <div className="text-[12px] text-[#4cdfff] font-medium">{tradeInfo}</div>
+
+                    {/* 아이템 레벨 정보 */}
+                    <div className="text-[13px] text-[#eee] font-medium pt-1">
+                        {itemLevelAndTier}
                     </div>
-                )}
+
+                    {/* 아크 패시브 위치 이동: 글자색 #ffcf4d 적용 */}
+                    {arcPassiveObj && (
+                        <div className="text-[13px] font-bold text-[#ffcf4d]">{cleanText(arcPassiveObj.value.Element_001)}
+                        </div>
+                    )}
+                </div>
 
                 {/* 2. 품질 바 */}
-                {quality !== -1 && (() => {
-                    const getQualityColor = (q: number) => {
-                        if (q === 100) return '#FF8000';
-                        if (q >= 90) return '#CE43FB';
-                        if (q >= 70) return '#00B0FA';
-                        if (q >= 30) return '#00D100';
-                        return '#919191';
-                    };
-                    const color = getQualityColor(quality);
-                    return (
-                        <div className="space-y-1">
-                            <div className="flex justify-between items-end">
-                                <span className="text-white/30 text-[10px] font-bold uppercase tracking-tight">Quality</span>
-                                <span className="text-[13px] font-bold" style={{ color }}>{quality}</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full transition-all duration-500" style={{ width: `${quality}%`, backgroundColor: color }} />
-                            </div>
+                {quality !== -1 && (
+                    <div className="space-y-1">
+                        <div className="flex justify-between items-end">
+                            <span className="text-[#a9a9a9] text-[12px]">품질</span>
+                            <span className="text-[14px] font-bold" style={{ color: getQualityColor(quality) }}>{quality}</span>
                         </div>
-                    );
-                })()}
-
-                {/* 3. 아크 패시브 (장신구 핵심) */}
-                {arcPassiveObj && (
-                    <div className="bg-[#f99200]/10 border border-[#f99200]/20 p-2.5 rounded flex justify-between items-center">
-                        <span className="text-[10px] text-[#f99200] font-black uppercase tracking-widest">Arc Passive</span>
-                        <span className="text-[13px] text-[#f99200] font-black">{cleanText(arcPassiveObj.value.Element_001)}</span>
+                        <div className="h-2 w-full bg-[#222] rounded-full overflow-hidden border border-black">
+                            <div
+                                className="h-full transition-all duration-700"
+                                style={{
+                                    width: `${quality}%`,
+                                    backgroundColor: getQualityColor(quality),
+                                    boxShadow: `0 0 8px ${getQualityColor(quality)}80`
+                                }}
+                            />
+                        </div>
                     </div>
                 )}
 
-                {/* 4. 세부 정보 섹션 */}
-                <div className="space-y-4">
+                {/* 4. 효과 정보 섹션 */}
+                <div className="space-y-5">
                     {/* 기본 효과 */}
                     {baseEffectObj?.value?.Element_001 && (
                         <div className="space-y-1">
-                            <div className="text-white/30 text-[10px] font-black uppercase tracking-widest border-b border-white/5 pb-1">
-                                [기본 효과]
-                            </div>
-                            <div className="text-zinc-200 text-[13px] leading-relaxed whitespace-pre-line font-medium">
+                            <div className="text-[#a9a9a9] text-[12px] font-bold">[기본 효과]</div>
+                            <div className="text-[#eee] text-[13px] leading-relaxed whitespace-pre-line font-medium">
                                 {cleanText(baseEffectObj.value.Element_001)}
                             </div>
                         </div>
                     )}
 
-                    {/* 연마 / 팔찌 / 특수 효과 */}
+                    {/* 연마 / 팔찌 / 특수 효과 (장신구 핵심 포인트 색상) */}
                     {specialEffectObj?.value?.Element_001 && (
                         <div className="space-y-1">
-                            <div className="text-white/30 text-[10px] font-black uppercase tracking-widest border-b border-white/5 pb-1">
-                                [{cleanText(specialEffectObj.value.Element_000)}]
-                            </div>
-                            <div className="text-sky-400 text-[13px] font-bold whitespace-pre-line leading-relaxed">
+                            <div className="text-[#a9a9a9] text-[12px] font-bold">[{cleanText(specialEffectObj.value.Element_000)}]</div>
+                            <div className="text-[#4cdfff] text-[13px] font-medium whitespace-pre-line leading-relaxed">
                                 {cleanText(specialEffectObj.value.Element_001)}
                             </div>
                         </div>
                     )}
 
-                    {/* 어빌리티 스톤 각인 효과 */}
+                    {/* 무작위 각인 (어빌리티 스톤 등) */}
                     {randomEffectObj && (
                         <div className="space-y-2">
-                            <div className="text-white/30 text-[10px] font-black uppercase tracking-widest border-b border-white/5 pb-1">
-                                [무작위 각인 효과]
-                            </div>
+                            <div className="text-[#a9a9a9] text-[12px] font-bold">[무작위 각인 효과]</div>
                             <div className="space-y-1.5">
                                 {Object.values(randomEffectObj.value.contentStr).map((eff: any, idx: number) => (
-                                    <div key={idx} className={`text-[13px] font-bold p-1 rounded-sm bg-white/5 ${eff.contentStr.includes('감소') ? 'text-red-400' : 'text-sky-300'}`}>
-                                        {cleanText(eff.contentStr)}
+                                    <div key={idx} className={`text-[13px] font-medium leading-snug ${eff.contentStr.includes('감소') ? 'text-[#ff6666]' : 'text-[#eee]'}`}>
+                                        • {cleanText(eff.contentStr)}
                                     </div>
                                 ))}
                             </div>
@@ -167,6 +158,8 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
                     )}
                 </div>
             </div>
+            {/* 하단 장식 라인 */}
+            <div className="h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
         </div>
     );
 };
