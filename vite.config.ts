@@ -9,7 +9,46 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
         proxy: {
-          "/api": "http://localhost:8080",
+          '/equipment': {
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/stat':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/arkgrid':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/engravings':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/gems':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/avatars':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/cards':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/arkpassive':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          }
         },
       },
       plugins: [react()],
