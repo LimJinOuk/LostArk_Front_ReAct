@@ -3,9 +3,9 @@ import React from 'react';
 const cleanText = (str: string) => {
     if (!str) return '';
     return str
-        .replace(/<BR>/gi, '\n')          // <BR> -> 줄바꿈
-        .replace(/<[^>]*>?/gm, '')        // 모든 HTML 태그 제거
-        .replace(/\n\s+/g, '\n')          // 줄바꿈 뒤 공백 제거
+        .replace(/<BR>/gi, '\n')
+        .replace(/<[^>]*>?/gm, '')
+        .replace(/\n\s+/g, '\n')
         .trim();
 };
 
@@ -16,146 +16,137 @@ interface TooltipProps {
 
 const EquipmentTooltip = ({ data, className = "" }: TooltipProps) => {
     if (!data) return null;
-    // --- 1. 데이터 추출 영역 ---
 
-    // 헤더 정보 (이름, 등급, 레벨, 품질)
+    // --- 데이터 추출 ---
     const itemName = cleanText(data.Element_000?.value || "");
     const titleInfo = data.Element_001?.value || {};
     const quality = titleInfo.qualityValue ?? -1;
-    const itemLevelStr = cleanText(titleInfo.leftStr2 || "");
     const gradeName = titleInfo.leftStr0?.split(' ')[0] || "고대";
     const itemIcon = titleInfo.slotData?.iconPath;
-    const itemGrade = titleInfo.leftStr0; // "고대 머리 방어구" 등
-    const itemLevelAndTier = cleanText(titleInfo.leftStr2 || ""); // "아이템 레벨 1705 (티어 4)"
+    const itemGrade = titleInfo.leftStr0;
+    const itemLevelAndTier = cleanText(titleInfo.leftStr2 || "");
 
     const elements = Object.values(data) as any[];
 
-    // 1. [기본 효과] 찾기 - 물리/마법 방어력, 힘/민/지, 체력
     const baseEffectObj = elements.find((el: any) =>
-        el?.type === 'ItemPartBox' &&
-        cleanText(el?.value?.Element_000) === '기본 효과'
+        el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000) === '기본 효과'
     );
-
-    // 2. [추가 효과] 찾기 - 추가 피해(무기), 생명 활성력(방어구)
     const addEffectObj = elements.find((el: any) =>
-        el?.type === 'ItemPartBox' &&
-        cleanText(el?.value?.Element_000).includes('추가 효과')
+        el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000).includes('추가 효과')
     );
-
-    // 3. [아크 패시브] 찾기 - 진화/깨달음 포인트
-    const arcPassiveObj = elements.find((el: any) =>
-        el?.type === 'ItemPartBox' &&
-        cleanText(el?.value?.Element_000).includes('아크 패시브')
-    );
-
-    // 4. [상급 재련] 찾기
     const advRefineObj = elements.find((el: any) =>
         typeof el?.value === 'string' && el.value.includes('[상급 재련]')
     );
 
-    // 5. [내구도] 찾기
-    const durabilityObj = elements.find((el: any) => el?.type === 'ShowMeTheMoney');
-
-    // 등급별 테마 (고대: 오렌지/브라운, 유물: 오렌지/레드)
+    // 등급별 인게임 테마 (더 어둡고 묵직하게 수정)
     const themes: any = {
-        '고대': 'from-[#3d3325] to-[#1a1a1c] text-[#e9d2a6] border-[#e9d2a6]/30',
-        '유물': 'from-[#412608] to-[#1a1a1c] text-[#f99200] border-[#f99200]/30',
+        '고대': {
+            bg: 'from-[#2a1a12] via-[#111111] to-[#111111]',
+            text: 'text-[#e7a15d]',
+            border: 'border-[#a6632d]/40'
+        },
+        '유물': {
+            bg: 'from-[#412608] via-[#111111] to-[#111111]',
+            text: 'text-[#f99200]',
+            border: 'border-[#f99200]/30'
+        }
     };
     const theme = themes[gradeName] || themes['고대'];
+
+    const getQualityColor = (q: number) => {
+        if (q === 100) return '#FF8000';
+        if (q >= 90) return '#CE43FB';
+        if (q >= 70) return '#00B0FA';
+        if (q >= 30) return '#00D100';
+        return '#919191';
+    };
+
     return (
-        <div className={`absolute z-[9999] w-80 bg-[#121213] border border-white/10 rounded shadow-2xl overflow-hidden ${className}`}>
-            {/* 헤더 섹션 (생략 가능) */}
-            {/* --- 상단 헤더 섹션 --- */}
-            <div className={`p-4 bg-gradient-to-br ${theme.split(' ').slice(0, 2).join(' ')} border-b border-white/10`}>
-                <div className="flex gap-4 items-start">
-                    {/* 아이템 아이콘 */}
-                    <div className="relative shrink-0">
-                        <div className="p-0.5 rounded-lg bg-gradient-to-br from-white/20 to-transparent border border-white/20 shadow-lg">
-                            <img src={itemIcon} className="w-14 h-14 rounded-md object-cover" alt="" />
+        <div className={`absolute z-[9999] w-[340px] bg-[#111111] border border-[#333] rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden font-sans ${className}`}>
+
+            {/* --- 상단 헤더 섹션 (로스트아크 특유의 그라데이션) --- */}
+            <div className={`p-4 bg-gradient-to-br ${theme.bg} border-b border-white/5`}>
+                <div className="flex gap-4 items-center">
+                    {/* 아이콘: 박스에 꽉 채우기 */}
+                    <div className="relative shrink-0 w-[58px] h-[58px]">
+                        <div className={`w-full h-full overflow-hidden rounded-md border ${theme.border} bg-black`}>
+                            <img src={itemIcon} className="w-full h-full object-cover transform scale-[1.02]" alt="" />
                         </div>
                     </div>
 
                     {/* 이름 및 등급 정보 */}
                     <div className="flex-1 min-w-0">
-                        <h4 className={`text-[18px] font-black leading-tight drop-shadow-md truncate ${theme.split(' ')[2]}`}>
+                        <h4 className={`text-[19px] font-bold leading-tight drop-shadow-md truncate ${theme.text}`}>
                             {itemName}
                         </h4>
-                        <div className="mt-1.5 space-y-0.5">
-                            <div className="text-[12px] font-bold text-white/70">
+                        <div className="mt-1 space-y-0.5">
+                            <div className="text-[13px] font-medium text-[#c6c6c6]">
                                 {cleanText(itemGrade)}
                             </div>
-                            <div className="text-[11px] font-medium text-white/40">
-                                {itemLevelAndTier}
-                            </div>
-                            <div className="text-[11px] font-medium text-white/40">
-                                {cleanText(advRefineObj.value).split('\n')[0]}
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="p-4 space-y-5">
-                {/* 품질 바 */}
-                {quality !== -1 && (() => {
-                    // 등급별 색상 로직 정의
-                    const getQualityColor = (q) => {
-                        if (q === 100) return '#FF8000'; // 고대/에스더
-                        if (q >= 90) return '#CE43FB';  // 유물
-                        if (q >= 70) return '#00B0FA';  // 전설
-                        if (q >= 30) return '#00D100';  // 영웅
-                        return '#919191';               // 일반/희귀 (기본값)
-                    };
+            {/* --- 본문 콘텐츠 영역 --- */}
+            <div className="p-4 space-y-4 bg-[#111111]">
 
-                    const color = getQualityColor(quality);
-
-                    return (
-                        <div className="space-y-1">
-                            <div className="flex justify-between items-end">
-                                <span className="text-white/30 text-[10px] font-bold uppercase tracking-tight">Quality</span>
-                                <span className="text-[13px] font-bold" style={{ color }}>{quality}</span>
-                            </div>
-                            {/* 미니 바 */}
-                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full transition-all duration-500"
-                                    style={{
-                                        width: `${quality}%`,
-                                        backgroundColor: color
-                                    }}
-                                />
-                            </div>
+                {/* 아이템 레벨 및 상급 재련 정보 */}
+                <div className="space-y-1 pb-3 border-b border-white/5">
+                    <div className="text-[13px] text-[#eee] font-medium">{itemLevelAndTier}</div>
+                    {advRefineObj && (
+                        <div className="text-[13px] text-[#ffcf4d] font-medium">
+                            {cleanText(advRefineObj.value).split('\n')[0]}
                         </div>
-                    );
-                })()}
+                    )}
+                </div>
 
-            <div className="p-4 space-y-5">
-                {/* [세부 정보] 섹션 */}
-                <div className="space-y-3">
-                    <div className="text-white/30 text-[10px] font-black uppercase tracking-widest border-b border-white/5 pb-1">
-                        [세부 정보]
+                {/* 품질 바 섹션 */}
+                {quality !== -1 && (
+                    <div className="space-y-1">
+                        <div className="flex justify-between items-end">
+                            <span className="text-[#a9a9a9] text-[12px]">품질</span>
+                            <span className="text-[14px] font-bold" style={{ color: getQualityColor(quality) }}>{quality}</span>
+                        </div>
+                        <div className="h-2 w-full bg-[#222] rounded-full overflow-hidden border border-black">
+                            <div
+                                className="h-full transition-all duration-700"
+                                style={{
+                                    width: `${quality}%`,
+                                    backgroundColor: getQualityColor(quality),
+                                    boxShadow: `0 0 8px ${getQualityColor(quality)}80`
+                                }}
+                            />
+                        </div>
                     </div>
+                )}
 
-                    {/* 물리/마법 방어력 + 힘/민/지/체 (기본 효과) */}
+                {/* [기본 효과] & [추가 효과] */}
+                <div className="space-y-4 pt-2">
                     {baseEffectObj?.value?.Element_001 && (
-                        <div className="text-zinc-200 text-[13px] leading-relaxed whitespace-pre-line font-medium">
-                            {cleanText(baseEffectObj.value.Element_001)}
+                        <div className="space-y-1">
+                            <div className="text-[#a9a9a9] text-[12px] font-bold">[기본 효과]</div>
+                            <div className="text-[#eee] text-[13px] leading-relaxed whitespace-pre-line">
+                                {cleanText(baseEffectObj.value.Element_001)}
+                            </div>
                         </div>
                     )}
 
-                    {/* 추가 피해 / 생명 활성력 (추가 효과) */}
                     {addEffectObj?.value?.Element_001 && (
-                        <div className="text-sky-400 text-[13px] font-bold">
-                            {cleanText(addEffectObj.value.Element_001)}
+                        <div className="space-y-1">
+                            <div className="text-[#a9a9a9] text-[12px] font-bold">[추가 효과]</div>
+                            <div className="text-[#4cdfff] text-[13px] font-medium whitespace-pre-line">
+                                {cleanText(addEffectObj.value.Element_001)}
+                            </div>
                         </div>
                     )}
                 </div>
             </div>
-        </div>
 
+            {/* 하단 장식용 로아 스타일 마무리 라인 */}
+            <div className="h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
         </div>
     );
 };
-
 
 export default EquipmentTooltip;
