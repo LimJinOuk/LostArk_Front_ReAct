@@ -112,8 +112,19 @@ export const CombatTab = ({ character }: { character: any }) => {
         return (engravingIconMap as Record<string, string>)[key] || "";
     };
 
-    const cleanText = (text: string) =>
-        text ? text.replace(/<[^>]*>?/gm, '').trim() : '';
+    const cleanText = (text: any): string => {
+        if (!text) return '';
+
+        if (typeof text === 'string') {
+            return text.replace(/<[^>]*>?/gm, '').trim();
+        }
+
+        if (typeof text === 'object' && typeof text.Text === 'string') {
+            return cleanText(text.Text);
+        }
+
+        return '';
+    };
 
     /* ================= 데이터 로딩 ================= */
     useEffect(() => {

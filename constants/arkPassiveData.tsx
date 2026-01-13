@@ -647,22 +647,229 @@ const ENLIGHTENMENT_BY_CLASS: Record<string, any[]> = {
 };
 
 // 3. 도약 (Leap) - 전 직업 공통
-const LEAP = [
+const LEAP_T1 = [
     { name: "초월적인 힘", iconId: "02_3", max: 5, tier: 1 },
     { name: "충전된 분노", iconId: "02_1", max: 5, tier: 1 },
     { name: "각성 증폭기", iconId: "01_54", max: 3, tier: 1 },
     { name: "풀려난 힘", iconId: "02_2", max: 5, tier: 1 },
     { name: "잠재력 해방", iconId: "01_10", max: 5, tier: 1 },
     { name: "즉각적인 주문", iconId: "02_5", max: 3, tier: 1 },
-    { name: "어둠의 장송곡", iconId: "se_11", max: 3, tier: 2 },
-    { name: "영혼 수확자", iconId: "se_12", max: 3, tier: 2 },
-    { name: "심판", iconId: "se_13", max: 3, tier: 2 },
-    { name: "영혼 갈구", iconId: "se_14", max: 3, tier: 2 },
 ];
+
+// 4. 도약 (Leap) - 직업 별 도약
+const LEAP_BY_CLASS: Record<string, any[]> = {
+    "워로드": [
+        ...LEAP_T1,
+        { name: "저돌", iconId: "gl_9", max: 3, tier: 2 },
+        { name: "선봉의 보호", iconId: "gl_10", max: 3, tier: 2 },
+        { name: "거포", iconId: "gl_17", max: 3, tier: 2 },
+        { name: "퀵 배럴", iconId: "gl_18", max: 3, tier: 2 }
+    ],
+    "버서커": [
+        ...LEAP_T1,
+        { name: "난도질", iconId: "bk_8", max: 3, tier: 2 },
+        { name: "분노 순환", iconId: "bk_9", max: 3, tier: 2 },
+        { name: "분노 증폭", iconId: "bk_10", max: 3, tier: 2 },
+        { name: "참격", iconId: "bk_11", max: 3, tier: 2 }
+    ],
+    "디스트로이어": [
+        ...LEAP_T1,
+        { name: "집중 공격", iconId: "dt_7", max: 3, tier: 2 },
+        { name: "중력 보존", iconId: "dt_8", max: 3, tier: 2 },
+        { name: "중력 축적", iconId: "dt_9", max: 3, tier: 2 },
+        { name: "순환력", iconId: "dt_10", max: 3, tier: 2 }
+    ],
+    "홀리나이트": [
+        ...LEAP_T1,
+        { name: "즉결 심판", iconId: "hk_8", max: 3, tier: 2 },
+        { name: "집행 선고", iconId: "hk_9", max: 3, tier: 2 },
+        { name: "성스러운 빛", iconId: "hk_10", max: 3, tier: 2 },
+        { name: "정의의 빛", iconId: "hk_11", max: 3, tier: 2 }
+    ],
+    "슬레이어": [
+        ...LEAP_T1,
+        { name: "축적된 힘", iconId: "bkf_7", max: 3, tier: 2 },
+        { name: "과감한 돌진", iconId: "bkf_8", max: 3, tier: 2 },
+        { name: "전력투구", iconId: "bkf_9", max: 3, tier: 2 },
+        { name: "숙련된 힘", iconId: "bkf_10", max: 3, tier: 2 }
+    ],
+    "발키리": [
+        ...LEAP_T1,
+        { name: "신념의 검", iconId: "hkf_13", max: 3, tier: 2 },
+        { name: "창공의 검", iconId: "hkf_14", max: 3, tier: 2 },
+        { name: "기적", iconId: "hkf_15", max: 3, tier: 2 },
+        { name: "순환", iconId: "hkf_16", max: 3, tier: 2 }
+    ],
+    "인파이터": [
+        ...LEAP_T1,
+        { name: "격노의 주먹", iconId: "if_7", max: 3, tier: 2 },
+        { name: "최후의 폭발", iconId: "if_8", max: 3, tier: 2 },
+        { name: "충격 폭발", iconId: "if_9", max: 3, tier: 2 },
+        { name: "간결한 타격", iconId: "if_10", max: 3, tier: 2 }
+    ],
+    "배틀마스터": [
+        ...LEAP_T1,
+        { name: "끊임없는 공세", iconId: "bm_7", max: 3, tier: 2 },
+        { name: "밀어차기", iconId: "bm_8", max: 3, tier: 2 },
+        { name: "집중 발차기", iconId: "bm_9", max: 3, tier: 2 },
+        { name: "간소화", iconId: "bm_10", max: 3, tier: 2 }
+    ],
+    "기공사": [
+        ...LEAP_T1,
+        { name: "금강", iconId: "so_10", max: 3, tier: 2 },
+        { name: "허공답보", iconId: "so_11", max: 3, tier: 2 },
+        { name: "최후의 일격", iconId: "so_12", max: 3, tier: 2 },
+        { name: "단계 적응", iconId: "so_13", max: 3, tier: 2 }
+    ],
+    "창술사": [
+        ...LEAP_T1,
+        { name: "강인한 타격", iconId: "lm_9", max: 3, tier: 2 },
+        { name: "최후의 판단", iconId: "lm_10", max: 3, tier: 2 },
+        { name: "관통 필살", iconId: "lm_11", max: 3, tier: 2 },
+        { name: "내지르기", iconId: "lm_12", max: 3, tier: 2 }
+    ],
+    "스트라이커": [
+        ...LEAP_T1,
+        { name: "집중 타격", iconId: "bmm_10", max: 3, tier: 2 },
+        { name: "단축타격", iconId: "bmm_11", max: 3, tier: 2 },
+        { name: "고속충전", iconId: "bmm_12", max: 3, tier: 2 },
+        { name: "효율적인 타격", iconId: "bmm_13", max: 3, tier: 2 }
+    ],
+    "브레이커": [
+        ...LEAP_T1,
+        { name: "천왕난무", iconId: "ifm_11", max: 3, tier: 2 },
+        { name: "우직한 공격", iconId: "ifm_12", max: 3, tier: 2 },
+        { name: "충격 폭발", iconId: "ifm_13", max: 3, tier: 2 },
+        { name: "사방 타격", iconId: "ifm_14", max: 3, tier: 2 }
+    ],
+    "데빌헌터": [
+        ...LEAP_T1,
+        { name: "허리케인", iconId: "dh_9", max: 3, tier: 2 },
+        { name: "퀵 스톰", iconId: "dh_10", max: 3, tier: 2 },
+        { name: "풀레인지", iconId: "dh_11", max: 3, tier: 2 },
+        { name: "샷건 리로드", iconId: "dh_12", max: 3, tier: 2 },
+        { name: "엄호 사격", iconId: "dh_13", max: 3, tier: 2 },
+        { name: "증원", iconId: "dh_14", max: 3, tier: 2 }
+    ],
+    "호크아이": [
+        ...LEAP_T1,
+        { name: "고속 회전", iconId: "he_7", max: 3, tier: 2 },
+        { name: "동료", iconId: "he_8", max: 3, tier: 2 },
+        { name: "추가 동작", iconId: "he_9", max: 3, tier: 2 },
+        { name: "기동대", iconId: "he_10", max: 3, tier: 2 }
+    ],
+    "블래스터": [
+        ...LEAP_T1,
+        { name: "다량 투하", iconId: "bs_8", max: 3, tier: 2 },
+        { name: "폭발탄", iconId: "bs_9", max: 3, tier: 2 },
+        { name: "미사일 추가", iconId: "bs_10", max: 3, tier: 2 },
+        { name: "런처 가속", iconId: "bs_11", max: 3, tier: 2 }
+    ],
+    "스카우터": [
+        ...LEAP_T1,
+        { name: "최적화 모드", iconId: "sc_8", max: 3, tier: 2 },
+        { name: "포커스 파워", iconId: "sc_15", max: 3, tier: 2 },
+        { name: "오토 파일럿", iconId: "sc_10", max: 3, tier: 2 },
+        { name: "싱크 콤비네이션", iconId: "sc_11", max: 3, tier: 2 }
+    ],
+    "건슬링어": [
+        ...LEAP_T1,
+        { name: "대용량 탄창", iconId: "dhf_11", max: 3, tier: 2 },
+        { name: "플래시", iconId: "dhf_12", max: 3, tier: 2 },
+        { name: "바람 걸음", iconId: "dhf_13", max: 3, tier: 2 },
+        { name: "공중 묘기", iconId: "dhf_14", max: 3, tier: 2 },
+        { name: "강화된 사격", iconId: "dhf_15", max: 3, tier: 2 },
+        { name: "초감각 사격", iconId: "dhf_16", max: 3, tier: 2 }
+    ],
+    "아르카나": [
+        ...LEAP_T1,
+        { name: "숨겨진 패", iconId: "ac_9", max: 3, tier: 2 },
+        { name: "폴스 딜", iconId: "ac_10", max: 3, tier: 2 },
+        { name: "악마의 눈속임", iconId: "ac_11", max: 3, tier: 2 },
+        { name: "쿼즈", iconId: "ac_12", max: 3, tier: 2 }
+    ],
+    "서머너": [
+        ...LEAP_T1,
+        { name: "개화", iconId: "sm_10", max: 3, tier: 2 },
+        { name: "마리포사의 축복", iconId: "sm_11", max: 3, tier: 2 },
+        { name: "길들이기", iconId: "sm_12", max: 3, tier: 2 },
+        { name: "이그나 브레스", iconId: "sm_13", max: 3, tier: 2 }
+    ],
+    "바드": [
+        ...LEAP_T1,
+        { name: "마르지 않는 영감", iconId: "bd_12", max: 3, tier: 2 },
+        { name: "풍요의 랩소디", iconId: "bd_11", max: 3, tier: 2 },
+        { name: "앙코르", iconId: "bd_13", max: 3, tier: 2 },
+        { name: "이명", iconId: "bd_14", max: 3, tier: 2 }
+    ],
+    "소서리스": [
+        ...LEAP_T1,
+        { name: "대폭발", iconId: "scs_9", max: 3, tier: 2 },
+        { name: "분출", iconId: "scs_10", max: 3, tier: 2 },
+        { name: "꿰뚫는 빙하", iconId: "scs_11", max: 3, tier: 2 },
+        { name: "냉기 숙련", iconId: "scs_12", max: 3, tier: 2 }
+    ],
+    "블레이드": [
+        ...LEAP_T1,
+        { name: "섬광 베기", iconId: "bl_9", max: 3, tier: 2 },
+        { name: "검객의 길", iconId: "bl_10", max: 3, tier: 2 },
+        { name: "악몽의 춤사위", iconId: "bl_11", max: 3, tier: 2 },
+        { name: "비명의 춤사위", iconId: "bl_12", max: 3, tier: 2 }
+    ],
+    "데모닉": [
+        ...LEAP_T1,
+        { name: "악의적인 권한", iconId: "dm_13", max: 3, tier: 2 },
+        { name: "황천 주입", iconId: "dm_14", max: 3, tier: 2 },
+        { name: "지옥의 광란", iconId: "dm_15", max: 3, tier: 2 },
+        { name: "악마의 승천", iconId: "dm_16", max: 3, tier: 2 }
+    ],
+    "리퍼": [
+        ...LEAP_T1,
+        { name: "비열한 칼날", iconId: "rp_8", max: 3, tier: 2 },
+        { name: "잔혹한 칼날", iconId: "rp_9", max: 3, tier: 2 },
+        { name: "암살자의 발자취", iconId: "rp_10", max: 3, tier: 2 },
+        { name: "그림자 맹수", iconId: "rp_11", max: 3, tier: 2 }
+    ],
+    "소울이터": [
+        ...LEAP_T1,
+        { name: "어둠의 장송곡", iconId: "se_11", max: 3, tier: 2 },
+        { name: "영혼 수확자", iconId: "se_12", max: 3, tier: 2 },
+        { name: "심판", iconId: "se_13", max: 3, tier: 2 },
+        { name: "영혼 갈구", iconId: "se_14", max: 3, tier: 2 }
+    ],
+    "도화가": [
+        ...LEAP_T1,
+        { name: "여의주", iconId: "yy_10", max: 3, tier: 2 },
+        { name: "승천", iconId: "yy_9", max: 3, tier: 2 },
+        { name: "돌진하는 먹", iconId: "yy_11", max: 3, tier: 2 },
+        { name: "땅 울리기", iconId: "yy_12", max: 3, tier: 2 }
+    ],
+    "기상술사": [
+        ...LEAP_T1,
+        { name: "완벽한 가르기", iconId: "wa_7", max: 3, tier: 2 },
+        { name: "단련된 가르기", iconId: "wa_8", max: 3, tier: 2 },
+        { name: "온도 상승", iconId: "wa_9", max: 3, tier: 2 },
+        { name: "햇살의 포옹", iconId: "wa_10", max: 3, tier: 2 }
+    ],
+    "   환수사": [
+        ...LEAP_T1,
+        { name: "고대의 힘", iconId: "dr_10", max: 3, tier: 2 },
+        { name: "민첩한 몸놀림", iconId: "dr_11", max: 3, tier: 2 },
+        { name: "결속 강화", iconId: "dr_12", max: 3, tier: 2 },
+        { name: "빨리와 여우곰!", iconId: "dr_13", max: 3, tier: 2 }
+],
+    "가디언나이트": [
+        ...LEAP_T1,
+        { name: "일점 돌파", iconId: "ddk_12", max: 3, tier: 2 },
+        { name: "파멸의 피", iconId: "ddk_13", max: 3, tier: 2 },
+        { name: "궤도 충돌", iconId: "ddk_14", max: 3, tier: 2 },
+        { name: "대강하", iconId: "ddk_15", max: 3, tier: 2 }
+    ],
+};
 
 // 최종 데이터 결합 및 내보내기
 export const MASTER_DATA = {
     EVOLUTION,
     ENLIGHTENMENT_BY_CLASS,
-    LEAP
+    LEAP_BY_CLASS
 };
