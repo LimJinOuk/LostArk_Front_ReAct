@@ -1,81 +1,122 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { Shield, Swords, Users, Trophy, Zap, Target, Flame, GripVertical, Home } from 'lucide-react';
 
 export const CharacterHeader = ({ character }: { character: any }) => {
-    const data = {
-        name: character.CharacterName,
-        server: character.ServerName,
-        class: character.CharacterClassName,
-        title: character.Title || "칭호 없음",
-        itemLevel: character.ItemAvgLevel,
-        combatPower: character.CombatPower,
-        battleLevel: character.CharacterLevel,
-        expeditionLevel: character.ExpeditionLevel,
-        image: character.CharacterImage
-    };
+    const stats = character.Stats || [];
+    const getStat = (type: string) => stats.find((s: any) => s.Type === type)?.Value || "-";
+
+    // 1. 랜덤 광원 색상 리스트 (RGBA 포맷)
+    const lightColors = useMemo(() => [
+        'rgba(168, 85, 247, 0.25)',   // 보라 (전설/영웅 등급 느낌)
+        'rgba(232, 103, 50, 0.3)',    // 고대 (로아 고대 장비의 독특한 주황색)
+        'rgba(255, 77, 0, 0.3)',      // 유물 (강렬한 유물 등급 주황)
+        'rgba(255, 215, 0, 0.25)',    // 노란색 (에스더/골드 느낌)
+        'rgba(30, 58, 138, 0.35)',    // 남색 (심연/어둠 계열 느낌)
+        'rgba(255, 255, 255, 0.15)',  // 하얀색 (고결한 빛 느낌 - 투명도 낮게 조절)
+    ], []);
+
+    // 2. 렌더링 시 랜덤하게 색상 하나 선택
+    const randomColor = useMemo(() => {
+        return lightColors[Math.floor(Math.random() * lightColors.length)];
+    }, []);
 
     return (
-        <div className="relative bg-zinc-900/30 rounded-[2.5rem] p-10 border border-white/[0.05] overflow-hidden">
+        <div className="relative w-full max-w-8xl mx-auto min-h-[350px] bg-[#15181d] text-white p-8 overflow-hidden rounded-xl border border-white/5">
 
-            {/* 1. 배경 이미지: 이름 뒤에 은은하게 배치 (Opacity 최적화) */}
-            <div className="absolute top-[-20%] left-[15%] w-[40%] h-[150%] opacity-[0.15] pointer-events-none">
-                <img
-                    src={data.image}
-                    className="w-full h-full object-cover object-top blur-xl grayscale-[0.5]"
-                    alt=""
-                />
+            {/* 캐릭터 이미지: z-0 */}
+            <div className="absolute right-[-4%] top-[-18%] w-[600px] h-[130%] z-0">
+                <div className="relative w-full h-full">
+                    <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#15181d] to-transparent z-10" />
+                    <img
+                        src={character.CharacterImage}
+                        alt={character.CharacterName}
+                        className="w-full h-[600px] object-cover object-top opacity-90"
+                    />
+                </div>
             </div>
 
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-
-                {/* 2. 왼쪽: 아바타 크기 확대 및 정보 배치 */}
-                <div className="flex items-center gap-10">
-                    <div className="relative group">
-                        {/* 이미지 외곽에 미세한 글로우 추가 */}
-                        <div className="absolute -inset-1 bg-white/5 rounded-[2rem] blur-md"></div>
-                        <div className="relative w-40 h-40 bg-zinc-950 rounded-[2rem] overflow-hidden ring-1 ring-white/10 shadow-2xl">
-                            <img
-                                src={data.image}
-                                className="w-full h-full object-cover object-[center_15%] scale-[1.5] translate-y-6"
-                                alt={data.name}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3 text-[14px] font-bold tracking-wide">
-                            <span className="text-zinc-500">@{data.server}</span>
-                            <span className="w-1 h-1 bg-zinc-700 rounded-full" />
-                            <span className="text-emerald-500">{data.class}</span>
-                        </div>
-
-                        <h1 className="text-5xl font-black text-white tracking-tighter italic leading-none">
-                            {data.name}
-                        </h1>
-
-                        <p className="text-[17px] font-medium text-zinc-400 opacity-80">
-                            {data.title}
-                        </p>
+            {/* 콘텐츠 영역: z-10 */}
+            <div className="relative z-10 flex flex-col justify-between h-full min-h-[290px]">
+                {/* 상단 섹션 */}
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-2">
+                        <span className="bg-purple-500/10 text-purple-500 border border-purple-500/20 px-3 py-1 rounded text-xs font-bold uppercase">
+                            {character.ServerName}
+                        </span>
+                        <span className="bg-zinc-800/80 backdrop-blur-sm px-3 py-1 rounded text-xs font-bold text-zinc-300 border border-white/5">
+                            {character.CharacterClassName}
+                        </span>
                     </div>
                 </div>
 
-                {/* 3. 우측 스탯: 크기를 키우고 간격을 조정하여 중앙 공백 해결 */}
-                <div className="grid grid-cols-3 gap-12 lg:gap-20 bg-white/[0.02] px-10 py-8 rounded-[2rem] border border-white/[0.03]">
-                    {[
-                        { label: '아이템 레벨', val: data.itemLevel, color: 'text-zinc-100', size: 'text-3xl' },
-                        { label: '전투력', val: data.combatPower.toLocaleString(), color: 'text-zinc-100', size: 'text-3xl' },
-                        { label: '전투 / 원정대', val: `${data.battleLevel} / ${data.expeditionLevel}`, color: 'text-zinc-400', size: 'text-2xl' },
-                    ].map((stat, i) => (
-                        <div key={i} className="flex flex-col gap-3 min-w-fit">
-                            <p className="text-[13px] font-bold text-zinc-600 uppercase tracking-[0.2em]">
-                                {stat.label}
-                            </p>
-                            <p className={`${stat.size} font-black tracking-tighter ${stat.color}`}>
-                                {stat.val}
-                            </p>
+                {/* 중앙 섹션 */}
+                <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-1">
+                        <GripVertical size={16} className="text-zinc-600" />
+                        <p className="text-sm text-zinc-500 italic font-medium">{character.Title || "원정대의 희망"}</p>
+                    </div>
+                    <h1 className="text-6xl font-black tracking-tighter mb-4">{character.CharacterName}</h1>
+
+                    <div className="flex items-center gap-8 mt-2">
+                        <div className="flex flex-col gap-1 border-r border-white/10 pr-6">
+                            <div className="flex items-center gap-2">
+                                <Trophy size={14} className="text-amber-500" />
+                                <span className="text-sm font-bold">Lv.{character.CharacterLevel}</span>
+                            </div>
                         </div>
-                    ))}
+                        <div className="flex items-center gap-6">
+                            <SlimStat icon={<Target size={14} className="text-orange-400" />} label="치명" value={getStat("치명")} />
+                            <SlimStat icon={<Flame size={14} className="text-rose-400" />} label="특화" value={getStat("특화")} />
+                            <SlimStat icon={<Zap size={14} className="text-cyan-400" />} label="신속" value={getStat("신속")} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 하단 섹션: 광원이 덮는 부분 */}
+                <div className="flex justify-between items-end mt-auto pt-6">
+                    <div className="flex gap-12">
+                        <SimpleStat label="아이템 레벨" value={character.ItemAvgLevel} icon={<Shield size={18} />} />
+                        <SimpleStat label="전투력" value={character.CombatPower} color="text-rose-500" icon={<Swords size={18} />} />
+                        <SimpleStat label="원정대 레벨" value={`Lv.${character.ExpeditionLevel}`} icon={<Zap size={18} />} />
+                    </div>
                 </div>
             </div>
+
+            {/* 3. 랜덤 광원 효과: z-20으로 최상단 배치 */}
+            <div
+                className="absolute -bottom-1/2 left-1/2 -translate-x-1/2 translate-y-1/2 z-20 pointer-events-none"
+                style={{
+                    width: '96rem',
+                    height: '48rem',
+                    mixBlendMode: 'screen',
+                    transition: 'all 1s ease-out',
+                    maskImage: 'radial-gradient(50% 50%, black 20%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(50% 50%, black 20%, transparent 100%)',
+                    filter: 'blur(15rem)',
+                    backgroundColor: randomColor, // 랜덤 색상 적용
+                }}
+            />
         </div>
     );
 };
+
+/* 보조 컴포넌트 */
+const SlimStat = ({ icon, label, value }: any) => (
+    <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1.5">
+            {icon}
+            <span className="text-[11px] text-zinc-500 font-bold">{label}</span>
+        </div>
+        <span className="text-base font-black">{value}</span>
+    </div>
+);
+
+const SimpleStat = ({ label, value, icon, color = "text-white" }: any) => (
+    <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-1.5 text-zinc-500">
+            {icon}
+            <span className="text-[10px] font-black tracking-widest uppercase">{label}</span>
+        </div>
+        <span className={`text-4xl font-[1000] tracking-tighter ${color} leading-none`}>{value}</span>
+    </div>
+);

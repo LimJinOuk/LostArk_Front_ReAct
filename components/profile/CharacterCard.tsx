@@ -27,11 +27,7 @@ export const CharacterCard: React.FC<{ character: CharacterInfo }> = ({ characte
             case '전투': return <CombatTab character={character} />;
             case '스킬': return <SkillTab skills={character.skills} />;
             case '아크 패시브': return <ArkPassiveTab character={character} />;
-            case '내실': return <CollectionTab character={character} />;
-            case '아바타': return <AvatarTab />;
-            case '통계': return <StatsTab character={character} />;
             case '캐릭터': return <CharacterDetailTab />;
-            case '길드': return <GuildTab character={character} />;
             default: return <CombatTab character={character} />;
         }
     };
