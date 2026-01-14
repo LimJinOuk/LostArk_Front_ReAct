@@ -3,7 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const TabNavigation = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (t: string) => void }) => {
-    const tabs = ['전투', '스킬', '아크 패시브', '캐릭터', '길드'];
+    const tabs = ['전투', '스킬', '아크 패시브', '캐릭터'];
 
     // 회전 상태 관리를 위한 state
     const [isRotating, setIsRotating] = useState(false);

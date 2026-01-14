@@ -3,7 +3,9 @@ import {Loader2, Hexagon, ShieldAlert, Zap} from 'lucide-react';
 import EquipmentTooltip from "@/components/profile/Tooltip/EquipmentTooltip.tsx";
 import AccessoryTooltip from '@/components/profile/Tooltip/AccessoryTooltip.tsx';
 import ArkCoreTooltip from '@/components/profile/Tooltip/ArkCoreTooltip.tsx';
+import JewelryTooltip from '@/components/profile/Tooltip/JewelryTooltip.tsx';
 import engravingIconMap from "./engravingsIdTable.json";
+import mokoko from "../../../assets/모코코.png";
 
 /* ================= 인터페이스 ================= */
 // --장비 인터페이스
@@ -60,6 +62,11 @@ interface CardData {
     Effects: CardEffect[];
 }
 
+interface GemCombatProps {
+    gems: any;
+    skillData: any[];
+}
+
 /* ✅ 아크 패시브 각인(우측 “활성 각인 (아크 패시브)”에 쓰는 데이터) */
 type ArkPassiveEffect = {
     Name: string;
@@ -98,6 +105,9 @@ export const CombatTab = ({ character }: { character: any }) => {
     const [accHoverData, setAccHoverData] = React.useState<any>(null);
     const [arkCoreHoverIdx, setArkCoreHoverIdx] = React.useState<any>(null);
     const [arkCoreHoverData, setArkCoreHoverData] = React.useState<any>(null);
+    const [jewlryHoverIdx , setJewlryHoverIdx] = React.useState<any>(null);
+    const [jewlryHoverData, setJewlryHoverData] = React.useState<any>(null);
+
 
     const normalizeEngravingName = (name: string) => {
         return (name || "")
@@ -112,8 +122,98 @@ export const CombatTab = ({ character }: { character: any }) => {
         return (engravingIconMap as Record<string, string>)[key] || "";
     };
 
-    const cleanText = (text: string) =>
-        text ? text.replace(/<[^>]*>?/gm, '').trim() : '';
+    const cleanText = (text: any): string => {
+        if (!text) return '';
+
+        if (typeof text === 'string') {
+            return text.replace(/<[^>]*>?/gm, '').trim();
+        }
+
+        if (typeof text === 'object' && typeof text.Text === 'string') {
+            return cleanText(text.Text);
+        }
+
+        return '';
+    };
+
+    const GemSlot = ({ gem, index, hoverIdx, hoverData, setHoverIdx, setHoverData, isCenter = false }: any) => {
+        const sizeClasses = isCenter ? "w-22 h-22" : "w-[76px] h-[76px]";
+
+        if (!gem) return <div className={`${sizeClasses} rounded-full bg-white/5 opacity-10`} />;
+
+        let skillIcon = gem.Icon;
+        let gemThemeColor = "#ffffff"; // 기본값
+
+        try {
+            if (gem.Tooltip) {
+                const tooltip = JSON.parse(gem.Tooltip);
+                skillIcon = tooltip.Element_001?.value?.slotData?.iconPath || gem.Icon;
+                const gradeName = tooltip.Element_001?.value?.leftStr0 || gem.Grade || "";
+
+                // 등급별 고유 테마 색상 설정
+                if (gradeName.includes("고대")) {
+                    gemThemeColor = "#dcc999"; // 고대: 청량한 시안/화이트
+                } else if (gradeName.includes("유물")) {
+                    gemThemeColor = "#fa5d00"; // 유물: 주황
+                } else if (gradeName.includes("전설")) {
+                    gemThemeColor = "#f9ba2e"; // 전설: 황금
+                }
+            }
+        } catch (e) { skillIcon = gem.Icon; }
+
+        return (
+            <div
+                className="relative group flex flex-col items-center gap-2"
+                onMouseLeave={() => { setHoverIdx(null); setHoverData(null); }}
+            >
+                <div
+                    className="flex flex-col items-center cursor-help"
+                    onMouseEnter={() => { setHoverIdx(index); setHoverData(gem); }}
+                >
+                    {/* [디자인 가이드 반영]
+                  1. border와 background가 등급 색상에 따라 자연스럽게 동화됨
+                  2. 강력한 inset shadow로 깊이감 형성
+                */}
+                    <div
+                        className={`${sizeClasses} rounded-full transition-all duration-300 group-hover:scale-110 flex items-center justify-center overflow-hidden border`}
+                        style={{
+                            // 요청하신 배경 스타일 적용 (등급 색상을 미세하게 섞어 일체감 부여)
+                            background: `linear-gradient(180deg, ${gemThemeColor}15 0%, #07090c 100%)`,
+                            // 테두리 선이 튀지 않도록 배경과 같은 계열의 투명도 적용
+                            borderColor: `${gemThemeColor}55`,
+                            // 안쪽으로 깊게 퍼지는 100px 그림자로 아이콘이 배경에 안착된 느낌
+                            boxShadow: `
+                            inset 0 0 40px rgba(0,0,0,0.9), 
+                            inset 0 0 100px rgba(0,0,0,0.8),
+                            0 0 15px ${gemThemeColor}33
+                        `,
+                        }}
+                    >
+                        <img
+                            src={skillIcon}
+                            alt=""
+                            className="w-full h-full object-cover scale-110 drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]"
+                        />
+                    </div>
+
+                    {/* 레벨 표시 */}
+                    <span className="mt-1.5 text-zinc-400 text-[12px] font-bold tracking-tighter drop-shadow-md group-hover:text-white">
+                    Lv.{gem.Level}
+                </span>
+                </div>
+
+                {/* 툴팁 영역 */}
+                {hoverIdx === index && hoverData && (
+                    <div className="absolute left-full top-0 z-[9999] pl-4 -ml-2 h-full flex items-start">
+                        <div className="animate-in fade-in zoom-in-95 duration-200">
+                            <JewelryTooltip gemData={hoverData} />
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
 
     /* ================= 데이터 로딩 ================= */
     useEffect(() => {
@@ -163,13 +263,6 @@ export const CombatTab = ({ character }: { character: any }) => {
             </div>
         );
     }
-
-    /* 아크패시브 스타일 설정 */
-    const passiveConfigs: any = {
-        '진화': { color: 'text-blue-400' },
-        '깨달음': { color: 'text-purple-400'},
-        '도약': { color: 'text-amber-400'},
-    };
 
 
     /* ================= 렌더 ================= */
@@ -323,8 +416,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                  onMouseLeave={() => {
                                                      setAccHoverIdx(null);
                                                      setAccHoverData(null);
-                                                 }}
-                                        >
+                                                 }}>
                                                 {/* 아이콘 및 품질 */}
                                                 <div className="relative shrink-0">
                                                     {/* 요청하신 브라운 -> 다크 그레이 그라데이션 및 금빛 테두리 적용 */}
@@ -446,148 +538,82 @@ export const CombatTab = ({ character }: { character: any }) => {
                     </div>
                 </section>
 
-                {/* ================= 아바타 섹션 수정 시작 ================= */}
-                <section className="w-full space-y-4">
-                    <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                        <div className="flex items-center gap-4">
-                            <h2 className="text-lg font-bold text-white">아바타</h2>
+                {/*====================보석 시작=============================*/}
+                <section className="mtz`-10 w-full flex flex-col items-center">
+                    {/* 헤더 부분 */}
+                    <div className="w-full max-w-5xl flex items-center justify-between border-b border-zinc-800 pb-2 mb-8">
+                        <h2 className="text-xl font-bold text-zinc-100 uppercase tracking-tight">보석</h2>
+                        <div className="text-[12px] bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full border border-blue-500/20 font-black shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                            {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
+                        </div>
+                    </div>
 
-                            {/* [추가] 통합 토글 버튼 */}
-                            <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 shadow-inner">
-                                <button
-                                    onClick={() => setAvatarViewMode('skin')}
-                                    className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${
-                                        avatarViewMode === 'skin' ? 'bg-sky-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
-                                    }`}
-                                >
-                                    덧입기
-                                </button>
-                                <button
-                                    onClick={() => setAvatarViewMode('inner')}
-                                    className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${
-                                        avatarViewMode === 'inner' ? 'bg-amber-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
-                                    }`}
-                                >
-                                    본체
-                                </button>
-                            </div>
+                    {/* 인게임 UI 배경 메인 컨테이너 */}
+                    <div className="relative w-full max-w-5xl p-8 rounded-[40px] border border-zinc-700/50 shadow-2xl flex items-center justify-center min-h-[400px]"
+                         style={{
+                             background: `linear-gradient(180deg, #0f1217 0%, #07090c 100%)`,
+                             boxShadow: 'inset 0 0 100px rgba(0,0,0,0.8)'
+                         }}>
+
+                        {/* 배경 효과 생략 (기존과 동일) */}
+                        <div className="absolute inset-0 z-0 pointer-events-none">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-900/20 rounded-full blur-[120px]" />
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30 pointer-events-none" />
                         </div>
 
-                        {/* 총 추가 능력치 계산 (본체 슬롯 기준 고정) */}
-                        {(() => {
-                            const slotTypes = ['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타'];
-// 총 추가 능력치 계산 (본체 우선 합산)
-                            const totalStat = (() => {
-                                // 능력치가 붙는 주요 아바타 부위 정의
-                                const statSlotTypes = ['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타'];
+                        {/* 보석 배치 레이아웃 (skillData 참조 제거) */}
+                        <div className="relative z-10 flex flex-col items-center gap-2">
 
-                                return statSlotTypes.reduce((acc, type) => {
-                                    const parts = avatars.filter(a => a.Type === type);
-
-                                    // 1. 본체(IsInner: true)를 가장 먼저 찾음
-                                    // 2. 본체가 없다면(빈 슬롯 방지) 덧입기(IsInner: false)를 찾음
-                                    const activeForStat = parts.find(a => a.IsInner === true) || parts.find(a => a.IsInner === false);
-
-                                    if (activeForStat) {
-                                        // Tooltip 내의 "민첩 +2.00%" 혹은 "힘 +1.00%" 등의 패턴 추출
-                                        const match = activeForStat.Tooltip.match(/(?:힘|민첩|지능)\s*\+([\d.]+)%/);
-                                        return acc + (match ? parseFloat(match[1]) : 0);
-                                    }
-                                    return acc;
-                                }, 0);
-                            })();
-                            return (
-                                <div className="text-[11px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20 font-bold">
-                                    기본 특성 {totalStat.toFixed(2)}%
+                            {/* 1행: O O (넓은 간격) O O */}
+                            <div className="flex items-center gap-40">
+                                <div className="flex gap-4">
+                                    <GemSlot gem={gems?.Gems?.[0]} index={0} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    <GemSlot gem={gems?.Gems?.[1]} index={1} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 </div>
-                            );
-                        })()}
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2.5">
-                        {['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타', '얼굴1 아바타', '얼굴2 아바타', '악기 아바타', '이동 효과'].map((type) => {
-                            const parts = avatars.filter(a => a.Type === type);
-                            const innerAvatar = parts.find(a => a.IsInner === true);
-                            const skinAvatar = parts.find(a => a.IsInner === false);
-
-                            if (!innerAvatar && !skinAvatar) return null;
-
-                            // [로직] 현재 모드에 따라 표시할 데이터 결정
-                            const activeDisplay = avatarViewMode === 'skin'
-                                ? (skinAvatar || innerAvatar)
-                                : (innerAvatar || skinAvatar);
-
-                            const isLegendary = activeDisplay.Grade === "전설";
-                            const statMatch = activeDisplay.Tooltip.match(/(?:힘|민첩|지능)\s*\+[\d.]+%/);
-
-                            return (
-                                <div key={type} className="group bg-[#181818] rounded-lg border border-white/5 p-3 hover:border-white/10 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative shrink-0">
-                                            <div className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center overflow-hidden transition-all ${
-                                                isLegendary
-                                                    ? 'border-orange-500/40 bg-gradient-to-br from-[#3e270a] to-zinc-900'
-                                                    : 'border-purple-500/40 bg-gradient-to-br from-[#2a133d] to-zinc-900'
-                                            }`}>
-                                                <img src={activeDisplay.Icon} className="w-11 h-11 object-contain group-hover:scale-110 transition-transform" alt="" />
-                                            </div>
-                                            {/* 현재 데이터 상태 라벨 (INNER/SKIN) */}
-                                            <div className={`absolute -top-1 -right-1 px-1 rounded text-[8px] font-black border ${
-                                                activeDisplay.IsInner ? 'bg-amber-500 border-amber-400' : 'bg-sky-500 border-sky-400'
-                                            } text-white shadow-lg`}>
-                                                {activeDisplay.IsInner ? 'INNER' : 'SKIN'}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">{type}</span>
-                                                <span className={`text-[10px] font-black ${isLegendary ? 'text-orange-400' : 'text-purple-400'}`}>
-                                                    {activeDisplay.Grade}
-                                                </span>
-                                            </div>
-                                            <p className="text-[14px] font-bold text-zinc-200 truncate mb-1">
-                                                {activeDisplay.Name}
-                                            </p>
-
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[11px] text-emerald-400 font-bold">
-                                                    {statMatch ? statMatch[0] : '추가 효과 없음'}
-                                                </span>
-                                                {/* 염색 여부 표시 (activeDisplay 기준) */}
-                                                {(activeDisplay.Tooltip.includes("itemTintGroup") || activeDisplay.Tooltip.includes("염색 정보")) && (
-                                                    <div className="flex gap-0.5 opacity-60">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-600"></div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="flex gap-6">
+                                    <GemSlot gem={gems?.Gems?.[2]} index={2} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    <GemSlot gem={gems?.Gems?.[3]} index={3} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 </div>
-                            );
-                        })}
+                            </div>
+
+                            {/* 2행: (밀집) O O O (밀집) */}
+                            <div className="flex items-center justify-center gap-6 -mt-2">
+                                <GemSlot gem={gems?.Gems?.[4]} index={4} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                <GemSlot gem={gems?.Gems?.[5]} index={5} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} isCenter={true} />
+                                <GemSlot gem={gems?.Gems?.[6]} index={6} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                            </div>
+
+                            {/* 3행: O O (넓은 간격) O O */}
+                            <div className="flex items-center gap-40 -mt-2">
+                                <div className="flex gap-4">
+                                    <GemSlot gem={gems?.Gems?.[7]} index={7} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    <GemSlot gem={gems?.Gems?.[8]} index={8} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                </div>
+                                <div className="flex gap-6">
+                                    <GemSlot gem={gems?.Gems?.[9]} index={9} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    <GemSlot gem={gems?.Gems?.[10]} index={10} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
-                    {/* ... 성향 요약부 생략 ... */}
                 </section>
-                {/* ================= 아바타 섹션 수정 끝 ================= */}
-
-                    {/* [우측] 장착 카드 섹션 (가로 정렬) */}
+                {/* [우측] 장착 카드 섹션 (가로 정렬) */}
                 <section className="flex-1 space-y-4">
                     <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
                         <div className="flex items-center gap-2">
                             <h2 className="text-lg font-bold text-white">장착 카드</h2>
                             {selectedCard && (
                                 <span className="text-[10px] text-orange-500 font-bold animate-pulse">
-                    ● {selectedCard} 상세 보기 중
-                </span>
+                                    ● {selectedCard} 상세 보기 중
+                                </span>
                             )}
                         </div>
                         {cards?.Effects?.[0] && (
                             <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500 font-medium">
-                    {cards.Effects[0].Items[cards.Effects[0].Items.length - 1].Name.split(' 6세트')[0]}
-                </span>
+                                <span className="text-xs text-zinc-500 font-medium">
+                                    {cards.Effects[0].Items[cards.Effects[0].Items.length - 1].Name.split(' 6세트')[0]}
+                                </span>
                             </div>
                         )}
                     </div>
@@ -653,11 +679,13 @@ export const CombatTab = ({ character }: { character: any }) => {
                         )}
                     </div>
                 </section>
+                {/* ================= 아바타 섹션 수정 끝 ================= */}
             </div>
 
-            {/* ================= 2. 악세사리 섹션 ================= */}
 
             {/* 오른쪽 섹션: 장비 & 각인 & 아크패시브 */}
+            {/* ================= 2. 악세사리 섹션 ================= */}
+
             <div className="flex-1 min-w-0 flex flex-col space-y-10">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#121213] p-8 rounded-xl border border-white/5 items-stretch">
@@ -830,9 +858,9 @@ export const CombatTab = ({ character }: { character: any }) => {
                                         {/* 스톤 추가 활성: 스톤 아이콘 + Lv.m */}
                                         {m > 0 && (
                                             <span className="inline-flex items-center gap-1 shrink-0">
-                        <img src={stoneIcon} alt="Ability Stone" className="w-4 h-4" />
-                        <span className="text-[12px] font-black text-sky-400">Lv.{m}</span>
-                      </span>
+                                                <img src={stoneIcon} alt="Ability Stone" className="w-4 h-4" />
+                                                <span className="text-[12px] font-black text-sky-400">Lv.{m}</span>
+                                            </span>
                                         )}
                                     </div>
 
@@ -843,94 +871,130 @@ export const CombatTab = ({ character }: { character: any }) => {
                         })}
                     </div>
                 </section>
+                {/* ================= 아바타 섹션 수정 시작 ================= */}
+                <section className="w-full space-y-4">
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-lg font-bold text-white">아바타</h2>
 
-                {/* 4. 장착 보석 효과 섹션 (Description 태그 제거 로직 추가) */}
-                <section className="space-y-4 mt-10">
-                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                        <div className="flex items-center gap-2">
-                            <h2 className="text-xl font-bold text-white">장착 보석 효과</h2>
+                            {/* [추가] 통합 토글 버튼 */}
+                            <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 shadow-inner">
+                                <button
+                                    onClick={() => setAvatarViewMode('skin')}
+                                    className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${
+                                        avatarViewMode === 'skin' ? 'bg-sky-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
+                                    }`}
+                                >
+                                    덧입기
+                                </button>
+                                <button
+                                    onClick={() => setAvatarViewMode('inner')}
+                                    className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${
+                                        avatarViewMode === 'inner' ? 'bg-amber-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
+                                    }`}
+                                >
+                                    본체
+                                </button>
+                            </div>
                         </div>
-                        {/* 수정 포인트: cleanText 유틸리티를 사용하여 HTML 태그 제거 */}
-                        <div className="text-[12px] bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full border border-sky-500/20 font-bold">
-                            {gems?.Effects?.Description
-                                ? gems.Effects.Description.replace(/<[^>]*>?/gm, '').trim()
-                                : "기본 공격력 증가 정보 없음"}
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {/* 총 추가 능력치 계산 (본체 슬롯 기준 고정) */}
                         {(() => {
-                            // 스킬 이름별로 그룹화
-                            const groupedSkills = gems?.Effects?.Skills?.reduce((acc: any, current: any) => {
-                                const existing = acc.find((item: any) => item.Name === current.Name);
-                                if (existing) {
-                                    existing.Gems.push(current);
-                                } else {
-                                    acc.push({
-                                        Name: current.Name,
-                                        Icon: current.Icon,
-                                        Gems: [current]
-                                    });
-                                }
-                                return acc;
-                            }, []);
+                            const slotTypes = ['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타'];
+                            // 총 추가 능력치 계산 (본체 우선 합산)
+                            const totalStat = (() => {
+                                // 능력치가 붙는 주요 아바타 부위 정의
+                                const statSlotTypes = ['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타'];
 
-                            return groupedSkills?.map((skillGroup: any, i: number) => (
-                                <div key={i} className="bg-[#181818] p-3 rounded border border-white/5 flex flex-col gap-3">
-                                    <div className="flex items-center gap-3">
-                                        {/* 보석 아이콘 나열 */}
-                                        <div className="flex gap-1 shrink-0">
-                                            {skillGroup.Gems.map((gem: any, idx: number) => (
-                                                <div key={idx} className="relative">
-                                                    <img src={gem.Icon} className="w-9 h-9 rounded border border-white/10" alt="" />
-                                                    <div className="absolute -bottom-1 -right-1 bg-black/80 text-[9px] text-white px-1 rounded font-bold border border-zinc-700 leading-tight">
-                                                        {gems.Gems.find((g: any) => g.Slot === gem.GemSlot)?.Level || '?'}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                return statSlotTypes.reduce((acc, type) => {
+                                    const parts = avatars.filter(a => a.Type === type);
 
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-[14px] text-zinc-100 font-bold truncate">{skillGroup.Name}</span>
-                                        </div>
-                                    </div>
+                                    // 1. 본체(IsInner: true)를 가장 먼저 찾음
+                                    // 2. 본체가 없다면(빈 슬롯 방지) 덧입기(IsInner: false)를 찾음
+                                    const activeForStat = parts.find(a => a.IsInner === true) || parts.find(a => a.IsInner === false);
 
-                                    {/* 효과 정보 세로 나열 */}
-                                    <div className="flex flex-col gap-1.5">
-                                        {skillGroup.Gems.map((gem: any, gemIdx: number) => (
-                                            <div key={gemIdx} className="space-y-1">
-                                                {gem.Description.map((desc: string, descIdx: number) => {
-                                                    const isDamage = desc.includes("피해");
-                                                    return (
-                                                        <div
-                                                            key={descIdx}
-                                                            className={`text-[12px] py-1 flex items-center gap-2 transition-opacity hover:opacity-80
-                                                            ${isDamage
-                                                                ? 'text-orange-400'
-                                                                : 'text-sky-400'
-                                                            } font-semibold`}
-                                                        >
-                                                            {/* 아이콘: 색상과 일치하도록 불투명도 조절 가능 */}
-                                                            <span className="text-[13px] shrink-0 opacity-90">
-                                                                {isDamage ? '🔥' : '⏳'}
-                                                            </span>
-
-                                                            {/* 텍스트: 배경이 없으므로 가독성을 위해 자간(tracking) 조정 */}
-                                                            <span className="flex-1 truncate tracking-tight">
-                                                                {desc}
-                                                            </span>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    if (activeForStat) {
+                                        // Tooltip 내의 "민첩 +2.00%" 혹은 "힘 +1.00%" 등의 패턴 추출
+                                        const match = activeForStat.Tooltip.match(/(?:힘|민첩|지능)\s*\+([\d.]+)%/);
+                                        return acc + (match ? parseFloat(match[1]) : 0);
+                                    }
+                                    return acc;
+                                }, 0);
+                            })();
+                            return (
+                                <div className="text-[11px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20 font-bold">
+                                    기본 특성 {totalStat.toFixed(2)}%
                                 </div>
-                            ));
+                            );
                         })()}
                     </div>
+
+                    <div className="grid grid-cols-1 gap-2.5">
+                        {['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타', '얼굴1 아바타', '얼굴2 아바타', '악기 아바타', '이동 효과'].map((type) => {
+                            const parts = avatars.filter(a => a.Type === type);
+                            const innerAvatar = parts.find(a => a.IsInner === true);
+                            const skinAvatar = parts.find(a => a.IsInner === false);
+
+                            if (!innerAvatar && !skinAvatar) return null;
+
+                            // [로직] 현재 모드에 따라 표시할 데이터 결정
+                            const activeDisplay = avatarViewMode === 'skin'
+                                ? (skinAvatar || innerAvatar)
+                                : (innerAvatar || skinAvatar);
+
+                            const isLegendary = activeDisplay.Grade === "전설";
+                            const statMatch = activeDisplay.Tooltip.match(/(?:힘|민첩|지능)\s*\+[\d.]+%/);
+
+                            return (
+                                <div key={type} className="group bg-[#181818] rounded-lg border border-white/5 p-3 hover:border-white/10 transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative shrink-0">
+                                            <div className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center overflow-hidden transition-all ${
+                                                isLegendary
+                                                    ? 'border-orange-500/40 bg-gradient-to-br from-[#3e270a] to-zinc-900'
+                                                    : 'border-purple-500/40 bg-gradient-to-br from-[#2a133d] to-zinc-900'
+                                            }`}>
+                                                <img src={activeDisplay.Icon} className="w-11 h-11 object-contain group-hover:scale-110 transition-transform" alt="" />
+                                            </div>
+                                            {/* 현재 데이터 상태 라벨 (INNER/SKIN) */}
+                                            <div className={`absolute -top-1 -right-1 px-1 rounded text-[8px] font-black border ${
+                                                activeDisplay.IsInner ? 'bg-amber-500 border-amber-400' : 'bg-sky-500 border-sky-400'
+                                            } text-white shadow-lg`}>
+                                                {activeDisplay.IsInner ? 'INNER' : 'SKIN'}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">{type}</span>
+                                                <span className={`text-[10px] font-black ${isLegendary ? 'text-orange-400' : 'text-purple-400'}`}>
+                                                    {activeDisplay.Grade}
+                                                </span>
+                                            </div>
+                                            <p className="text-[14px] font-bold text-zinc-200 truncate mb-1">
+                                                {activeDisplay.Name}
+                                            </p>
+
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[11px] text-emerald-400 font-bold">
+                                                    {statMatch ? statMatch[0] : '추가 효과 없음'}
+                                                </span>
+                                                {/* 염색 여부 표시 (activeDisplay 기준) */}
+                                                {(activeDisplay.Tooltip.includes("itemTintGroup") || activeDisplay.Tooltip.includes("염색 정보")) && (
+                                                    <div className="flex gap-0.5 opacity-60">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-600"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    {/* ... 성향 요약부 생략 ... */}
                 </section>
-                {/* 3. 아크 패시브 상세 섹션 */}
             </div>
         </div>
     );
