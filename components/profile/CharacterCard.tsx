@@ -33,7 +33,7 @@ export const CharacterCard: React.FC<{
             case '전투': return <CombatTab character={character} />;
             case '스킬': return <SkillTab skills={(character as any).skills} />;
             case '아크 패시브': return <ArkPassiveTab character={character} />;
-            case '캐릭터': return <CharacterDetailTab />;
+            case '캐릭터': return <CharacterDetailTab character={character}/>;
             default: return <CombatTab character={character} />;
         }
     };
