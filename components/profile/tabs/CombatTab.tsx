@@ -253,6 +253,33 @@ export const CombatTab = ({ character }: { character: any }) => {
         if (q >= 30) return 'text-[#00D100] border-[#00D100]';
         return 'text-[#FF4040] border-[#FF4040]';
     };
+    const gradeStyles: any = {
+        '일반': { bg: 'from-[#222] to-[#111]', border: 'border-white/20', text: 'text-[#ffffff]' },
+        '고급': { bg: 'from-[#1a2e1a] to-[#111]', border: 'border-[#48c948]/30', text: 'text-[#48c948]' },
+        '희귀': { bg: 'from-[#1a2a3e] to-[#111]', border: 'border-[#00b0fa]/30', text: 'text-[#00b0fa]' },
+        '영웅': { bg: 'from-[#2e1a3e] to-[#111]', border: 'border-[#ce43fb]/30', text: 'text-[#ce43fb]' },
+        '전설': { bg: 'from-[#41321a] to-[#111]', border: 'border-[#f99200]/30', text: 'text-[#f99200]' },
+        '유물': {
+            // [기존 고대 스타일을 유물로 적용]
+            bg: 'from-[#2a1a12] to-[#111111]',
+            border: 'border-[#a6632d]/50',
+            text: 'text-[#e7a15d]',
+            glow: 'shadow-[#a6632d]/20'
+        },
+        '고대': {
+            // [요청하신 고대 전용 스타일 적용]
+            bg: 'from-[#3d3325] to-[#1a1a1c]',
+            border: 'border-[#e9d2a6]/30',
+            text: 'text-[#c69c6d]',
+            glow: 'shadow-[#e9d2a6]/10'
+        },
+        '에스더': {
+            bg: 'from-[#0d2e2e] to-[#111111]',
+            border: 'border-[#2edbd3]/60',
+            text: 'text-[#2edbd3]',
+            glow: 'shadow-[#2edbd3]/30'
+        }
+    };
 
     /* ================= 로딩 ================= */
     if (loading) {
@@ -281,68 +308,90 @@ export const CombatTab = ({ character }: { character: any }) => {
                         <div className="flex flex-col gap-2">
                             {
                                 getItemsByType(['무기', '투구', '상의', '하의', '장갑', '어깨'])
-                                .sort((a, b) => (a.Type === '무기' ? 1 : b.Type === '무기' ? -1 : 0))
-                                .map((item, i) => {
-                                    let tooltip;
-                                    try { tooltip = JSON.parse(item.Tooltip); } catch (e) { return null; }
+                                    .sort((a, b) => (a.Type === '무기' ? 1 : b.Type === '무기' ? -1 : 0))
+                                    .map((item, i) => {
+                                        let tooltip;
+                                        try { tooltip = JSON.parse(item.Tooltip); } catch (e) { return null; }
 
-                                    const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
-                                    const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || '';
-                                    const itemName = cleanText(item.Name).replace(/\+\d+\s/, '');
+                                        const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
+                                        const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || '';
+                                        const itemName = cleanText(item.Name).replace(/\+\d+\s/, '');
 
-                                    let advancedReinforce = "0";
-                                    const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
-                                    if (advMatch) advancedReinforce = advMatch[1];
+                                        // 등급 판별 로직
+                                        const rawGrade = (item.Grade || "").trim();
+                                        let currentGrade = "일반";
 
-                                    return (
-                                        /* 부모에 relative 추가 */
-                                        <div key={item.Name}
-                                            /* 1. group 클래스를 유지하여 내부 요소들의 상태를 통합 관리합니다. */
-                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
-                                             onMouseEnter={() => {
-                                                 setHoveredIndex(i);
-                                                 setHoveredData(tooltip);
-                                             }}
-                                             onMouseLeave={() => {
-                                                 setHoveredIndex(null);
-                                                 setHoveredData(null);
-                                             }}
-                                        >
-                                            {/* 아이템 콘텐츠 영역 */}
-                                            <div className="relative shrink-0">
-                                                {/* 배경 그라데이션 및 테두리 수정 */}
-                                                <div className="p-0.5 rounded-lg bg-gradient-to-br from-[#3d3325] to-[#1a1a1c] border border-[#e9d2a6]/30 shadow-lg">
-                                                    <img
-                                                        src={item.Icon}
-                                                        className="w-12 h-12 rounded-md object-cover bg-black/20"
-                                                        alt={itemName}
-                                                    />
+                                        if (rawGrade.includes('에스더') || item.Name.includes('에스더')) {
+                                            currentGrade = '에스더';
+                                        } else if (rawGrade.includes('고대')) {
+                                            currentGrade = '고대';
+                                        } else if (rawGrade.includes('유물')) {
+                                            currentGrade = '유물';
+                                        } else if (rawGrade.includes('전설')) {
+                                            currentGrade = '전설';
+                                        } else if (rawGrade.includes('영웅')) {
+                                            currentGrade = '영웅';
+                                        } else if (rawGrade.includes('희귀')) {
+                                            currentGrade = '희귀';
+                                        } else if (rawGrade.includes('고급')) {
+                                            currentGrade = '고급';
+                                        }
+
+
+                                        const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
+
+                                        let advancedReinforce = "0";
+                                        const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
+                                        if (advMatch) advancedReinforce = advMatch[1];
+
+                                        return (
+                                            <div key={item.Name}
+                                                 className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
+                                                 onMouseEnter={() => {
+                                                     setHoveredIndex(i);
+                                                     setHoveredData(tooltip);
+                                                 }}
+                                                 onMouseLeave={() => {
+                                                     setHoveredIndex(null);
+                                                     setHoveredData(null);
+                                                 }}
+                                            >
+                                                <div className="relative shrink-0">
+                                                    {/* 아이콘 박스 */}
+                                                    <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
+                                                        <img src={item.Icon} className="w-12 h-12 rounded-md object-cover bg-black/20" alt={itemName} />
+                                                        {(currentGrade === '고대' || currentGrade === '에스더') && (
+                                                            <div className="absolute inset-0 rounded-lg shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)] pointer-events-none" />
+                                                        )}
+                                                    </div>
+
+                                                    {/* 품질 표시 영역 */}
+                                                    <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 text-[#e9d2a6]`}>
+                                                        {quality}
+                                                    </div>
                                                 </div>
 
-                                                {/* 품질 표시 영역: 텍스트 색상 반영 */}
-                                                <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 text-[#e9d2a6]`}>
-                                                    {quality}
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className={`font-bold text-[14px] truncate mb-0.5 ${theme.text}`}>
+                                                        {itemName}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-white/50 text-[12px]">재련 {reinforceLevel}</span>
+                                                        {advancedReinforce !== "0" && (
+                                                            <span className="text-sky-400 text-[12px] font-bold">상재 +{advancedReinforce}</span>
+                                                        )}
+                                                    </div>
                                                 </div>
+
+                                                {/* 툴팁 렌더링 영역 */}
+                                                {hoveredIndex === i && hoveredData && (
+                                                    <div className="absolute left-full top-0 -ml-2 pl-4 z-[9999] h-full flex items-start">
+                                                        <EquipmentTooltip data={hoveredData} />
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="text-white/90 font-bold text-[14px] truncate mb-0.5">{itemName}</h3>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-white/50 text-[12px]">재련 {reinforceLevel}</span>
-                                                    {advancedReinforce !== "0" && (
-                                                        <span className="text-sky-400 text-[12px] font-bold">상재 +{advancedReinforce}</span>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* 2. 툴팁 렌더링 영역: '끊김 방지 브릿지' 적용 */}
-                                            {hoveredIndex === i && hoveredData && (
-                                                <div className="absolute left-full top-0 -ml-2 pl-4 z-[9999] h-full flex items-start">
-                                                    <EquipmentTooltip data={hoveredData} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })
+                                        );
+                                    })
                             }
                         </div>
                     </div>
@@ -357,6 +406,7 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                         <div className="flex flex-col gap-2">
                             {/* 1. 일반 악세사리 리스트 */}
+                            {/* 1. 일반 악세사리 리스트 */}
                             {getItemsByType(['목걸이', '귀걸이', '반지', '팔찌'])
                                 .filter(item => {
                                     try {
@@ -369,14 +419,25 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     const quality = tooltip.Element_001?.value?.qualityValue ?? 0;
                                     const itemName = item.Name || "아이템 이름";
 
+                                    // --- 등급 판별 로직 추가 ---
+                                    const rawGrade = (item.Grade || "").trim();
+                                    let currentGrade = "일반";
+                                    if (rawGrade.includes('고대')) currentGrade = '고대';
+                                    else if (rawGrade.includes('유물')) currentGrade = '유물';
+                                    else if (rawGrade.includes('전설')) currentGrade = '전설';
+                                    else if (rawGrade.includes('영웅')) currentGrade = '영웅';
+
+                                    // 정의된 gradeStyles 테마 가져오기 (전투 장비와 동일한 객체 사용)
+                                    const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
+
                                     // 데이터 추출: 깨달음 포인트
                                     const passive = cleanText(tooltip.Element_007?.value?.Element_001 || '').match(/\d+/)?.[0] || '0';
 
-                                    // [수정] JSON 구조에 맞춘 티어 추출 (leftStr2: "아이템 티어 4" -> "4")
+                                    // 티어 추출
                                     const tierStr = tooltip.Element_001?.value?.leftStr2 || "";
-                                    const tier = tierStr.replace(/[^0-9]/g, "").slice(-1) || "4"; // 문자열 중 가장 마지막 숫자 하나만 가져옴
+                                    const tier = tierStr.replace(/[^0-9]/g, "").slice(-1) || "4";
 
-                                    // 연마 효과 추출 및 축약 로직
+                                    // 연마 효과 추출 로직 (기존과 동일)
                                     const grindContent = cleanText(tooltip.Element_006?.value?.Element_001 || tooltip.Element_005?.value?.Element_001 || '');
                                     const effects = [...grindContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)].map(m => ({
                                         name: m[1].trim(),
@@ -384,119 +445,132 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     }));
 
                                     const shortNames = {
-                                        '적에게 주는 피해': '적주피',
-                                        '전투 중 생명력 회복량': '전투회복',
+                                        // 딜러 관련 핵심 옵션
                                         '추가 피해': '추피',
-                                        '무기 공격력': '무공',
-                                        '공격력': '공격력',
-                                        '파티원 회복 효과': '파티회복',
-                                        '아군 피해량 강화 효과': '아피',
-                                        '치명타 피해': '치피',
+                                        '적에게 주는 피해': '적주피',
                                         '치명타 적중률': '치적',
-                                        '아군 공격력 강화 효과': '아공강'
-                                    };
+                                        '치명타 피해': '치피',
+                                        '공격력': '공격력',
+                                        '무기 공격력': '무공',
 
-                                    // 수치 순서에 따른 색상 반환 함수 (왼쪽부터 상/중/하 등급 가정)
-                                    const getEffectColor = (index: number) => {
-                                        switch (index) {
-                                            case 0: return 'text-yellow-400'; // 첫 번째 (상): 노란색
-                                            case 1: return 'text-purple-400'; // 두 번째 (중): 보라색
-                                            case 2: return 'text-blue-400';   // 세 번째 (하): 파란색
-                                            default: return 'text-white/40';
-                                        }
+                                        // 서포터 관련 핵심 옵션
+                                        '조화 게이지 획득량': '아덴획득',
+                                        '낙인력': '낙인력',
+                                        '파티원 회복 효과': '파티회복',
+                                        '파티원 보호막 효과': '파티보호',
+                                        '아군 공격력 강화 효과': '아공강',
+                                        '아군 피해량 강화 효과': '아피강',
+
+                                        // 공통/유틸 옵션
+                                        '최대 생명력': '최생',
+                                        '최대 마나': '최마',
+                                        '전투 중 생명력 회복량': '전투회복',
+                                        '상태이상 공격 지속시간': '상태이상'
                                     };
 
                                     return (
-                                            <div key={i}
-                                                 className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
-                                                 onMouseEnter={() => {
-                                                     setAccHoverIdx(i);
-                                                     setAccHoverData(tooltip);
-                                                 }}
-                                                 onMouseLeave={() => {
-                                                     setAccHoverIdx(null);
-                                                     setAccHoverData(null);
-                                                 }}>
-                                                {/* 아이콘 및 품질 */}
-                                                <div className="relative shrink-0">
-                                                    {/* 요청하신 브라운 -> 다크 그레이 그라데이션 및 금빛 테두리 적용 */}
-                                                    <div className="p-0.5 rounded-lg bg-gradient-to-br from-[#3d3325] to-[#1a1a1c] border border-[#e9d2a6]/30">
-                                                        <img src={item.Icon} className="w-12 h-12 rounded-md object-cover" alt="" />
-                                                    </div>
+                                        <div key={i}
+                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
+                                             onMouseEnter={() => {
+                                                 setAccHoverIdx(i);
+                                                 setAccHoverData(tooltip);
+                                             }}
+                                             onMouseLeave={() => {
+                                                 setAccHoverIdx(null);
+                                                 setAccHoverData(null);
+                                             }}>
 
-                                                    {/* 품질 수치 영역: 텍스트 색상을 #e9d2a6로 설정 */}
-                                                    <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 text-[#e9d2a6]`}>
-                                                        {quality}
-                                                    </div>
+                                            {/* 아이콘 및 품질 */}
+                                            <div className="relative shrink-0">
+                                                {/* 등급별 배경 및 테두리 적용 */}
+                                                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
+                                                    <img src={item.Icon} className="w-12 h-12 rounded-md object-cover bg-black/20" alt="" />
+
+                                                    {/* 고대 등급 이상 내부 광채 */}
+                                                    {currentGrade === '고대' && (
+                                                        <div className="absolute inset-0 rounded-lg shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)] pointer-events-none" />
+                                                    )}
                                                 </div>
+
+                                                {/* 품질 수치 영역: 텍스트 색상을 테마에 맞춤 (혹은 고정 #e9d2a6) */}
+                                                <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 ${theme.text}`}>
+                                                    {quality}
+                                                </div>
+                                            </div>
 
                                             {/* 이름 및 티어 정보 */}
                                             <div className="flex-[2] min-w-0">
-                                                <h3 className="text-white/90 font-bold text-[14px] truncate mb-0.5">{itemName}</h3>
+                                                {/* 등급별 텍스트 색상 적용 */}
+                                                <h3 className={`font-bold text-[14px] truncate mb-0.5 ${theme.text}`}>
+                                                    {itemName}
+                                                </h3>
                                                 <div className="flex gap-4 text-[11px]">
                                                     <span className="text-orange-400 font-bold">깨달음 +{passive}</span>
                                                     <span className="text-white/40 font-medium">{tier}티어</span>
                                                 </div>
                                             </div>
 
-                                                {/* 축약된 연마 효과 영역 */}
-                                                <div className="w-24 flex flex-col justify-center items-end border-l border-white/5 pl-3 shrink-0">
-                                                    {[0, 1, 2].map((idx) => {
-                                                        const rawName = effects[idx]?.name || ''; // 원본 이름
-                                                        const val = effects[idx]?.value || '-';   // 수치 문자열 (예: "2.60%")
-                                                        const dispName = shortNames[rawName] || rawName || '-';
+                                            {/* 축약된 연마 효과 영역 (기존 로직 유지) */}
+                                            <div className="w-24 flex flex-col justify-center items-end border-l border-white/5 pl-3 shrink-0">
+                                                {[0, 1, 2].map((idx) => {
+                                                    const rawName = effects[idx]?.name || '';
+                                                    const val = effects[idx]?.value || '-';
+                                                    const dispName = shortNames[rawName] || rawName || '-';
 
-                                                        const getDynamicColor = (name: string, valueStr: string) => {
-                                                            if (valueStr === '-' || !valueStr) return 'text-white/20';
+                                                    const getDynamicColor = (name: string, valueStr: string) => {
+                                                        if (valueStr === '-' || !valueStr) return 'text-white/20';
+                                                        const num = parseFloat(valueStr.replace(/[^0-9.]/g, ''));
+                                                        const isPercent = valueStr.includes('%');
 
-                                                            // 1. 숫자만 추출 (예: "+480" -> 480, "+3.00%" -> 3.0)
-                                                            const num = parseFloat(valueStr.replace(/[^0-9.]/g, ''));
+                                                        const thresholds: Record<string, { 상: number; 중: number; 하: number }> = {
+                                                            // --- 딜러 관련 옵션 ---
+                                                            '추가 피해': { 상: 2.6, 중: 1.6, 하: 0.6 },
+                                                            '적에게 주는 피해': { 상: 2.0, 중: 1.2, 하: 0.55 },
+                                                            '치명타 적중률': { 상: 1.55, 중: 0.95, 하: 0.4 },
+                                                            '치명타 피해': { 상: 4.0, 중: 2.4, 하: 1.1 },
 
-                                                            // 2. % 기호가 포함되어 있는지 확인
-                                                            const isPercent = valueStr.includes('%');
+                                                            // --- 서포터 관련 옵션 (보내주신 리스트 기반) ---
+                                                            '조화 게이지 획득량': { 상: 2.6, 중: 1.6, 하: 0.6 },
+                                                            '낙인력': { 상: 2.6, 중: 1.6, 하: 0.6 },
+                                                            '파티원 회복 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
+                                                            '파티원 보호막 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
+                                                            '아군 공격력 강화 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
+                                                            '아군 피해량 강화 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
 
-                                                            // 3. 상/중/하 기준표 데이터
-                                                            const thresholds: Record<string, { 상: number; 중: number; 하: number }> = {
-                                                                '추가 피해': { 상: 2.6, 중: 1.6, 하: 0.6 },
-                                                                '적에게 주는 피해': { 상: 2.0, 중: 1.2, 하: 0.55 },
-                                                                '치명타 적중률': { 상: 1.55, 중: 0.95, 하: 0.4 },
-                                                                '치명타 피해': { 상: 4.0, 중: 2.4, 하: 1.1 },
-                                                                // 공격력 계열 (이름은 같지만 내부 키로 분리)
-                                                                '공격력_PCT': { 상: 1.55, 중: 0.95, 하: 0.4 },
-                                                                '공격력_FIXED': { 상: 390, 중: 195, 하: 80 },
-                                                                // 무기 공격력 계열 (이름은 같지만 내부 키로 분리)
-                                                                '무기 공격력_PCT': { 상: 3.0, 중: 1.8, 하: 0.8 },
-                                                                '무기 공격력_FIXED': { 상: 960, 중: 480, 하: 195 }
-                                                            };
+                                                            // --- 공격력 / 무기 공격력 (단위에 따라 기준 분리) ---
+                                                            '공격력_PCT': { 상: 1.55, 중: 0.95, 하: 0.4 },
+                                                            '공격력_FIXED': { 상: 390, 중: 195, 하: 80 },
+                                                            '무기 공격력_PCT': { 상: 3.0, 중: 1.8, 하: 0.8 },
+                                                            '무기 공격력_FIXED': { 상: 960, 중: 480, 하: 195 },
 
-                                                            // 4. 이름과 % 유무를 조합하여 정확한 기준값(TargetKey) 찾기
-                                                            let targetKey = name;
-                                                            if (name === '공격력') {
-                                                                targetKey = isPercent ? '공격력_PCT' : '공격력_FIXED';
-                                                            } else if (name === '무기 공격력') {
-                                                                targetKey = isPercent ? '무기 공격력_PCT' : '무기 공격력_FIXED';
-                                                            }
-
-                                                            const criteria = thresholds[targetKey];
-                                                            if (!criteria) return 'text-zinc-500';
-
-                                                            // 5. 판별 및 색상 반환
-                                                            if (num >= criteria.상) return 'text-yellow-400 font-black'; // 상 (노랑)
-                                                            if (num >= criteria.중) return 'text-purple-400 font-bold';  // 중 (보라)
-                                                            return 'text-blue-400 font-medium';                          // 하 (파랑)
+                                                            // --- 유틸 및 생존 옵션 ---
+                                                            '최대 생명력': { 상: 4000, 중: 2400, 하: 1100 },
+                                                            '최대 마나': { 상: 45, 중: 27, 하: 12 },
+                                                            '상태이상 공격 지속시간': { 상: 2.6, 중: 1.6, 하: 0.6 },
+                                                            '전투 중 생명력 회복량': { 상: 125, 중: 75, 하: 34 }
                                                         };
 
-                                                        const valueColorClass = getDynamicColor(rawName, val);
+                                                        let targetKey = name;
+                                                        if (name === '공격력') targetKey = isPercent ? '공격력_PCT' : '공격력_FIXED';
+                                                        else if (name === '무기 공격력') targetKey = isPercent ? '무기 공격력_PCT' : '무기 공격력_FIXED';
 
-                                                        return (
-                                                            <div key={idx} className="flex justify-between w-full text-[11px] leading-tight">
-                                                                {/* 이름은 반투명하게, 수치는 강조색으로 명확한 대비 유도 */}
-                                                                <span className="text-white/60 font-normal truncate mr-1">{dispName}</span>
-                                                                <span className={valueColorClass}>{val}</span>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                        const criteria = thresholds[targetKey];
+                                                        if (!criteria) return 'text-zinc-500';
+
+                                                        if (num >= criteria.상) return 'text-yellow-400 font-black';
+                                                        if (num >= criteria.중) return 'text-purple-400 font-bold';
+                                                        return 'text-blue-400 font-medium';
+                                                    };
+
+                                                    return (
+                                                        <div key={idx} className="flex justify-between w-full text-[11px] leading-tight">
+                                                            <span className="text-white/60 font-normal truncate mr-1">{dispName}</span>
+                                                            <span className={getDynamicColor(rawName, val)}>{val}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
                                             {accHoverIdx === i && accHoverData && (
                                                 <div className="absolute left-full top-0 -ml-2 pl-4 z-[9999] h-full flex items-start">
                                                     <AccessoryTooltip data={accHoverData} />
@@ -539,57 +613,58 @@ export const CombatTab = ({ character }: { character: any }) => {
                 </section>
 
                 {/*====================보석 시작=============================*/}
-                <section className="mtz`-10 w-full flex flex-col items-center">
-                    {/* 헤더 부분 */}
-                    <div className="w-full max-w-5xl flex items-center justify-between border-b border-zinc-800 pb-2 mb-8">
+                <section className="mt-10 w-full flex flex-col items-center px-4">
+                    {/* 헤더 부분: 화면이 작아지면 세로로 정렬되거나 간격 조정 */}
+                    <div className="w-full max-w-6xl flex flex-wrap items-center justify-between border-b border-zinc-800 pb-2 mb-8 gap-4">
                         <h2 className="text-xl font-bold text-zinc-100 uppercase tracking-tight">보석</h2>
-                        <div className="text-[12px] bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full border border-blue-500/20 font-black shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                        <div className="text-[10px] md:text-[12px] bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full border border-blue-500/20 font-black shadow-[0_0_10px_rgba(59,130,246,0.2)] whitespace-nowrap">
                             {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
                         </div>
                     </div>
 
                     {/* 인게임 UI 배경 메인 컨테이너 */}
-                    <div className="relative w-full max-w-5xl p-8 rounded-[40px] border border-zinc-700/50 shadow-2xl flex items-center justify-center min-h-[400px]"
+                    {/* overflow-hidden을 추가하고 컨텐츠에 scale을 적용하여 넘침 방지 */}
+                    <div className="relative w-full max-w-5xl rounded-[30px] border border-zinc-700/50 shadow-2xl flex items-center justify-center min-h-[300px] md:min-h-[400px]"
                          style={{
                              background: `linear-gradient(180deg, #0f1217 0%, #07090c 100%)`,
                              boxShadow: 'inset 0 0 100px rgba(0,0,0,0.8)'
                          }}>
 
-                        {/* 배경 효과 생략 (기존과 동일) */}
+                        {/* 배경 효과 */}
                         <div className="absolute inset-0 z-0 pointer-events-none">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-900/20 rounded-full blur-[120px]" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[200px] md:h-[400px] bg-blue-900/20 rounded-full blur-[80px] md:blur-[120px]" />
                             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30 pointer-events-none" />
                         </div>
 
-                        {/* 보석 배치 레이아웃 (skillData 참조 제거) */}
-                        <div className="relative z-10 flex flex-col items-center gap-2">
+                        {/* 보석 배치 레이아웃 - 모바일 환경에서 scale을 사용하여 크기 자동 조절 */}
+                        <div className="relative z-10 flex flex-col items-center gap-2 transform scale-[0.6] sm:scale-[0.8] md:scale-100 transition-transform duration-300">
 
-                            {/* 1행: O O (넓은 간격) O O */}
-                            <div className="flex items-center gap-40">
+                            {/* 1행: 간격을 gap-40에서 반응형 gap으로 수정 */}
+                            <div className="flex items-center gap-20 md:gap-40">
                                 <div className="flex gap-4">
                                     <GemSlot gem={gems?.Gems?.[0]} index={0} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                     <GemSlot gem={gems?.Gems?.[1]} index={1} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 </div>
-                                <div className="flex gap-6">
+                                <div className="flex gap-4 md:gap-6">
                                     <GemSlot gem={gems?.Gems?.[2]} index={2} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                     <GemSlot gem={gems?.Gems?.[3]} index={3} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 </div>
                             </div>
 
-                            {/* 2행: (밀집) O O O (밀집) */}
-                            <div className="flex items-center justify-center gap-6 -mt-2">
+                            {/* 2행 */}
+                            <div className="flex items-center justify-center gap-4 md:gap-6 -mt-2">
                                 <GemSlot gem={gems?.Gems?.[4]} index={4} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 <GemSlot gem={gems?.Gems?.[5]} index={5} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} isCenter={true} />
                                 <GemSlot gem={gems?.Gems?.[6]} index={6} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                             </div>
 
-                            {/* 3행: O O (넓은 간격) O O */}
-                            <div className="flex items-center gap-40 -mt-2">
+                            {/* 3행 */}
+                            <div className="flex items-center gap-20 md:gap-40 -mt-2">
                                 <div className="flex gap-4">
                                     <GemSlot gem={gems?.Gems?.[7]} index={7} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                     <GemSlot gem={gems?.Gems?.[8]} index={8} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 </div>
-                                <div className="flex gap-6">
+                                <div className="flex gap-4 md:gap-6">
                                     <GemSlot gem={gems?.Gems?.[9]} index={9} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                     <GemSlot gem={gems?.Gems?.[10]} index={10} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 </div>
@@ -699,13 +774,23 @@ export const CombatTab = ({ character }: { character: any }) => {
                             </h1>
                         </div>
 
-                        {/* 그리드 레이아웃: 세로 배치이므로 높이(h)를 제거하거나 충분히 확보해야 합니다. */}
+                        {/* 그리드 레이아웃 */}
                         <div className="grid grid-cols-3 gap-y-12 gap-x-4">
                             {arkGrid?.Slots?.map((slot, i) => {
-                                // ":"를 기준으로 텍스트 분리 (예: "질서의 해 코어 : 다크 문")
+                                // ":" 기준으로 텍스트 분리
                                 const nameParts = slot.Name.split(/\s*:\s*/);
                                 const category = nameParts[0]; // "질서의 해 코어"
-                                const subName = nameParts[1];   // "다크 문"
+                                const subName = nameParts[1];   // "차지 인핸스" (색상 적용 대상)
+
+                                // --- 등급 판별 로직 ---
+                                const rawGrade = (slot.Grade || "").trim();
+                                let currentGrade = "일반";
+                                if (rawGrade.includes('고대')) currentGrade = '고대';
+                                else if (rawGrade.includes('유물')) currentGrade = '유물';
+                                else if (rawGrade.includes('전설')) currentGrade = '전설';
+                                else if (rawGrade.includes('영웅')) currentGrade = '영웅';
+
+                                const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
 
                                 return (
                                     <div key={i}
@@ -721,12 +806,13 @@ export const CombatTab = ({ character }: { character: any }) => {
                                          }}
                                     >
                                         <div className="relative w-16 h-16 mb-4 shrink-0">
-                                            {/* 배경: 블랙에 가까운 다크 그레이 / 테두리: 매우 어두운 금속 느낌 */}
-                                            <div className="w-full h-full bg-[#0c0c0d] rounded-2xl p-1.5 border border-zinc-800 group-hover:border-purple-900/50 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,1)] flex items-center justify-center">
+                                            {/* 코어 아이콘 박스 */}
+                                            <div className={`w-full h-full rounded-2xl p-1.5 border shadow-lg bg-gradient-to-br transition-all flex items-center justify-center
+                                            ${theme.bg} ${theme.border} ${theme.glow || ''} group-hover:scale-105 duration-200`}>
                                                 <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
                                             </div>
 
-                                            {/* 젬 장착 표시부: 배경과 대비되는 선명한 보라색 */}
+                                            {/* 젬 장착 표시부 */}
                                             {slot.Gems?.length > 0 && (
                                                 <div className="absolute -right-1 -bottom-1 w-5 h-5 bg-[#7b2cff] rounded-full border-[3px] border-[#0c0c0d] flex items-center justify-center shadow-[0_0_8px_rgba(123,44,255,0.4)]">
                                                     <div className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_4px_#fff]"></div>
@@ -734,36 +820,30 @@ export const CombatTab = ({ character }: { character: any }) => {
                                             )}
                                         </div>
 
-                                        {/* 2. 텍스트 영역 (3단 수직 배치) */}
+                                        {/* 텍스트 영역 */}
                                         <div className="w-full text-center flex flex-col items-center">
-                                            {/* 카테고리 (질서의 해 코어 등) */}
+                                            {/* 1. 카테고리: 화이트 계열로 고정 */}
                                             <span className="text-[12px] font-bold text-sky-400/90 leading-tight">
                                                 {category}
+
                                             </span>
-                                            {/* 세부 이름 (블레이드 러시 등) */}
-                                            <span className="text-[12px] font-extrabold text-zinc-100 mt-0.5 leading-tight">
+
+                                            {/* 2. 세부 이름 (차지 인핸스 등): 등급별 텍스트 색상(theme.text) 적용 */}
+                                            <span className={`text-[12px] font-extrabold mt-0.5 leading-tight ${theme.text}`}>
                                                 {subName}
                                             </span>
-                                            {/* 포인트 (14p 등) */}
+
+                                            {/* 3. 포인트 */}
                                             <span className="text-[14px] font-black text-[#f18c2d] mt-2 tracking-tighter">
                                                 {slot.Point}p
                                             </span>
                                         </div>
 
-                                        {/* --- 툴팁 모달 --- */}{/* --- 툴팁 모달 --- */}
+                                        {/* 툴팁 모달 */}
                                         {arkCoreHoverIdx === i && arkCoreHoverData && (
                                             <div
-                                                /* 1. i % 3 === 2 조건문을 삭제하고 left-full로 고정
-                                                   2. -ml-2와 pl-4를 통해 마우스가 지나가는 '가교' 형성
-                                                */
                                                 className="absolute left-full top-0 -ml-2 pl-4 z-[9999] h-full flex items-start pointer-events-auto animate-in fade-in slide-in-from-left-2 duration-200"
-
-                                                /* 마우스가 모달에 진입했을 때 상태 유지 */
-                                                onMouseEnter={() => {
-                                                    setArkCoreHoverIdx(i);
-                                                }}
-
-                                                /* 마우스가 모달에서 나갔을 때 상태 초기화 */
+                                                onMouseEnter={() => setArkCoreHoverIdx(i)}
                                                 onMouseLeave={() => {
                                                     setArkCoreHoverIdx(null);
                                                     setArkCoreHoverData(null);
