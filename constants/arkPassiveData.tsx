@@ -851,7 +851,7 @@ const LEAP_BY_CLASS: Record<string, any[]> = {
         { name: "온도 상승", iconId: "wa_9", max: 3, tier: 2 },
         { name: "햇살의 포옹", iconId: "wa_10", max: 3, tier: 2 }
     ],
-    "   환수사": [
+    "환수사": [
         ...LEAP_T1,
         { name: "고대의 힘", iconId: "dr_10", max: 3, tier: 2 },
         { name: "민첩한 몸놀림", iconId: "dr_11", max: 3, tier: 2 },

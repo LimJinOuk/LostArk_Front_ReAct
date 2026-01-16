@@ -7,16 +7,17 @@ import EquipmentTooltip from "@/components/profile/Tooltip/EquipmentTooltip.tsx"
 import AccessoryTooltip from "@/components/profile/Tooltip/AccessoryTooltip.tsx";
 import ArkCoreTooltip from "@/components/profile/Tooltip/ArkCoreTooltip.tsx";
 import JewelryTooltip from "@/components/profile/Tooltip/JewelryTooltip.tsx";
-import engravingIconMap from "./engravingsIdTable.json"; // 경로는 너 프로젝트에 맞게 조정
+import { ArkPassiveBoard } from "./ArkPassiveBoard.tsx";
+
+import engravingIconMap from "@/components/profile/tabs/engravingsIdTable.json";
 import { CharacterInfo } from "../../types.ts";
 
-/** ✅ 아크 패시브 각인(우측 “활성 각인 (아크 패시브)”에 쓰는 데이터) */
 type ArkPassiveEffect = {
     Name: string;
     Description?: string;
     Icon?: string;
-    Level?: number; // 각인서 활성 단계(0~4)
-    AbilityStoneLevel?: number; // 스톤 추가 활성(0~4)
+    Level?: number;
+    AbilityStoneLevel?: number;
     AbilityStoneIcon?: string;
 };
 
@@ -57,15 +58,14 @@ interface ArkCoreData {
 const cleanText = (text: any): string => {
     if (!text) return "";
     if (typeof text === "string") return text.replace(/<[^>]*>?/gm, "").trim();
-    if (typeof text === "object" && typeof text.Text === "string")
-        return cleanText(text.Text);
+    if (typeof text === "object" && typeof text.Text === "string") return cleanText(text.Text);
     return "";
 };
 
 const normalizeEngravingName = (name: string) => {
     return (name || "")
-        .replace(/\[[^\]]*]/g, "") // [강화] 제거
-        .replace(/\([^)]*\)/g, "") // (중력 해방) 제거
+        .replace(/\[[^\]]*]/g, "")
+        .replace(/\([^)]*\)/g, "")
         .replace(/\s+/g, " ")
         .trim();
 };
@@ -94,8 +94,7 @@ const GemSlot = ({
                      isCenter = false,
                  }: any) => {
     const sizeClasses = isCenter ? "w-22 h-22" : "w-[76px] h-[76px]";
-    if (!gem)
-        return <div className={`${sizeClasses} rounded-full bg-white/5 opacity-10`} />;
+    if (!gem) return <div className={`${sizeClasses} rounded-full bg-white/5 opacity-10`} />;
 
     let skillIcon = gem.Icon;
     let gemThemeColor = "#ffffff";
@@ -185,18 +184,13 @@ const NoCharacterView = ({
                     </div>
                     <div>
                         <h2 className="text-xl font-black text-white">캐릭터 정보가 없습니다.</h2>
-                        <p className="text-sm text-zinc-400 mt-1">
-                            시뮬레이터를 사용하려면 캐릭터를 먼저 검색해 주세요.
-                        </p>
+                        <p className="text-sm text-zinc-400 mt-1">시뮬레이터를 사용하려면 캐릭터를 먼저 검색해 주세요.</p>
                     </div>
                 </div>
 
                 <div className="mt-6 flex gap-2">
                     <div className="flex-1 relative">
-                        <Search
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
-                            size={18}
-                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
                         <input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -230,9 +224,15 @@ const NoCharacterView = ({
 /* ---------------------- Main Simulator ---------------------- */
 type SimTab = "info" | "synergy" | "result";
 
-export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
-                                                                              character: propCharacter,
-                                                                          }) => {
+function safeClone<T>(v: T): T {
+    try {
+        // @ts-ignore
+        if (typeof structuredClone === "function") return structuredClone(v);
+    } catch {}
+    return JSON.parse(JSON.stringify(v));
+}
+
+export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({ character: propCharacter }) => {
     const location = useLocation();
 
     /** ✅ 우선순위: props > location.state.character > null */
@@ -241,7 +241,13 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
         return (propCharacter ?? stateChar) as CharacterInfo | null;
     }, [location.state, propCharacter]);
 
+    // ✅ 원본 캐릭터 (절대 직접 수정 X)
     const [character, setCharacter] = useState<CharacterInfo | null>(initialCharacter);
+
+    // ✅ 시뮬에서만 사용할 캐릭터 사본(나중에 스탯 편집 UI 붙일 때 여기만 바꿈)
+    const [simCharacter, setSimCharacter] = useState<CharacterInfo | null>(
+        initialCharacter ? safeClone(initialCharacter) : null
+    );
 
     // ✅ 네비 탭
     const [tab, setTab] = useState<SimTab>("info");
@@ -250,13 +256,16 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
     const [searching, setSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
 
-    // 상세 데이터들
+    // 상세 데이터들(원본)
     const [loading, setLoading] = useState(false);
     const [equipments, setEquipments] = useState<Equipment[]>([]);
     const [arkGrid, setArkGrid] = useState<ArkCoreData | null>(null);
     const [gems, setGems] = useState<any>(null);
     const [engravings, setEngravings] = useState<any>(null);
-    const [arkPassive, setArkPassive] = useState<any>(null);
+
+    // ✅ 아크패시브: 원본/시뮬 분리
+    const [originalArkPassive, setOriginalArkPassive] = useState<any>(null);
+    const [simArkPassive, setSimArkPassive] = useState<any>(null);
 
     // Hover states (툴팁)
     const [weaponHover, setWeaponHover] = useState<any>(null);
@@ -269,6 +278,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
 
     useEffect(() => {
         setCharacter(initialCharacter);
+        setSimCharacter(initialCharacter ? safeClone(initialCharacter) : null);
     }, [initialCharacter]);
 
     /** ✅ 캐릭터 검색 -> /stat 로 캐릭터 기본정보 확보 */
@@ -281,8 +291,13 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
             const res = await fetch(`/stat?name=${encodeURIComponent(name)}`);
             if (!res.ok) throw new Error("캐릭터 정보를 불러올 수 없습니다.");
             const data = await res.json();
+
+            // ✅ 원본 교체
             setCharacter(data);
-            setTab("info"); // 검색 성공하면 기본 탭으로
+            // ✅ 시뮬 사본도 새로 생성
+            setSimCharacter(safeClone(data));
+
+            setTab("info");
         } catch (e: any) {
             setSearchError(e?.message ?? "검색 실패");
         } finally {
@@ -290,34 +305,27 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
         }
     };
 
-    /** ✅ 상세 데이터 로딩 (무기/악세/아크그리드/젬효과/보석/아크패시브) */
+    /** ✅ 상세 데이터 로딩 */
     useEffect(() => {
-        if (!character?.CharacterName) return;
+        if (!character?.name) return;
 
         setLoading(true);
         Promise.all([
-            fetch(`/equipment?name=${encodeURIComponent(character.CharacterName)}`).then((r) =>
-                r.json()
-            ),
-            fetch(`/arkgrid?name=${encodeURIComponent(character.CharacterName)}`).then((r) =>
-                r.json()
-            ),
-            fetch(`/gems?name=${encodeURIComponent(character.CharacterName)}`).then((r) =>
-                r.json()
-            ),
-            fetch(`/engravings?name=${encodeURIComponent(character.CharacterName)}`).then((r) =>
-                r.json()
-            ),
-            fetch(`/arkpassive?name=${encodeURIComponent(character.CharacterName)}`).then((r) =>
-                r.json()
-            ),
+            fetch(`/equipment?name=${encodeURIComponent(character.name)}`).then((r) => r.json()),
+            fetch(`/arkgrid?name=${encodeURIComponent(character.name)}`).then((r) => r.json()),
+            fetch(`/gems?name=${encodeURIComponent(character.name)}`).then((r) => r.json()),
+            fetch(`/engravings?name=${encodeURIComponent(character.name)}`).then((r) => r.json()),
+            fetch(`/arkpassive?name=${encodeURIComponent(character.name)}`).then((r) => r.json()),
         ])
             .then(([eqData, arkData, gemData, engData, passiveData]) => {
                 setEquipments(Array.isArray(eqData) ? eqData : []);
                 setArkGrid(arkData ?? null);
                 setGems(gemData ?? null);
                 setEngravings(engData ?? null);
-                setArkPassive(passiveData ?? null);
+
+                // ✅ 아크패시브: 원본 저장 + 시뮬 사본 생성
+                setOriginalArkPassive(passiveData ?? null);
+                setSimArkPassive(passiveData ? safeClone(passiveData) : null);
             })
             .catch((err) => {
                 console.error("데이터 로딩 실패:", err);
@@ -325,13 +333,13 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                 setArkGrid(null);
                 setGems(null);
                 setEngravings(null);
-                setArkPassive(null);
+                setOriginalArkPassive(null);
+                setSimArkPassive(null);
             })
             .finally(() => setLoading(false));
-    }, [character?.CharacterName]);
+    }, [character?.name]);
 
-    const getItemsByType = (types: string[]) =>
-        equipments.filter((i) => types.includes(i.Type));
+    const getItemsByType = (types: string[]) => equipments.filter((i) => types.includes(i.Type));
 
     /** ✅ 무기 1개 */
     const weaponItem = useMemo(() => {
@@ -339,7 +347,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
         return w ?? null;
     }, [equipments]);
 
-    /** ✅ 악세사리 정렬: 목걸이 -> 귀걸이1/2 -> 반지1/2 -> 팔찌 */
+    /** ✅ 악세사리 정렬 */
     const accessories = useMemo(() => {
         const list = getItemsByType(["목걸이", "귀걸이", "반지", "팔찌"]).filter((item) => {
             try {
@@ -359,7 +367,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
     }, [equipments]);
 
     // 캐릭터 없으면 빈 화면 + 검색창
-    if (!character?.CharacterName) {
+    if (!character?.name) {
         return <NoCharacterView onSearch={handleSearch} searching={searching} error={searchError} />;
     }
 
@@ -374,20 +382,15 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
     }
 
     const goToProfilePage = () => {
-        if (!character?.CharacterName) return;
-
-        window.location.href = `/profilePage?name=${encodeURIComponent(
-            character.CharacterName
-        )}`;
+        if (!character?.name) return;
+        window.location.href = `/profilePage?name=${encodeURIComponent(character.name)}`;
     };
-
 
     return (
         <div className="text-zinc-200 space-y-8">
-            {/* ===================== ✅ 네비게이션 바(요청한 위치) ===================== */}
+            {/* ===================== ✅ 네비게이션 바 ===================== */}
             <div className="mb-8">
                 <div className="w-full flex items-center justify-between bg-zinc-950/60 border border-white/5 rounded-2xl px-4 py-3">
-                    {/* 좌측 탭 */}
                     <div className="flex items-center gap-2">
                         {(
                             [
@@ -414,18 +417,10 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                         })}
                     </div>
 
-                    {/* 우측은 비워둠(나중에 버튼 추가 가능) */}
-                    {/* 우측 버튼 */}
                     <div className="flex items-center gap-2">
                         <button
                             onClick={goToProfilePage}
-                            className="
-            px-4 py-2 rounded-xl
-            bg-white/90 text-black
-            font-black text-sm
-            hover:bg-white transition
-            shadow
-        "
+                            className="px-4 py-2 rounded-xl bg-white/90 text-black font-black text-sm hover:bg-white transition shadow"
                         >
                             캐릭터 정보 페이지로 전환
                         </button>
@@ -436,9 +431,11 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
             {/* ===================== ✅ 탭별 컨텐츠 ===================== */}
             {tab === "info" && (
                 <>
+                    {/* (중간 내용은 너가 준 그대로라 생략 없이 유지했음) */}
+                    {/* ---- 여기 아래는 너 기존 코드 그대로 ---- */}
                     {/* ===================== 1) 상단 2열: 좌(무기+악세) / 우(아크그리드+젬효과) ===================== */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                        {/* 좌측: 무기 + 악세사리 (한 구역) */}
+                        {/* 좌측: 무기 + 악세사리 */}
                         <section className="lg:col-span-6 bg-zinc-950 p-6 rounded-3xl border border-white/5 h-full">
                             <div className="flex items-end justify-between border-b border-white/10 pb-2 mb-4">
                                 <h2 className="text-lg font-bold text-white/90 tracking-tight">무기 / 악세사리</h2>
@@ -461,9 +458,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                         const itemName = cleanText(weaponItem.Name).replace(/\+\d+\s/, "");
 
                                         let advancedReinforce = "0";
-                                        const advMatch = cleanText(tooltip?.Element_005?.value || "").match(
-                                            /\[상급\s*재련\]\s*(\d+)단계/
-                                        );
+                                        const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
                                         if (advMatch) advancedReinforce = advMatch[1];
 
                                         return (
@@ -491,15 +486,11 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                                 </div>
 
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="text-white/90 font-bold text-[14px] truncate mb-0.5">
-                                                        {itemName}
-                                                    </h3>
+                                                    <h3 className="text-white/90 font-bold text-[14px] truncate mb-0.5">{itemName}</h3>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-white/50 text-[12px]">재련 {reinforceLevel}</span>
                                                         {advancedReinforce !== "0" && (
-                                                            <span className="text-sky-400 text-[12px] font-bold">
-                                상재 +{advancedReinforce}
-                              </span>
+                                                            <span className="text-sky-400 text-[12px] font-bold">상재 +{advancedReinforce}</span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -513,7 +504,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                         );
                                     })()}
 
-                                {/* 악세사리: 목걸이 -> 귀걸이1 -> 귀걸이2 -> 반지1 -> 반지2 -> 팔찌 */}
+                                {/* 악세사리 */}
                                 {accessories.map((item, i) => {
                                     let tooltip: any = null;
                                     try {
@@ -522,8 +513,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                     const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
 
                                     const passive =
-                                        cleanText(tooltip?.Element_007?.value?.Element_001 || "").match(/\d+/)?.[0] ||
-                                        "0";
+                                        cleanText(tooltip?.Element_007?.value?.Element_001 || "").match(/\d+/)?.[0] || "0";
                                     const tierStr = tooltip?.Element_001?.value?.leftStr2 || "";
                                     const tier = tierStr.replace(/[^0-9]/g, "").slice(-1) || "4";
 
@@ -554,9 +544,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                             </div>
 
                                             <div className="flex-[2] min-w-0">
-                                                <h3 className="text-white/90 font-bold text-[14px] truncate mb-0.5">
-                                                    {item.Name || "아이템"}
-                                                </h3>
+                                                <h3 className="text-white/90 font-bold text-[14px] truncate mb-0.5">{item.Name || "아이템"}</h3>
                                                 <div className="flex gap-4 text-[11px]">
                                                     <span className="text-orange-400 font-bold">깨달음 +{passive}</span>
                                                     <span className="text-white/40 font-medium">{tier}티어</span>
@@ -574,16 +562,14 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                             </div>
                         </section>
 
-                        {/* 우측: 같은 높이 구역 안에서 "아크그리드 / 젬효과" 병렬 */}
+                        {/* 우측: 아크그리드 + 젬효과 */}
                         <section className="lg:col-span-6 bg-[#121213] p-6 rounded-3xl border border-white/5 h-full">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch h-full">
                                 {/* 아크 그리드 */}
                                 <div className="flex flex-col h-full">
                                     <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-6">
                                         <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
-                                        <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
-                                            아크 그리드
-                                        </h1>
+                                        <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">아크 그리드</h1>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-y-12 gap-x-4">
@@ -598,10 +584,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                                     className="relative group flex flex-col items-center cursor-help"
                                                     onMouseEnter={() => {
                                                         setArkCoreHoverIdx(i);
-                                                        const parsed =
-                                                            typeof slot.Tooltip === "string"
-                                                                ? JSON.parse(slot.Tooltip)
-                                                                : slot.Tooltip;
+                                                        const parsed = typeof slot.Tooltip === "string" ? JSON.parse(slot.Tooltip) : slot.Tooltip;
                                                         setArkCoreHoverData({ core: parsed, gems: slot.Gems });
                                                     }}
                                                     onMouseLeave={() => {
@@ -611,11 +594,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                                 >
                                                     <div className="relative w-16 h-16 mb-4 shrink-0">
                                                         <div className="w-full h-full bg-[#0c0c0d] rounded-2xl p-1.5 border border-zinc-800 group-hover:border-purple-900/50 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,1)] flex items-center justify-center">
-                                                            <img
-                                                                src={slot.Icon}
-                                                                className="w-full h-full object-contain filter drop-shadow-md"
-                                                                alt=""
-                                                            />
+                                                            <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
                                                         </div>
 
                                                         {slot.Gems?.length > 0 && (
@@ -626,15 +605,9 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                                     </div>
 
                                                     <div className="w-full text-center flex flex-col items-center">
-                            <span className="text-[12px] font-bold text-sky-400/90 leading-tight">
-                              {category}
-                            </span>
-                                                        <span className="text-[12px] font-extrabold text-zinc-100 mt-0.5 leading-tight">
-                              {subName}
-                            </span>
-                                                        <span className="text-[14px] font-black text-[#f18c2d] mt-2 tracking-tighter">
-                              {slot.Point}p
-                            </span>
+                                                        <span className="text-[12px] font-bold text-sky-400/90 leading-tight">{category}</span>
+                                                        <span className="text-[12px] font-extrabold text-zinc-100 mt-0.5 leading-tight">{subName}</span>
+                                                        <span className="text-[14px] font-black text-[#f18c2d] mt-2 tracking-tighter">{slot.Point}p</span>
                                                     </div>
 
                                                     {arkCoreHoverIdx === i && arkCoreHoverData && (
@@ -659,9 +632,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                 <div className="flex flex-col h-full md:border-l md:border-zinc-800/30 md:pl-8">
                                     <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-6">
                                         <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
-                                        <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
-                                            젬 효과
-                                        </h1>
+                                        <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">젬 효과</h1>
                                     </div>
 
                                     <div className="flex flex-col gap-5">
@@ -683,24 +654,21 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                                 </div>
                                             );
                                         })}
-                                        {!arkGrid?.Effects?.length && (
-                                            <div className="text-sm text-zinc-500">젬 효과 정보가 없습니다.</div>
-                                        )}
+                                        {!arkGrid?.Effects?.length && <div className="text-sm text-zinc-500">젬 효과 정보가 없습니다.</div>}
                                     </div>
                                 </div>
                             </div>
                         </section>
                     </div>
 
-                    {/* ===================== 2) 보석 (위 덩어리 밑) ===================== */}
+                    {/* ===================== 2) 보석 ===================== */}
                     <section className="mt-10 w-full flex flex-col items-center">
-                        <div className="w-full max-w-5xl flex items-center justify-between border-b border-zinc-800 pb-2 mb-8">
+                        <div className="w-full max-w-5xlxl flex items-center justify-between border-b border-zinc-800 pb-2 mb-8">
                             <h2 className="text-xl font-bold text-zinc-100 uppercase tracking-tight">보석</h2>
                             <div className="text-[12px] bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full border border-blue-500/20 font-black shadow-[0_0_10px_rgba(59,130,246,0.2)]">
                                 {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, "").trim() || "정보 없음"}
                             </div>
                         </div>
-
                         <div
                             className="relative w-full max-w-5xl p-8 rounded-[40px] border border-zinc-700/50 shadow-2xl flex items-center justify-center min-h-[400px]"
                             style={{
@@ -823,7 +791,22 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                         </div>
                     </section>
 
-                    {/* ===================== 3) 활성 각인 (아크 패시브) (보석 밑) ===================== */}
+                    {/* ===================== 2.5) 아크 패시브 보드 ===================== */}
+                    <section className="mt-10 space-y-4">
+                        <div className="flex items-center gap-2 border-b border-zinc-800 pb-2 text-white">
+                            <h2 className="text-xl font-bold">아크 패시브</h2>
+                        </div>
+
+                        {/* ✅ 여기 중요: simArkPassive를 넘기고, 변경도 simArkPassive만 바꿈 */}
+                        <ArkPassiveBoard
+                            character={character}
+                            data={simArkPassive}
+                            onChangeData={setSimArkPassive}
+                            onReset={() => setSimArkPassive(originalArkPassive ? safeClone(originalArkPassive) : null)}
+                        />
+                    </section>
+
+                    {/* ===================== 3) 활성 각인 (아크 패시브) ===================== */}
                     <section className="mt-10 space-y-4">
                         <div className="flex items-center gap-2 border-b border-zinc-800 pb-2 text-white">
                             <h2 className="text-xl font-bold">활성 각인 (아크 패시브)</h2>
@@ -844,11 +827,7 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                                     >
                                         <div className="flex items-center gap-2 min-w-0">
                                             <div className="w-7 h-7 shrink-0 rounded overflow-hidden bg-black/30 border border-white/10">
-                                                {iconUrl ? (
-                                                    <img src={iconUrl} alt={eng.Name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full" />
-                                                )}
+                                                {iconUrl ? <img src={iconUrl} alt={eng.Name} className="w-full h-full object-cover" /> : <div className="w-full h-full" />}
                                             </div>
 
                                             <span className="text-[12px] font-black text-white/90 shrink-0">{n}단계</span>
@@ -882,21 +861,18 @@ export const Simulator: React.FC<{ character?: CharacterInfo | null }> = ({
                     <div className="flex items-center justify-between">
                         <div className="text-xl font-black text-white">시너지 및 버프</div>
                     </div>
-
                     <SynergyBuffTab />
                 </div>
             )}
 
-
             {tab === "result" && (
                 <div className="space-y-6">
-                    {/* 필요하면 제목 유지 */}
                     <div className="flex items-center justify-between">
                         <div className="text-xl font-black text-white">결과</div>
                     </div>
 
-                    {/* ✅ ResultTab 실제 렌더 */}
-                    <ResultTab />
+                    {/* ✅ 결과는 simCharacter / simArkPassive 기준으로만 (시뮬 전용) */}
+                    <ResultTab character={simCharacter} arkPassive={simArkPassive} />
                 </div>
             )}
         </div>
