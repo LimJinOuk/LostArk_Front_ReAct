@@ -1,144 +1,203 @@
-import React from 'react';
-// ... 기존 툴팁 및 아이콘 import 생략 ...
+import React, { useEffect, useState } from 'react';
+import { Loader2, Clock, Zap, Droplets } from 'lucide-react';
 
-/* ✅ 부모로부터 모든 데이터를 한 번에 전달받는 Props 정의 */
-interface CombatTabProps {
-    character: any;
-    equipments: any[];
-    arkGrid: any;
-    engravings: any;
-    gems: any;
-    avatars: any[];
-    cards: any;
-    arkPassive: any;
-    skillData: any[]; // 스킬 데이터 추가
-}
-
-export const CombatTab = ({
-                              character,
-                              equipments = [],
-                              arkGrid,
-                              engravings,
-                              gems,
-                              avatars = [],
-                              cards,
-                              arkPassive,
-                              skillData = []
-                          }: CombatTabProps) => {
-
-    /* 내부의 useEffect와 fetch 로직을 모두 삭제했습니다.
-       이제 이 컴포넌트는 오직 '보여주는' 역할만 수행합니다.
-    */
-
-    return (
-        <div className="flex flex-col gap-10 p-6 bg-[#0f0f0f] text-zinc-300 min-h-screen max-w-[1800px] mx-auto">
-            {/* 상단 섹션: 기존 장비 & 악세사리 렌더링 로직 */}
-            <div className="flex flex-col lg:flex-row gap-10">
-                {/* ... (장비/악세사리 렌더링 부분은 기존 코드 유지) ... */}
-            </div>
-
-            {/* 하단 섹션: 스킬 정보 호출 */}
-            <SkillTab skills={skillData} />
-        </div>
-    );
+const cleanHtml = (html: string) => {
+    if (!html) return "";
+    return html
+        .replace(/<br[^>]*>/gi, "\n")
+        .replace(/<[^>]*>?/gm, "")
+        .replace(/&nbsp;/g, " ")
+        .trim();
 };
 
-/* ================= 스킬 탭 컴포넌트 (정의부) ================= */
-export const SkillTab = ({ skills }: { skills: any[] }) => {
-    if (!skills || skills.length === 0) {
-        return (
-            <div className="bg-[#121213] rounded-3xl border border-white/5 p-20 text-center text-zinc-500 font-bold">
-                등록된 스킬 정보가 없습니다.
-            </div>
-        );
-    }
+export const SkillTab: React.FC<{ character: any }> = ({ character }) => {
+    const [skills, setSkills] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const cleanHtml = (html: string) => {
-        if (!html) return "";
-        return html.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim();
-    };
+    useEffect(() => {
+        const fetchSkills = async () => {
+            if (!character?.CharacterName) return;
+            setLoading(true);
+            try {
+                const response = await fetch(`/combat-skills?name=${encodeURIComponent(character.CharacterName)}`);
+                const json = await response.json();
+                setSkills(json);
+            } catch (error) {
+                console.error("스킬 로딩 실패:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSkills();
+    }, [character?.CharacterName]);
+
+    if (loading) return (
+        <div className="py-32 flex flex-col items-center justify-center bg-[#121213] rounded-3xl mt-10 border border-white/5">
+            <Loader2 className="animate-spin text-purple-500 w-10 h-10 mb-4" />
+            <span className="text-zinc-400 font-medium">전투 스킬 목록을 불러오는 중...</span>
+        </div>
+    );
 
     return (
-        <section className="bg-[#121213] rounded-3xl border border-white/5 p-7 space-y-7 shadow-2xl mt-10">
-            <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
-                <div className="w-1.5 h-6 bg-purple-500 rounded-full"></div>
-                <h2 className="text-xl font-extrabold text-white tracking-tight uppercase">전투 스킬 정보</h2>
-            </div>
+        <section className="bg-[#121213] rounded-3xl border border-white/5 p-7 mt-10 shadow-2xl">
+            <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+                {skills.map((skill: any, i) => {
+                    const sTooltip = JSON.parse(skill.Tooltip || "{}");
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-5">
-                {skills.map((skill, i) => {
-                    let gemEffect = null;
-                    let attackType = null;
+                    let cooldown = "";
+                    let skillTypeTags: string[] = []; // 태그들을 배열로 관리
+                    let description = "";
+                    let consume = "";
+                    let battleStats: string[] = [];
+                    let gemEffects: string[] = [];
 
-                    try {
-                        if (skill.Tooltip) {
-                            const tooltipData = JSON.parse(skill.Tooltip);
-                            gemEffect = tooltipData.Element_008?.value?.Element_001 || tooltipData.Element_009?.value?.Element_001;
-                            const desc = tooltipData.Element_005?.value || "";
-                            const match = desc.match(/공격 타입 : ([^<]+)/);
-                            if (match) attackType = match[1];
+                    Object.entries(sTooltip).forEach(([key, el]: [string, any]) => {
+                        const val = el.value;
+                        if (!val) return;
+
+                        if (el.type === "CommonSkillTitle") {
+                            cooldown = cleanHtml(val.leftText);
+
+                            // [로직 수정] '일반' 제외 및 특수 타입(체인 등)만 추출
+                            const levelPart = cleanHtml(val.level).replace(/[\[\]]/g, "");
+                            const namePart = cleanHtml(val.name).replace(/[\[\]]/g, "");
+
+                            const rawTags = [levelPart, namePart];
+                            rawTags.forEach(tag => {
+                                // '일반'이라는 단어가 포함되지 않은 경우에만 태그 리스트에 추가
+                                if (tag && tag !== "일반" && !skillTypeTags.includes(tag)) {
+                                    skillTypeTags.push(tag);
+                                }
+                            });
                         }
-                    } catch (e) {}
+
+                        if (typeof val === 'string' && val.includes("소모")) {
+                            const cleanedConsume = cleanHtml(val).split('|')[0].trim();
+                            if (cleanedConsume) consume = cleanedConsume;
+                        }
+
+                        if (typeof val === 'string' && val.includes("피해를")) {
+                            const lines = val.split(/<BR>|\n/);
+                            lines.forEach((line) => {
+                                const cleanedLine = cleanHtml(line);
+                                if (!cleanedLine) return;
+
+                                if (
+                                    cleanedLine.includes("무력화") ||
+                                    cleanedLine.includes("부위 파괴") ||
+                                    cleanedLine.includes("슈퍼아머") ||
+                                    cleanedLine.includes("카운터") ||
+                                    cleanedLine.includes("공격 타입")
+                                ) {
+                                    if (!battleStats.includes(cleanedLine)) battleStats.push(cleanedLine);
+                                } else if (cleanedLine.includes("피해를") && !description) {
+                                    description = cleanedLine;
+                                }
+                            });
+                        }
+
+                        if (el.type === "ItemPartBox" && val.Element_000?.includes("보석")) {
+                            gemEffects = val.Element_001.split('<BR>').map((v: string) => cleanHtml(v));
+                        }
+                    });
+
+                    const isAwakening = skill.SkillType === 100 || skill.SkillType === 101;
 
                     return (
-                        <div key={i} className="bg-white/[0.02] p-5 rounded-2xl border border-white/5 space-y-5 group hover:border-purple-500/30 transition-all shadow-lg">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-zinc-900 rounded-xl border border-white/10 flex items-center justify-center relative shrink-0 overflow-hidden shadow-inner">
+                        <div key={i} className={`relative p-5 rounded-2xl border transition-all flex flex-col h-full
+              ${isAwakening ? 'bg-red-500/[0.03] border-red-500/20 shadow-lg shadow-red-500/5' : 'bg-white/[0.02] border-white/5 hover:border-purple-500/30'}`}>
+
+                            <div className="flex items-start gap-4 mb-4">
+                                <div className="relative shrink-0">
+                                    <div className={`w-14 h-14 rounded-xl overflow-hidden border ${isAwakening ? 'border-red-500/40' : 'border-white/10'}`}>
                                         <img src={skill.Icon} alt="" className="w-full h-full object-cover" />
-                                        <div className="absolute -bottom-1 -right-1 bg-zinc-950 px-2 py-0.5 rounded text-[10px] font-black border border-white/10 text-sky-400">
-                                            Lv.{skill.Level}
-                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="text-[17px] font-bold text-zinc-100 group-hover:text-white transition-colors">
-                                                {skill.Name}
-                                            </h4>
-                                            {attackType && (
-                                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 font-bold border border-white/5">
-                                                    {attackType}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="mt-1.5">
-                                            {skill.Rune ? (
-                                                <div className="flex items-center gap-1.5 bg-orange-500/5 px-2 py-0.5 rounded-md border border-orange-500/10 w-fit">
-                                                    <img src={skill.Rune.Icon} alt="" className="w-3.5 h-3.5" />
-                                                    <span className="text-[11px] font-bold text-orange-400">{skill.Rune.Name}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-[11px] text-zinc-600 font-bold uppercase tracking-tighter">No Rune</span>
-                                            )}
-                                        </div>
+                                    <div className="absolute -bottom-1 -right-1 bg-zinc-950 px-1.5 py-0.5 rounded text-[10px] font-bold border border-white/10 text-zinc-300">
+                                        Lv.{skill.Level}
                                     </div>
                                 </div>
-                                <span className="text-[10px] font-black px-2 py-1 bg-zinc-900 rounded border border-white/5 text-zinc-500 uppercase tracking-widest">
-                                    {skill.Type || "일반"}
-                                </span>
-                            </div>
 
-                            <div className="grid grid-cols-3 gap-2">
-                                {skill.Tripods?.filter((tp: any) => tp.IsSelected).map((tp: any, ti: number) => (
-                                    <div key={ti} className="py-2 px-1 rounded-lg border border-purple-500/30 bg-purple-500/5 text-center shadow-[inset_0_0_8px_rgba(168,85,247,0.05)]">
-                                        <p className="text-[11px] font-bold text-purple-300 truncate">
-                                            {cleanHtml(tp.Name)}
-                                        </p>
+                                <div className="flex flex-col gap-1.5 overflow-hidden">
+                                    <div className="flex items-center gap-2">
+                                        <h4 className={`text-lg font-bold truncate ${isAwakening ? 'text-red-400' : 'text-zinc-100'}`}>{skill.Name}</h4>
                                     </div>
-                                ))}
-                                {Array.from({ length: Math.max(0, 3 - (skill.Tripods?.filter((tp: any) => tp.IsSelected).length || 0)) }).map((_, idx) => (
-                                    <div key={`empty-${idx}`} className="py-2 rounded-lg border border-white/5 bg-zinc-900/20 opacity-30" />
-                                ))}
+
+                                    {/* [수정] 체인, 콤보 등 특수 타입만 띄우는 별도 블럭 */}
+                                    {skillTypeTags.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-0.5">
+                                            {skillTypeTags.map((tag, ti) => (
+                                                <span key={ti} className={`text-[9px] px-1.5 py-0.5 rounded font-black tracking-tight ${isAwakening ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                          {tag}
+                        </span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                                        {cooldown && (
+                                            <span className="flex items-center gap-1 text-[11px] text-zinc-400 font-medium">
+                        <Clock size={12} className="text-sky-500" /> {cooldown.replace("재사용 대기시간 ", "")}
+                      </span>
+                                        )}
+                                        {consume && (
+                                            <span className="flex items-center gap-1 text-[11px] text-zinc-400 font-medium">
+                        <Droplets size={12} className="text-blue-500" /> {consume}
+                      </span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
-                            {gemEffect && (
-                                <div className="p-3 rounded-xl bg-black/40 border border-white/5 flex items-start gap-3">
-                                    <div className="mt-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-[9px] font-black text-amber-500 shrink-0">GEM</div>
-                                    <p className="text-[11px] text-zinc-400 font-medium leading-snug">
-                                        {cleanHtml(gemEffect)}
-                                    </p>
+                            {/* 전투 속성 배지 */}
+                            {battleStats.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                    {battleStats.map((stat, si) => (
+                                        <span key={si} className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-medium text-zinc-400">
+                      {stat}
+                    </span>
+                                    ))}
                                 </div>
                             )}
+
+                            {description && (
+                                <div className={`p-3.5 rounded-xl text-[12.5px] leading-relaxed mb-4 break-keep
+                  ${isAwakening ? 'bg-red-500/5 text-zinc-300 border border-red-500/10' : 'bg-black/30 text-zinc-400 border border-white/5'}`}>
+                                    {description}
+                                </div>
+                            )}
+
+                            <div className="mt-auto space-y-3">
+                                {skill.Rune && (
+                                    <div className="flex items-center gap-2.5 p-2 rounded-lg bg-zinc-800/50 border border-white/5">
+                                        <img src={skill.Rune.Icon} alt="" className="w-5 h-5" />
+                                        <span className="text-[11px] font-bold text-zinc-300">
+                      [{skill.Rune.Grade}] {skill.Rune.Name}
+                    </span>
+                                    </div>
+                                )}
+
+                                {skill.Tripods?.some((t: any) => t.IsSelected) && (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {skill.Tripods.filter((t: any) => t.IsSelected).map((tp: any, ti: number) => (
+                                            <div key={ti} className="flex flex-col items-center p-2 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                                                <img src={tp.Icon} alt="" className="w-6 h-6 mb-1 filter drop-shadow-sm opacity-90" />
+                                                <span className="text-[10px] font-bold text-purple-300 text-center line-clamp-1">{tp.Name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {gemEffects.length > 0 && (
+                                    <div className="pt-3 border-t border-white/5 space-y-1">
+                                        {gemEffects.map((eff, ei) => (
+                                            <div key={ei} className="flex items-center gap-2 text-[11px] text-amber-400/80 font-medium">
+                                                <Zap size={10} fill="currentColor" />
+                                                <span className="truncate">{eff}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     );
                 })}
