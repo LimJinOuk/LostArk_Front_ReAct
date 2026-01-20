@@ -24,50 +24,51 @@ const getGradeStyles = (levelStr: string, isCurrent: boolean) => {
     const level = parseFloat(levelStr.replace(/,/g, ''));
 
 // 1. 고대 (1680 이상) - 가장 선명하고 화려한 스타일
+    // 1. 에스더 (1680 이상 - 가장 밝고 영롱한 금색)
     if (level >= 1680) return {
         bg: 'from-[#3d3325] to-[#1a1a1c]',
         border: 'border-[#e9d2a6]/100',
-        text: 'text-[#e9d2a6]',
+        text: 'text-[#f5e4bc]', // 부드럽고 밝은 에스더 골드
         glow: isCurrent ? 'shadow-[0_0_20px_rgba(233,210,166,0.4)]' : 'shadow-[#e9d2a6]/10'
     };
 
-    // 2. 상위 유물 (1600 이상) - 약간의 투명도가 들어간 테두리
+// 2. 고대 (1600 이상 - 무게감 있는 고대 등급의 백금/금색)
     if (level >= 1600) return {
         bg: 'from-[#2a1a12] to-[#111111]',
         border: 'border-[#e9d2a6]/80',
-        text: 'text-[#e9d2a6]/90',
+        text: 'text-[#dcc8a0]', // 채도가 낮은 고급스러운 고대색
         glow: isCurrent ? 'shadow-[0_0_20px_rgba(254,150,0,0.2)]' : ''
     };
 
-    // 3. 유물 (1580 이상)
+// 3. 유물 (1580 이상 - 선명하지만 깊이 있는 주황)
     if (level >= 1580) return {
         bg: 'from-[#2a1a12] to-[#111111]',
         border: 'border-[#e9d2a6]/60',
-        text: 'text-[#e9d2a6]/80',
+        text: 'text-[#e67a39]', // 쨍하지 않은 유물 주황
         glow: isCurrent ? 'shadow-[0_0_20px_rgba(206,67,0,0.2)]' : ''
     };
 
-    // 4. 전설 (1490 이상)
+// 4. 전설 (1490 이상 - 탁한 노랑)
     if (level >= 1490) return {
         bg: 'from-[#41321a] to-[#111111]',
         border: 'border-[#e9d2a6]/40',
-        text: 'text-[#e9d2a6]/70',
+        text: 'text-[#c2b378]', // 쨍함을 뺀 탁한 노란색 (황토빛 가미)
         glow: isCurrent ? 'shadow-[0_0_20px_rgba(255,234,26,0.15)]' : ''
     };
 
-    // 5. 희귀/영웅 (1415 이상)
+// 5. 영웅/희귀 (1415 이상 - 탁한 파랑)
     if (level >= 1415) return {
         bg: 'from-[#1a2a3e] to-[#111]',
         border: 'border-[#e9d2a6]/20',
-        text: 'text-[#e9d2a6]/60',
+        text: 'text-[#7890a8]', // 채도를 낮춘 탁한 파란색 (Steel Blue 느낌)
         glow: isCurrent ? 'shadow-[0_0_20px_rgba(0,176,255,0.15)]' : ''
     };
 
-    // 6. 기본 (그 외)
+// 6. 기본 (그 외 - 무채색)
     return {
         bg: 'from-[#222] to-[#111]',
         border: 'border-[#e9d2a6]/10',
-        text: 'text-[#e9d2a6]/40',
+        text: 'text-[#888888]', // 완전한 무채색 회색
         glow: ''
     };
 };
@@ -139,7 +140,7 @@ export const CharacterDetailTab = ({ character }: CharacterDetailTabProps) => {
                 <div key={serverName} className="space-y-6">
                     <div className="flex items-center gap-3">
                         <h3 className="text-xl font-black text-white tracking-tighter uppercase">{serverName}</h3>
-                        <div className="h-[1px] flex-1 bg-gradient-to-r from-pink-500/30 to-transparent" />
+                        <div className="h-[1px] flex-1 bg-gradient-to-r from-zinc-500/40 to-transparent" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

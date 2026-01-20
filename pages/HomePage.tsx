@@ -1,20 +1,16 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom"; // ✅ 추가
+import { useNavigate } from "react-router-dom";
 
 const HomePage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    const navigate = useNavigate(); // ✅ 네비게이션 훅 사용
+    const navigate = useNavigate();
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         const q = searchQuery.trim();
         if (!q) return;
-
-        // ✅ 검색 페이지로 캐릭터 이름을 파라미터로 넘기며 이동
-        // 예: /search?name=치킨버거사주세요
         navigate(`/profilePage?name=${encodeURIComponent(q)}`);
     };
 
@@ -24,44 +20,45 @@ const HomePage: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}
-            className="flex flex-col items-center justify-center py-20 mx-auto max-w-4xl"
+            /* 1. justify-center를 제거하여 위에서부터 시작하게 함
+               2. pt-32 (또는 pt-20)를 사용하여 상단 여백을 원하는 만큼 조절
+            */
+            className="flex flex-col items-center min-h-screen pt-20 mx-auto max-w-4xl px-4"
         >
-            <form onSubmit={handleSearch} className="w-full max-w-2xl relative group">
-                <div className="pointer-events-none absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-900 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
+            {/* 로고 섹션 (간격을 더 좁힘) */}
+            <div className="text-center mb-12">
+                <h1 className="text-8xl font-black tracking-tighter text-white mb-2 leading-none">
+                    LOAPANG
+                </h1>
+                <p className="text-zinc-400 text-lg font-medium tracking-wide">
+                    로스트아크 고효율 전적 검색 및 전투 시뮬레이터
+                </p>
+            </div>
 
+            {/* 검색창 섹션 */}
+            <form onSubmit={handleSearch} className="w-full max-w-2xl relative group mb-8">
+                <div className="pointer-events-none absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-900 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000" />
                 <div className="relative z-10">
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.currentTarget.value)}
                         placeholder="캐릭터명을 입력하세요"
-                        className="w-full h-24 px-12 rounded-[2.5rem] bg-white dark:bg-zinc-900 border-2 border-slate-200 dark:border-white/10 focus:border-indigo-500 outline-none text-2xl font-black shadow-2xl transition-all dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-700"
+                        className="w-full h-24 px-10 rounded-[2.5rem] bg-zinc-900/90 border-2 border-white/10 focus:border-indigo-500 outline-none text-2xl font-bold shadow-2xl transition-all text-white placeholder:text-zinc-700"
                     />
-
                     <button
                         type="submit"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 w-16 h-16 bg-slate-900 text-white dark:bg-white dark:text-zinc-950 rounded-[1.8rem] hover:scale-105 active:scale-95 transition-all shadow-lg flex items-center justify-center"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-14 h-14 bg-white text-black rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-lg flex items-center justify-center"
                     >
-                        <Search size={32} strokeWidth={3} />
+                        <Search size={28} strokeWidth={3} />
                     </button>
                 </div>
             </form>
 
-            <div className="mt-24 grid grid-cols-3 gap-12 w-full border-t border-slate-100 dark:border-white/5 pt-12">
-                {[
-                    { label: "Active Users", value: "12,842" },
-                    { label: "Calculations", value: "859K+" },
-                    { label: "Server Status", value: "ONLINE" },
-                ].map((stat) => (
-                    <div key={stat.label} className="text-center">
-                        <p className="text-[10px] font-black text-slate-400 dark:text-zinc-600 uppercase tracking-[0.3em] mb-2">
-                            {stat.label}
-                        </p>
-                        <p className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                            {stat.value}
-                        </p>
-                    </div>
-                ))}
+
+            {/* 통계 섹션 (이 부분도 위로 당겨지길 원한다면 mt를 줄이세요) */}
+            <div className="mt-24 grid grid-cols-3 gap-12 w-full max-w-2xl border-t border-white/5 pt-12">
+                {/* ... 통계 내용 동일 */}
             </div>
         </motion.div>
     );
