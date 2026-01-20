@@ -31,7 +31,7 @@ export const CharacterCard: React.FC<{
     const renderContent = () => {
         switch (activeTab) {
             case '전투': return <CombatTab character={character} />;
-            case '스킬': return <SkillTab skills={(character as any).skills} />;
+            case '스킬': return <SkillTab character={character} />;
             case '아크 패시브': return <ArkPassiveTab character={character} />;
             case '캐릭터': return <CharacterDetailTab character={character}/>;
             default: return <CombatTab character={character} />;
