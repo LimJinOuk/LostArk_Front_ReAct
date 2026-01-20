@@ -98,6 +98,7 @@ export const CombatTab = ({ character }: { character: any }) => {
     const [cards, setCards] = useState<CardData | null>(null);
     const [selectedCard, setSelectedCard] = useState<string | null>(null);
     const [arkPassive, setArkPassive] = useState<any>(null);
+    const [skillData, setSkillData] = useState<any[]>([]);
     const [activePassiveTab, setActivePassiveTab] = useState('진화');
     const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
     const [hoveredData, setHoveredData] = React.useState<any>(null);
@@ -227,9 +228,10 @@ export const CombatTab = ({ character }: { character: any }) => {
             fetch(`/gems?name=${encodeURIComponent(character.CharacterName)}`).then(res => res.json()),
             fetch(`/avatars?name=${encodeURIComponent(character.CharacterName)}`).then(res => res.json()),
             fetch(`/cards?name=${encodeURIComponent(character.CharacterName)}`).then(res => res.json()),
-            fetch(`/arkpassive?name=${encodeURIComponent(character.CharacterName)}`).then(res => res.json())
+            fetch(`/arkpassive?name=${encodeURIComponent(character.CharacterName)}`).then(res => res.json()),
+            fetch(`/combat-skills?name=${encodeURIComponent(character.CharacterName)}`).then(res => res.json())
         ])
-            .then(([eqData, arkData, engData, gemData, avatarData, cardData, passiveData]) => {
+            .then(([eqData, arkData, engData, gemData, avatarData, cardData, passiveData, skillData]) => {
                 setEquipments(Array.isArray(eqData) ? eqData : []);
                 setArkGrid(arkData);
                 setEngravings(engData);
@@ -237,6 +239,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                 setAvatars(Array.isArray(avatarData) ? avatarData : []);
                 setCards(cardData);
                 setArkPassive(passiveData);
+                setSkillData(skillData);
             })
             .catch(err => console.error('데이터 로딩 실패:', err))
             .finally(() => setLoading(false));
@@ -600,7 +603,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                             <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
                                 보석
                             </h1>
-                        </div>
+                        </div>z
                         <div className="text-[10px] md:text-[12px] bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full border border-blue-500/20 font-black shadow-[0_0_10px_rgba(59,130,246,0.2)] whitespace-nowrap">
                             {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
                         </div>
