@@ -83,7 +83,7 @@ type EngravingsResponse = {
 
 /** 어빌리티 스톤 아이콘: 데이터에 없으면 이걸로 대체 */
 const FALLBACK_ABILITY_STONE_ICON =
-    'https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_7_206.png';
+    'https://cdn-lostark.game.onstove.com/2018/obt/assets/images/common/game/ico_ability_stone_symbol.png';
 
 
 /* ================= 컴포넌트 ================= */
@@ -157,40 +157,36 @@ export const CombatTab = ({ character }: { character: any }) => {
     };
 
     const GemSlot = ({ gem, index, hoverIdx, hoverData, setHoverIdx, setHoverData, isCenter = false }: any) => {
-        // 1. 아이콘 크기 고정 (요청하신 대로 컴팩트하게 유지)
         const sizeClasses = isCenter ? "w-20 h-20" : "w-[72px] h-[72px]";
 
         if (!gem) return <div className={`${sizeClasses} rounded-full bg-white/5 opacity-10 border border-zinc-800`} />;
 
         let skillIcon = gem.Icon;
-        let gradeColor = "#1f2937"; // 기본 배경색 (zinc-800 계열)
+        let gradeColor = "#1f2937";
 
         try {
             if (gem.Tooltip) {
-                const tooltip = JSON.parse(gem.Tooltip);
+                const tooltip = typeof gem.Tooltip === 'string' ? JSON.parse(gem.Tooltip) : gem.Tooltip;
                 skillIcon = tooltip.Element_001?.value?.slotData?.iconPath || gem.Icon;
                 const gradeName = tooltip.Element_001?.value?.leftStr0 || gem.Grade || "";
 
-                // 등급에 따른 배경색 지정 (보석 등급 고유색의 투명도 버전)
-                if (gradeName.includes("고대")) gradeColor = "#2a4d4f";      // 고대
-                else if (gradeName.includes("유물")) gradeColor = "#4d2b14"; // 유물
-                else if (gradeName.includes("전설")) gradeColor = "#45381a"; // 전설
+                if (gradeName.includes("고대")) gradeColor = "#2a4d4f";
+                else if (gradeName.includes("유물")) gradeColor = "#4d2b14";
+                else if (gradeName.includes("전설")) gradeColor = "#45381a";
             }
         } catch (e) { skillIcon = gem.Icon; }
 
         return (
+            /* 최상위 컨테이너: 여기에 MouseLeave를 걸어야 툴팁으로 이동해도 사라지지 않음 */
             <div
                 className="relative group flex flex-col items-center"
+                onMouseEnter={() => { setHoverIdx(index); setHoverData(gem); }}
                 onMouseLeave={() => { setHoverIdx(null); setHoverData(null); }}
             >
-                <div
-                    className="flex flex-col items-center cursor-help"
-                    onMouseEnter={() => { setHoverIdx(index); setHoverData(gem); }}
-                >
+                <div className="flex flex-col items-center cursor-help">
                     <div
                         className={`${sizeClasses} rounded-full transition-all duration-300 group-hover:scale-105 flex items-center justify-center overflow-hidden border border-zinc-700/50 shadow-lg`}
                         style={{
-                            // 2. 아이콘 배경색만 등급에 맞게 변경
                             background: `radial-gradient(circle at center, ${gradeColor} 0%, #07090c 100%)`,
                         }}
                     >
@@ -200,16 +196,17 @@ export const CombatTab = ({ character }: { character: any }) => {
                             className="w-full h-full object-cover scale-110 drop-shadow-[0_0_5px_rgba(0,0,0,0.8)]"
                         />
                     </div>
-
-                    {/* 레벨 표시 */}
                     <span className="mt-1 text-zinc-500 text-[11px] font-bold group-hover:text-zinc-300 transition-colors">
                     Lv.{gem.Level}
                 </span>
                 </div>
 
-                {/* 툴팁: 보석 바로 옆에 뜨도록 조정 */}
+                {/* 툴팁: pointer-events-auto(기본값)를 유지하여 마우스 상호작용 허용 */}
                 {hoverIdx === index && hoverData && (
-                    <div className="absolute left-full top-0 z-[9999] pl-3 pointer-events-none">
+                    <div
+                        className="absolute left-[80%] top-0 z-[9999] pl-4 pt-2 pointer-events-auto"
+                        style={{ width: 'max-content' }}
+                    >
                         <div className="animate-in fade-in zoom-in-95 duration-150">
                             <JewelryTooltip gemData={hoverData} />
                         </div>
@@ -218,7 +215,6 @@ export const CombatTab = ({ character }: { character: any }) => {
             </div>
         );
     };
-
 
     /* ================= 데이터 로딩 ================= */
     useEffect(() => {
@@ -602,55 +598,48 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                 {/*====================보석 시작=============================*/}
                 <section className="mt-10 w-full flex flex-col items-center px-4 select-none">
-                    {/* 1. 헤더 (컴팩트 유지) */}
+                    {/* 1. 헤더 */}
                     <div className="w-full max-w-3xl flex items-center justify-between border-b border-zinc-800/50 pb-2 mb-8">
                         <div className="flex items-center gap-2">
                             <div className="w-1 h-4 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
                             <h1 className="text-lg font-extrabold text-zinc-200 tracking-tight uppercase">보석</h1>
                         </div>
-                        <div className="flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-sm">
-                            {/* 젬 포인트 바: 특성치와 구분되도록 sky-400 컬러 적용 */}
-                            <div className="w-1 h-3 bg-sky-400 rounded-full"></div>
 
-                            <span className="text-[13px] text-[#efeff0] font-semibold tracking-tight leading-none truncate">
-                                {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
-                            </span>
+                        {/* 미니멀 고스트 배지 디자인 적용 */}
+                        <div className="flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-sm">
+                            <div className="w-1 h-3 bg-sky-400 rounded-full"></div>
+                            <span className="text-[13px] text-[#efeff0] font-semibold tracking-tight leading-none truncate max-w-[200px] md:max-w-none">
+                {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
+            </span>
                         </div>
                     </div>
 
-                    {/* 2. 메인 보드: 컴팩트한 사이즈 + 휘황찬란 배경 복구 */}
+                    {/* 2. 메인 보드 */}
                     <div className="relative w-full max-w-2xl rounded-[40px] border border-white/5 flex items-center justify-center min-h-[320px] md:min-h-[380px] overflow-visible shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
                          style={{
                              background: `radial-gradient(circle at center, #1a202c 0%, #0d1117 40%, #05070a 100%)`,
                          }}>
 
-                        {/* 3. 배경 특수 효과 (내부에서만 작동하도록 제한) */}
+                        {/* 배경 특수 효과 */}
                         <div className="absolute inset-0 z-0 pointer-events-none rounded-[40px] overflow-hidden">
-                            {/* 중앙 마력 응집 */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.15)_0%,_transparent_70%)] animate-pulse" />
-
-                            {/* 소용돌이 성운 효과 */}
                             <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg_at_50%_50%,_transparent_0%,_rgba(139,92,246,0.08)_15%,_transparent_30%,_rgba(56,189,248,0.08)_60%,_transparent_100%)] animate-[spin_25s_linear_infinite]" />
-
-                            {/* 하단 심연 그라데이션 */}
                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.4)_100%)]" />
-
-                            {/* 미세 별무리 질감 */}
-                            <div className="absolute inset-0 opacity-[0.04] mix-blend-screen"
-                                 style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/stardust.png')` }} />
                         </div>
 
-                        {/* 4. 보석 배치 (컴팩트 간격 고정) */}
+                        {/* 3. 보석 배치 */}
                         <div className="relative z-10 flex flex-col items-center gap-2 transform scale-[0.85] sm:scale-100 transition-all duration-500">
                             {/* 1행 */}
                             <div className="flex items-center gap-12 md:gap-20 mb-1">
                                 <div className="flex gap-3">
-                                    <GemSlot gem={gems?.Gems?.[0]} index={0} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
-                                    <GemSlot gem={gems?.Gems?.[1]} index={1} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    {[0, 1].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
                                 </div>
                                 <div className="flex gap-3">
-                                    <GemSlot gem={gems?.Gems?.[2]} index={2} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
-                                    <GemSlot gem={gems?.Gems?.[3]} index={3} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    {[2, 3].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
                                 </div>
                             </div>
 
@@ -658,7 +647,6 @@ export const CombatTab = ({ character }: { character: any }) => {
                             <div className="flex items-center justify-center gap-4 md:gap-6 -mt-1 relative">
                                 <GemSlot gem={gems?.Gems?.[4]} index={4} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
                                 <div className="relative">
-                                    {/* 중앙 보석 후광 (컴팩트하게 조정) */}
                                     <div className="absolute inset-0 bg-blue-500/20 blur-[40px] rounded-full scale-150 animate-pulse"></div>
                                     <GemSlot gem={gems?.Gems?.[5]} index={5} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} isCenter={true} />
                                 </div>
@@ -668,12 +656,14 @@ export const CombatTab = ({ character }: { character: any }) => {
                             {/* 3행 */}
                             <div className="flex items-center gap-12 md:gap-20 -mt-1">
                                 <div className="flex gap-3">
-                                    <GemSlot gem={gems?.Gems?.[7]} index={7} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
-                                    <GemSlot gem={gems?.Gems?.[8]} index={8} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    {[7, 8].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
                                 </div>
                                 <div className="flex gap-3">
-                                    <GemSlot gem={gems?.Gems?.[9]} index={9} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
-                                    <GemSlot gem={gems?.Gems?.[10]} index={10} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    {[9, 10].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -955,18 +945,16 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                 className="text-[#f16022] fill-[#f16022] drop-shadow-[0_0_5px_rgba(241,96,34,0.5)]"
                                             />
                                             <span className="text-[#a8a8a8] text-sm font-medium">x</span>
-                                            <span className="text-white text-xl font-bold leading-none tabular-nums">
-              {n}
-            </span>
+                                            <span className="text-white text-xl font-bold leading-none tabular-nums">{n}</span>
                                         </div>
 
                                         {/* 3. 각인명 + (이름 옆 툴팁 앵커) */}
                                         <div className="flex items-center gap-3 min-w-0">
                                             {/* ✅ 이름 래퍼를 relative로 만들고, 여기서 툴팁을 '옆'에 띄움 */}
                                             <div className="relative min-w-0">
-              <span className="text-[#efeff0] font-bold text-[17px] tracking-tight truncate">
-                {eng.Name}
-              </span>
+                                                <span className="text-[#efeff0] font-bold text-[17px] tracking-tight truncate">
+                                                    {eng.Name}
+                                                </span>
 
                                                 {/* ✅ 이름 옆 툴팁 */}
                                                 {engrHoverIdx === i && engrHoverDesc && (
@@ -1003,7 +991,7 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                             {/* 스톤 레벨 */}
                                             {m > 0 && (
-                                                <div className="flex items-center gap-1.5 ml-2 bg-black/20 px-2 py-0.5 rounded-sm border border-white/5">
+                                                <div className="flex items-center gap-1.5 ml-2">
                                                     <img
                                                         src={stoneIcon}
                                                         alt="Stone"
@@ -1016,15 +1004,6 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
-
-                                    {/* 우측 hover 장식 */}
-                                    <div className="flex items-center gap-3 shrink-0">
-                                        <div className="w-1 h-6 rounded-full bg-orange-500/0 group-hover:bg-orange-500 shadow-[0_0_10px_rgba(241,96,34,0.8)] transition-all duration-300" />
-                                        <ChevronRight
-                                            size={18}
-                                            className="text-zinc-600 group-hover:text-zinc-300 opacity-0 group-hover:opacity-100 translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300"
-                                        />
                                     </div>
                                 </div>
                             );
@@ -1092,7 +1071,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     </div>
 
                                     {/* 본체 고정 스탯 배지 */}
-                                    <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5">
+                                    <div className="flex items-center gap-2.5 px-3 py-1.5">
                                         <div className="w-1 h-3 bg-emerald-500 rounded-full shadow-[0_0_5px_#10b981]"></div>
                                         <span className="text-[12px] text-zinc-400 font-bold">힘민지 총합</span>
                                         <span className="text-[14px] text-white font-black tracking-tight tabular-nums">
