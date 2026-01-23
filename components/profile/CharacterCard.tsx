@@ -41,43 +41,14 @@ export const CharacterCard: React.FC<{
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* ✅ 카드 위 버튼 바 (원복) */}
-            <div className="flex justify-end gap-2 pr-2">
-                <button
-                    onClick={goToSimulator}
-                    className="
-            flex items-center justify-center gap-2
-            px-4 py-1.5
-            bg-zinc-100 text-zinc-950
-            text-[14px] font-bold
-            rounded-lg
-            transition-all duration-200 shadow-md
-            hover:bg-[#7C3AED] hover:text-white
-            active:scale-95
-          "
-                >
-                    시뮬레이터 전환
-                </button>
-
-                <button
-                    onClick={onUpdate}
-                    className="
-            flex items-center justify-center gap-2
-            px-4 py-1.5
-            bg-zinc-900/40 text-zinc-200
-            text-[14px] font-bold
-            rounded-lg
-            border border-white/10
-            transition-all duration-200 shadow-md
-            hover:bg-zinc-800/60
-            active:scale-95
-          "
-                >
-                    업데이트
-                </button>
-            </div>
 
             <CharacterHeader character={character} />
-            <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+            <TabNavigation
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                onUpdate={onUpdate}
+                onSimulator={goToSimulator}
+            />
 
             <AnimatePresence mode="wait">
                 <motion.div
