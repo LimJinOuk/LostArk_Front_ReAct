@@ -328,11 +328,11 @@ export const CombatTab = ({ character }: { character: any }) => {
 
     /* ================= 렌더 ================= */
     return (
-        <div className="flex flex-col-2 gap-6 p-4 bg-[#0f0f0f] text-zinc-300 min-h-screen max-w-[1600px] mx-auto">
+        <div className="flex flex-col gap-6 p-4 text-zinc-300 min-h-screen max-w-[1200px] mx-auto">
 
             {/* 왼쪽 섹션: 장비 & 각인 & 아크패시브 */}
-            <div className="flex-1 min-w-0 space-y-10">
-                <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 items-start bg-[#121213] p-6 rounded-2xl border border-white/5">
+            <div className="flex-1 min-w-0 space-y-6">
+                <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-4 items-stretch bg-[#121213] p-5 rounded-2xl border border-white/5">
                     {/* 왼쪽: 전투 장비 Section (가로 너비 유지) */}
                     <div className="w-full lg:w-[38%] flex flex-col shrink-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
@@ -385,7 +385,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                  setHoveredIndex(null);
                                                  setHoveredData(null);
                                              }}
-                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
+                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
                                         >
                                             {/* 아이콘 영역 */}
                                             <div className="relative shrink-0">
@@ -485,7 +485,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                  setAccHoverIdx(null);
                                                  setAccHoverData(null);
                                              }}
-                                        className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help min-w-0 min-w-0">
+                                        className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help min-w-0 min-w-0">
 
                                             {/* 아이콘 및 품질 (툴팁 기준점) */}
                                             <div className="relative shrink-0">
@@ -579,7 +579,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     );
                                 })}
 
-                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[72px] text-[10px]">
+                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[62px] text-[10px]">
                                 팔찌 효율 계산 행
                             </div>
                         </div>
@@ -784,7 +784,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 return (
                                     <div key={i}
                                         // p-1.5로 줄여서 전체적으로 왼쪽으로 더 붙임
-                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
+                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
                                          onMouseEnter={() => {
                                              setArkCoreHoverIdx(i);
                                              const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
