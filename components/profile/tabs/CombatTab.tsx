@@ -242,32 +242,62 @@ export const CombatTab = ({ character }: { character: any }) => {
         return 'text-[#FF4040] border-[#FF4040]';
     };
     const gradeStyles: any = {
-        '일반': { bg: 'from-zinc-800 to-zinc-950', border: 'border-white/10', text: 'text-zinc-400', glow: '', accent: 'bg-zinc-500' },
-        '고급': { bg: 'from-[#1a2e1a] to-[#0a0f0a]', border: 'border-[#48c948]/30', text: 'text-[#48c948]', glow: 'shadow-[#48c948]/5', accent: 'bg-[#48c948]' },
-        '희귀': { bg: 'from-[#1a2a3e] to-[#0a0d12]', border: 'border-[#00b0fa]/30', text: 'text-[#00b0fa]', glow: 'shadow-[#00b0fa]/10', accent: 'bg-[#00b0fa]' },
-        '영웅': { bg: 'from-[#2e1a3e] to-[#120a1a]', border: 'border-[#ce43fb]/30', text: 'text-[#ce43fb]', glow: 'shadow-[#ce43fb]/10', accent: 'bg-[#ce43fb]' },
-        '전설': { bg: 'from-[#41321a] to-[#1a120a]', border: 'border-[#f99200]/40', text: 'text-[#f99200]', glow: 'shadow-[#f99200]/15', accent: 'bg-[#f99200]' },
-        '유물': {
-            bg: 'from-[#2a1a12] to-[#0a0a0a]',
-            border: 'border-[#fa5d00]/50',
-            text: 'text-[#fa5d00]',
-            glow: 'shadow-[#fa5d00]/20 drop-shadow-[0_0_10px_rgba(250,93,0,0.2)]',
-            accent: 'bg-[#fa5d00]'
-        },
-        '고대': {
-            bg: 'from-[#3d3325] to-[#0f0f10]',
-            border: 'border-[#e9d2a6]/40',
-            text: 'text-[#e9d2a6]',
-            glow: 'shadow-[#e9d2a6]/25 drop-shadow-[0_0_15px_rgba(233,210,166,0.3)]',
-            accent: 'bg-[#e9d2a6]'
-        },
-        '에스더': {
-            bg: 'from-[#0d2e2e] to-[#050505]',
-            border: 'border-[#2edbd3]/60',
-            text: 'text-[#2edbd3]',
-            glow: 'shadow-[#2edbd3]/40 drop-shadow-[0_0_20px_rgba(46,219,211,0.4)]',
-            accent: 'bg-[#2edbd3]'
-        }
+            '일반': {
+                bg: 'from-zinc-800 to-zinc-950',
+                border: 'border-white/10',
+                text: 'text-zinc-400',
+                glow: '',
+                accent: 'bg-zinc-500'
+            },
+            '고급': {
+                bg: 'from-[#1a2e1a] to-[#0a0f0a]',
+                border: 'border-[#48c948]/30 shadow-[0_0_10px_rgba(72,201,72,0.05)]',
+                text: 'text-[#4edb4e] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+                glow: 'shadow-[#48c948]/5',
+                accent: 'bg-[#48c948]'
+            },
+            '희귀': {
+                bg: 'from-[#1a2a3e] to-[#0a0d12]',
+                border: 'border-[#00b0fa]/30 shadow-[0_0_10px_rgba(0,176,250,0.1)]',
+                text: 'text-[#33c2ff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+                glow: 'shadow-[#00b0fa]/10',
+                accent: 'bg-[#00b0fa]'
+            },
+            '영웅': {
+                bg: 'from-[#2e1a3e] to-[#120a1a]',
+                border: 'border-[#ce43fb]/30 shadow-[0_0_10px_rgba(206,67,251,0.1)]',
+                text: 'text-[#d966ff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+                glow: 'shadow-[#ce43fb]/10',
+                accent: 'bg-[#ce43fb]'
+            },
+            '전설': {
+                bg: 'from-[#41321a] to-[#1a120a]',
+                border: 'border-[#f99200]/40 shadow-[0_0_10px_rgba(249,146,0,0.15)]',
+                text: 'text-[#ffaa33] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+                glow: 'shadow-[#f99200]/15',
+                accent: 'bg-[#f99200]'
+            },
+            '유물': {
+                bg: 'from-[#351a0a] to-[#0a0a0a]',
+                border: 'border-[#fa5d00]/50 shadow-[0_0_10px_rgba(250,93,0,0.2)]',
+                text: 'text-[#ff7526] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+                glow: 'shadow-[#fa5d00]/25 drop-shadow-[0_0_15px_rgba(250,93,0,0.35)]',
+                accent: 'bg-[#fa5d00]'
+            },
+            '고대': {
+                bg: 'from-[#3d3325] to-[#0f0f10]',
+                border: 'border-[#e9d2a6]/40',
+                text: 'text-[#e9d2a6]',
+                glow: 'shadow-[#e9d2a6]/25 drop-shadow-[0_0_15px_rgba(233,210,166,0.3)]',
+                accent: 'bg-[#e9d2a6]'
+            },
+            '에스더': {
+                bg: 'from-[#0d2e2e] to-[#050505]',
+                border: 'border-[#2edbd3]/60 shadow-[0_0_12px_rgba(46,219,211,0.2)]',
+                text: 'text-[#45f3ec] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+                glow: 'shadow-[#2edbd3]/30 drop-shadow-[0_0_18px_rgba(46,219,211,0.4)]',
+                accent: 'bg-[#2edbd3]'
+            }
     };
 
     /* ================= 로딩 ================= */
@@ -290,6 +320,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                 <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 items-start bg-[#121213] p-6 rounded-3xl border border-white/5">
                     {/* 왼쪽: 전투 장비 Section (가로 너비 유지) */}
                     <div className="w-full lg:w-[40%] flex flex-col">
+                        {/* 타이틀 영역 */}
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-6">
                             <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
                             <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
@@ -298,89 +329,99 @@ export const CombatTab = ({ character }: { character: any }) => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            {
-                                getItemsByType(['무기', '투구', '상의', '하의', '장갑', '어깨'])
-                                    .sort((a, b) => (a.Type === '무기' ? 1 : b.Type === '무기' ? -1 : 0))
-                                    .map((item, i) => {
-                                        let tooltip;
-                                        try { tooltip = JSON.parse(item.Tooltip); } catch (e) { return null; }
+                            {getItemsByType(['무기', '투구', '상의', '하의', '장갑', '어깨'])
+                                .sort((a, b) => (a.Type === '무기' ? 1 : b.Type === '무기' ? -1 : 0))
+                                .map((item, i) => {
+                                    let tooltip;
+                                    try { tooltip = JSON.parse(item.Tooltip); } catch (e) { return null; }
 
-                                        const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
-                                        const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || '';
-                                        const itemName = cleanText(item.Name).replace(/\+\d+\s/, '');
+                                    const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
+                                    const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || '';
+                                    const itemName = cleanText(item.Name).replace(/\+\d+\s/, '');
 
-                                        const rawGrade = (item.Grade || "").trim();
-                                        let currentGrade = "일반";
+                                    const rawGrade = (item.Grade || "").trim();
+                                    let currentGrade = "일반";
 
-                                        if (rawGrade.includes('에스더') || item.Name.includes('에스더')) {
-                                            currentGrade = '에스더';
-                                        } else if (rawGrade.includes('고대')) {
-                                            currentGrade = '고대';
-                                        } else if (rawGrade.includes('유물')) {
-                                            currentGrade = '유물';
-                                        } else if (rawGrade.includes('전설')) {
-                                            currentGrade = '전설';
-                                        } else if (rawGrade.includes('영웅')) {
-                                            currentGrade = '영웅';
-                                        } else if (rawGrade.includes('희귀')) {
-                                            currentGrade = '희귀';
-                                        } else if (rawGrade.includes('고급')) {
-                                            currentGrade = '고급';
-                                        }
-                                        const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
-                                        let advancedReinforce = "0";
-                                        const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
-                                        if (advMatch) advancedReinforce = advMatch[1];
+                                    if (rawGrade.includes('에스더') || item.Name.includes('에스더')) {
+                                        currentGrade = '에스더';
+                                    } else if (rawGrade.includes('고대')) {
+                                        currentGrade = '고대';
+                                    } else if (rawGrade.includes('유물')) {
+                                        currentGrade = '유물';
+                                    } else if (rawGrade.includes('전설')) {
+                                        currentGrade = '전설';
+                                    } else if (rawGrade.includes('영웅')) {
+                                        currentGrade = '영웅';
+                                    } else if (rawGrade.includes('희귀')) {
+                                        currentGrade = '희귀';
+                                    } else if (rawGrade.includes('고급')) {
+                                        currentGrade = '고급';
+                                    }
+                                    const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
+                                    let advancedReinforce = "0";
+                                    const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
+                                    if (advMatch) advancedReinforce = advMatch[1];
 
-                                        return (
-                                            <div key={item.Name}
-                                                 className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
-                                                 onMouseEnter={() => {
-                                                     setHoveredIndex(i);
-                                                     setHoveredData(tooltip);
-                                                 }}
-                                                 onMouseLeave={() => {
-                                                     setHoveredIndex(null);
-                                                     setHoveredData(null);
-                                                 }}
-                                            >
-                                                <div className="relative shrink-0">
-                                                    <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
-                                                        <img src={item.Icon} className="w-12 h-12 rounded-md object-cover bg-black/20" alt={itemName} />
-                                                        {(currentGrade === '고대' || currentGrade === '에스더') && (
-                                                            <div className="absolute inset-0 rounded-lg shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)] pointer-events-none" />
-                                                        )}
-                                                    </div>
-
-                                                    <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 text-[#e9d2a6]`}>
-                                                        {quality}
-                                                    </div>
+                                    return (
+                                        <div key={item.Name}
+                                            // 마우스 이벤트를 다시 최상위 div로 복구하여 모달 위에서도 유지가 가능하게 함
+                                             onMouseEnter={() => {
+                                                 setHoveredIndex(i);
+                                                 setHoveredData(tooltip);
+                                             }}
+                                             onMouseLeave={() => {
+                                                 setHoveredIndex(null);
+                                                 setHoveredData(null);
+                                             }}
+                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
+                                        >
+                                            {/* 아이콘 영역 */}
+                                            <div className="relative shrink-0">
+                                                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
+                                                    <img src={item.Icon} className="w-12 h-12 rounded-md object-cover bg-black/20" alt={itemName} />
+                                                    {(currentGrade === '고대' || currentGrade === '에스더') && (
+                                                        <div className="absolute inset-0 rounded-lg shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)] pointer-events-none" />
+                                                    )}
                                                 </div>
 
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className={`font-bold text-[14px] truncate mb-0.5 ${theme.text}`}>
-                                                        {itemName}
-                                                    </h3>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-white/50 text-[12px]">재련 {reinforceLevel}</span>
-                                                        {advancedReinforce !== "0" && (
-                                                            <span className="text-sky-400 text-[12px] font-bold">상재 +{advancedReinforce}</span>
-                                                        )}
-                                                    </div>
+                                                <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 text-[#e9d2a6]`}>
+                                                    {quality}
                                                 </div>
 
+                                                {/* --- 툴팁 모달: 아이콘 바로 오른쪽 밀착 --- */}
                                                 {hoveredIndex === i && hoveredData && (
-                                                    <div className="absolute left-full top-0 -ml-2 pl-4 z-[9999] h-full flex items-start">
-                                                        <EquipmentTooltip data={hoveredData} />
+                                                    <div
+                                                        className="absolute left-full top-0 z-[9999] pointer-events-auto flex items-start"
+                                                        // ml-3 대신 패딩을 사용하여 마우스 이동 경로(Bridge)를 확보
+                                                        style={{ paddingLeft: '12px', width: 'max-content' }}
+                                                    >
+                                                        <div className="animate-in fade-in slide-in-from-left-1 duration-200">
+                                                            <EquipmentTooltip data={hoveredData} />
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
-                                        );
-                                    })}
+
+                                            {/* 정보 영역 */}
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className={`font-bold text-[14px] truncate mb-0.5 ${theme.text}`}>
+                                                    {itemName}
+                                                </h3>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-white/50 text-[12px]">재련 {reinforceLevel}</span>
+                                                    {advancedReinforce !== "0" && (
+                                                        <span className="text-sky-400 text-[12px] font-bold">상재 +{advancedReinforce}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                         </div>
                     </div>
                     {/* 오른쪽: 액세서리 Section (가로 너비 확장 및 내부 비율 조정) */}
                     <div className="w-full lg:w-[60%] flex flex-col">
+                        {/* 타이틀 영역 */}
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-6">
                             <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
                             <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
@@ -401,7 +442,6 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     const quality = tooltip.Element_001?.value?.qualityValue ?? 0;
                                     const itemName = item.Name || "아이템 이름";
 
-                                    // --- 등급 판별 로직 추가 ---
                                     const rawGrade = (item.Grade || "").trim();
                                     let currentGrade = "일반";
                                     if (rawGrade.includes('고대')) currentGrade = '고대';
@@ -409,17 +449,11 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     else if (rawGrade.includes('전설')) currentGrade = '전설';
                                     else if (rawGrade.includes('영웅')) currentGrade = '영웅';
 
-                                    // 정의된 gradeStyles 테마 가져오기 (전투 장비와 동일한 객체 사용)
                                     const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
-
-                                    // 데이터 추출: 깨달음 포인트
                                     const passive = cleanText(tooltip.Element_007?.value?.Element_001 || '').match(/\d+/)?.[0] || '0';
-
-                                    // 티어 추출
                                     const tierStr = tooltip.Element_001?.value?.leftStr2 || "";
                                     const tier = tierStr.replace(/[^0-9]/g, "").slice(-1) || "4";
 
-                                    // 연마 효과 추출 로직 (기존과 동일)
                                     const grindContent = cleanText(tooltip.Element_006?.value?.Element_001 || tooltip.Element_005?.value?.Element_001 || '');
                                     const effects = [...grindContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)].map(m => ({
                                         name: m[1].trim(),
@@ -427,32 +461,16 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     }));
 
                                     const shortNames = {
-                                        // 딜러 관련 핵심 옵션
-                                        '추가 피해': '추피',
-                                        '적에게 주는 피해': '적주피',
-                                        '치명타 적중률': '치적',
-                                        '치명타 피해': '치피',
-                                        '공격력': '공격력',
-                                        '무기 공격력': '무공',
-
-                                        // 서포터 관련 핵심 옵션
-                                        '조화 게이지 획득량': '아덴획득',
-                                        '낙인력': '낙인력',
-                                        '파티원 회복 효과': '파티회복',
-                                        '파티원 보호막 효과': '파티보호',
-                                        '아군 공격력 강화 효과': '아공강',
-                                        '아군 피해량 강화 효과': '아피강',
-
-                                        // 공통/유틸 옵션
-                                        '최대 생명력': '최생',
-                                        '최대 마나': '최마',
-                                        '전투 중 생명력 회복량': '전투회복',
-                                        '상태이상 공격 지속시간': '상태이상'
+                                        '추가 피해': '추피', '적에게 주는 피해': '적주피', '치명타 적중률': '치적', '치명타 피해': '치피',
+                                        '공격력': '공격력', '무기 공격력': '무공', '조화 게이지 획득량': '아덴획득', '낙인력': '낙인력',
+                                        '파티원 회복 효과': '파티회복', '파티원 보호막 효과': '파티보호', '아군 공격력 강화 효과': '아공강',
+                                        '아군 피해량 강화 효과': '아피강', '최대 생명력': '최생', '최대 마나': '최마',
+                                        '전투 중 생명력 회복량': '전투회복', '상태이상 공격 지속시간': '상태이상'
                                     };
 
                                     return (
                                         <div key={i}
-                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
+                                            // 마우스 이동 시 툴팁 유지를 위해 전체 행에 이벤트 적용
                                              onMouseEnter={() => {
                                                  setAccHoverIdx(i);
                                                  setAccHoverData(tooltip);
@@ -460,29 +478,38 @@ export const CombatTab = ({ character }: { character: any }) => {
                                              onMouseLeave={() => {
                                                  setAccHoverIdx(null);
                                                  setAccHoverData(null);
-                                             }}>
-
-                                            {/* 아이콘 및 품질 */}
+                                             }}
+                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
+                                        >
+                                            {/* 아이콘 및 품질 (툴팁 기준점) */}
                                             <div className="relative shrink-0">
-                                                {/* 등급별 배경 및 테두리 적용 */}
                                                 <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
                                                     <img src={item.Icon} className="w-12 h-12 rounded-md object-cover bg-black/20" alt="" />
-
-                                                    {/* 고대 등급 이상 내부 광채 */}
                                                     {currentGrade === '고대' && (
                                                         <div className="absolute inset-0 rounded-lg shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)] pointer-events-none" />
                                                     )}
                                                 </div>
 
-                                                {/* 품질 수치 영역: 텍스트 색상을 테마에 맞춤 (혹은 고정 #e9d2a6) */}
                                                 <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 ${theme.text}`}>
                                                     {quality}
                                                 </div>
+
+                                                {/* --- 툴팁 모달: 아이콘 바로 오른쪽 밀착 및 유지 --- */}
+                                                {accHoverIdx === i && accHoverData && (
+                                                    <div
+                                                        className="absolute left-full top-0 z-[9999] pointer-events-auto flex items-start"
+                                                        // paddingLeft를 통해 아이콘과 모달 사이의 마우스 인식 끊김 방지
+                                                        style={{ paddingLeft: '12px', width: 'max-content' }}
+                                                    >
+                                                        <div className="animate-in fade-in slide-in-from-left-1 duration-200">
+                                                            <AccessoryTooltip data={accHoverData} />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* 이름 및 티어 정보 */}
                                             <div className="flex-[2] min-w-0">
-                                                {/* 등급별 텍스트 색상 적용 */}
                                                 <h3 className={`font-bold text-[14px] truncate mb-0.5 ${theme.text}`}>
                                                     {itemName}
                                                 </h3>
@@ -492,40 +519,32 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                 </div>
                                             </div>
 
-                                            {/* 축약된 연마 효과 영역 (기존 로직 유지) */}
+                                            {/* 연마 효과 영역 (기존 로직 유지) */}
                                             <div className="w-24 flex flex-col justify-center items-end border-l border-white/5 pl-3 shrink-0">
                                                 {[0, 1, 2].map((idx) => {
                                                     const rawName = effects[idx]?.name || '';
                                                     const val = effects[idx]?.value || '-';
                                                     const dispName = shortNames[rawName] || rawName || '-';
 
-                                                    const getDynamicColor = (name: string, valueStr: string) => {
+                                                    const getDynamicColor = (name, valueStr) => {
                                                         if (valueStr === '-' || !valueStr) return 'text-white/20';
                                                         const num = parseFloat(valueStr.replace(/[^0-9.]/g, ''));
                                                         const isPercent = valueStr.includes('%');
-
-                                                        const thresholds: Record<string, { 상: number; 중: number; 하: number }> = {
-                                                            // --- 딜러 관련 옵션 ---
+                                                        const thresholds = {
                                                             '추가 피해': { 상: 2.6, 중: 1.6, 하: 0.6 },
                                                             '적에게 주는 피해': { 상: 2.0, 중: 1.2, 하: 0.55 },
                                                             '치명타 적중률': { 상: 1.55, 중: 0.95, 하: 0.4 },
                                                             '치명타 피해': { 상: 4.0, 중: 2.4, 하: 1.1 },
-
-                                                            // --- 서포터 관련 옵션 (보내주신 리스트 기반) ---
                                                             '조화 게이지 획득량': { 상: 2.6, 중: 1.6, 하: 0.6 },
                                                             '낙인력': { 상: 2.6, 중: 1.6, 하: 0.6 },
                                                             '파티원 회복 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
                                                             '파티원 보호막 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
                                                             '아군 공격력 강화 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
                                                             '아군 피해량 강화 효과': { 상: 2.6, 중: 1.6, 하: 0.6 },
-
-                                                            // --- 공격력 / 무기 공격력 (단위에 따라 기준 분리) ---
                                                             '공격력_PCT': { 상: 1.55, 중: 0.95, 하: 0.4 },
                                                             '공격력_FIXED': { 상: 390, 중: 195, 하: 80 },
                                                             '무기 공격력_PCT': { 상: 3.0, 중: 1.8, 하: 0.8 },
                                                             '무기 공격력_FIXED': { 상: 960, 중: 480, 하: 195 },
-
-                                                            // --- 유틸 및 생존 옵션 ---
                                                             '최대 생명력': { 상: 4000, 중: 2400, 하: 1100 },
                                                             '최대 마나': { 상: 45, 중: 27, 하: 12 },
                                                             '상태이상 공격 지속시간': { 상: 2.6, 중: 1.6, 하: 0.6 },
@@ -538,36 +557,23 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                                         const criteria = thresholds[targetKey];
                                                         if (!criteria) return 'text-zinc-500';
-
                                                         if (num >= criteria.상) return 'text-yellow-400 font-black';
                                                         if (num >= criteria.중) return 'text-purple-400 font-bold';
                                                         return 'text-blue-400 font-medium';
                                                     };
 
-                                                    const isHigh = val.includes('2.6') || val.includes('4.0'); // 상급 수치 판별 예시
                                                     return (
-                                                        //수정 후
                                                         <div key={idx} className="flex justify-between w-full text-[11px] leading-tight gap-2">
                                                             <span className="text-white/40 font-medium truncate">{dispName}</span>
-                                                            <span className={`${getDynamicColor(rawName, val)} font-bold
-                                                            ${isHigh ? 'drop-shadow-[0_0_5px_rgba(250,204,21,0.6)] animate-pulse' : ''}`}>
-                                                                {val}
-                                                            </span>
+                                                            <span className={`${getDynamicColor(rawName, val)} font-bold`}>{val}</span>
                                                         </div>
                                                     );
                                                 })}
                                             </div>
-
-                                            {accHoverIdx === i && accHoverData && (
-                                                <div className="absolute left-full top-0 -ml-2 pl-4 z-[9999] h-full flex items-start">
-                                                    <AccessoryTooltip data={accHoverData} />
-                                                </div>
-                                            )}
                                         </div>
                                     );
                                 })}
 
-                            {/* 2. 팔찌 효율 계산 행 */}
                             <div className="flex items-center gap-4 p-2.5 rounded-xl bg-white/[0.03] border border-white/5 h-[72px]">
                                 팔찌 효율 계산 행
                             </div>
@@ -581,10 +587,15 @@ export const CombatTab = ({ character }: { character: any }) => {
                     <div className="w-full max-w-3xl flex items-center justify-between border-b border-zinc-800/50 pb-2 mb-8">
                         <div className="flex items-center gap-2">
                             <div className="w-1 h-4 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
-                            <h1 className="text-sm font-extrabold text-zinc-200 tracking-tight uppercase">보석</h1>
+                            <h1 className="text-lg font-extrabold text-zinc-200 tracking-tight uppercase">보석</h1>
                         </div>
-                        <div className="text-[10px] bg-zinc-900/50 text-zinc-400 px-3 py-1 rounded border border-zinc-800 font-medium backdrop-blur-sm">
-                            {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
+                        <div className="flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-sm">
+                            {/* 젬 포인트 바: 특성치와 구분되도록 sky-400 컬러 적용 */}
+                            <div className="w-1 h-3 bg-sky-400 rounded-full"></div>
+
+                            <span className="text-[13px] text-[#efeff0] font-semibold tracking-tight leading-none truncate">
+                                {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
+                            </span>
                         </div>
                     </div>
 
@@ -743,7 +754,7 @@ export const CombatTab = ({ character }: { character: any }) => {
 
             <div className="flex-1 min-w-0 flex flex-col space-y-10">
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#121213] p-8 rounded-xl border border-white/5 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#121213] p-6 rounded-xl border border-white/5 items-stretch">
                     {/* 왼쪽: 코어 섹션 */}
                     <section className="flex flex-col">
                         {/* 타이틀 영역 */}
@@ -754,15 +765,13 @@ export const CombatTab = ({ character }: { character: any }) => {
                             </h1>
                         </div>
 
-                        {/* 그리드 레이아웃 */}
-                        <div className="grid grid-cols-3 gap-y-12 gap-x-4">
+                        {/* 6행 1열 레이아웃: p-0 또는 p-1 등으로 왼쪽 여백 최소화 */}
+                        <div className="flex flex-col gap-1">
                             {arkGrid?.Slots?.map((slot, i) => {
-                                // ":" 기준으로 텍스트 분리
                                 const nameParts = slot.Name.split(/\s*:\s*/);
-                                const category = nameParts[0]; // "질서의 해 코어"
-                                const subName = nameParts[1];   // "차지 인핸스" (색상 적용 대상)
+                                const category = nameParts[0];
+                                const subName = nameParts[1];
 
-                                // --- 등급 판별 로직 ---
                                 const rawGrade = (slot.Grade || "").trim();
                                 let currentGrade = "일반";
                                 if (rawGrade.includes('고대')) currentGrade = '고대';
@@ -770,11 +779,13 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 else if (rawGrade.includes('전설')) currentGrade = '전설';
                                 else if (rawGrade.includes('영웅')) currentGrade = '영웅';
 
+                                // 등급에 따른 테마 가져오기
                                 const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
 
                                 return (
                                     <div key={i}
-                                         className="relative group flex flex-col items-center cursor-help"
+                                        // p-1.5로 줄여서 전체적으로 왼쪽으로 더 붙임
+                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
                                          onMouseEnter={() => {
                                              setArkCoreHoverIdx(i);
                                              const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
@@ -785,62 +796,60 @@ export const CombatTab = ({ character }: { character: any }) => {
                                              setArkCoreHoverData(null);
                                          }}
                                     >
-                                        <div className="relative w-16 h-16 mb-4 shrink-0">
-                                            {/* 코어 아이콘 박스 */}
-                                            <div className={`w-full h-full rounded-2xl p-1.5 border shadow-lg bg-gradient-to-br transition-all flex items-center justify-center
-                                            ${theme.bg} ${theme.border} ${theme.glow || ''} group-hover:scale-105 duration-200`}>
+                                        {/* [좌측] 아이콘 영역 */}
+                                        <div className="relative shrink-0">
+                                            {/* 아이콘 배경: 고대 등급 고정 */}
+                                            <div className={`w-14 h-14 rounded-xl p-[2px] transition-all flex items-center justify-center
+                                            bg-gradient-to-br ${theme.bg} overflow-hidden
+                                            border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
+
                                                 <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
+
+                                                {/* 젬 장착 표시: 등급에 맞는 색상(theme.accent) 적용 */}
+                                                {slot.Gems?.length > 0 && (
+                                                    <div className={`absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
+                                                        <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            {/* 젬 장착 표시부 */}
-                                            {slot.Gems?.length > 0 && (
-                                                <div className="absolute -right-1 -bottom-1 w-5 h-5 bg-[#7b2cff] rounded-full border-[3px] border-[#0c0c0d] flex items-center justify-center shadow-[0_0_8px_rgba(123,44,255,0.4)]">
-                                                    <div className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_4px_#fff]"></div>
+                                            {/* 툴팁 모달 */}
+                                            {arkCoreHoverIdx === i && arkCoreHoverData && (
+                                                <div
+                                                    className="absolute left-full top-0 z-[9999] pointer-events-auto flex items-start"
+                                                    style={{ paddingLeft: '12px', width: 'max-content' }}
+                                                >
+                                                    <div className="animate-in fade-in slide-in-from-left-1 duration-200">
+                                                        <ArkCoreTooltip
+                                                            data={arkCoreHoverData.core}
+                                                            Gems={arkCoreHoverData.gems}
+                                                        />
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* 텍스트 영역 */}
-                                        <div className="w-full text-center flex flex-col items-center">
-                                            {/* 1. 카테고리: 화이트 계열로 고정 */}
-                                            <span className="text-[12px] font-bold text-sky-400/90 leading-tight">
+                                        {/* [중앙] 텍스트 정보: 간격 gap-3으로 왼쪽으로 당김 */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-[12px] font-bold text-sky-400/90 leading-tight">
                                                 {category}
-
-                                            </span>
-
-                                            {/* 2. 세부 이름 (차지 인핸스 등): 등급별 텍스트 색상(theme.text) 적용 */}
-                                            <span className={`text-[12px] font-extrabold mt-0.5 leading-tight ${theme.text}`}>
+                                            </div>
+                                            <div className={`text-[14px] font-extrabold mt-0.5 truncate ${theme.text}`}>
                                                 {subName}
-                                            </span>
-
-                                            {/* 3. 포인트 */}
-                                            <div className="mt-3 px-3 py-0.5 rounded-[5px] bg-orange-900/10 border border-orange-500/20">
-                                                <span className="text-[13px] font-black text-[#f18c2d] tracking-tighter">{slot.Point}P</span>
                                             </div>
                                         </div>
 
-                                        {/* 툴팁 모달 */}
-                                        {arkCoreHoverIdx === i && arkCoreHoverData && (
-                                            <div
-                                                className="absolute left-full top-0 -ml-2 pl-4 z-[9999] h-full flex items-start pointer-events-auto animate-in fade-in slide-in-from-left-2 duration-200"
-                                                onMouseEnter={() => setArkCoreHoverIdx(i)}
-                                                onMouseLeave={() => {
-                                                    setArkCoreHoverIdx(null);
-                                                    setArkCoreHoverData(null);
-                                                }}
-                                            >
-                                                <ArkCoreTooltip
-                                                    data={arkCoreHoverData.core}
-                                                    Gems={arkCoreHoverData.gems}
-                                                />
-                                            </div>
-                                        )}
+                                        {/* [우측] 포인트 정보 */}
+                                        <div className="shrink-0 text-right pr-1">
+                        <span className="text-[15px] font-black text-[#f18c2d] tracking-tighter">
+                            {slot.Point}P
+                        </span>
+                                        </div>
                                     </div>
                                 );
                             })}
                         </div>
                     </section>
-
                     {/* 오른쪽: 젬 효과 섹션 */}
                     <section className="flex flex-col border-l border-zinc-800/30 md:pl-8">
                         {/* 타이틀 영역 높이 통일 */}
@@ -939,96 +948,115 @@ export const CombatTab = ({ character }: { character: any }) => {
                     </div>
                 </section>
                 {/* ================= 아바타 섹션 수정 시작 ================= */}
-                {/* ✅ 전체 섹션: 박스 디자인 적용 */}
-                {/* 활성 각인 섹션과 동일한 bg, rounded, border, p-6 적용 */}
                 <section className="bg-[#121213] rounded-xl border border-white/5 p-6 space-y-6 shadow-2xl">
+                    {/* 데이터 처리 및 본체 전용 합산 로직 */}
+                    {(() => {
+                        const avatarTypes = ['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타', '얼굴1 아바타', '얼굴2 아바타', '악기 아바타', '이동 효과'];
 
-                    {/* 헤더 부분: 활성 각인과 동일한 border-b 스타일 */}
-                    <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                        <div className="flex items-center gap-4">
-
-                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
-                            <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
-                                아바타
-                            </h1>
-
-                            {/* 통합 토글 버튼 */}
-                            <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 shadow-inner">
-                                <button
-                                    onClick={() => setAvatarViewMode('skin')}
-                                    className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${
-                                        avatarViewMode === 'skin' ? 'bg-sky-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
-                                    }`}
-                                >
-                                    덧입기
-                                </button>
-                                <button
-                                    onClick={() => setAvatarViewMode('inner')}
-                                    className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${
-                                        avatarViewMode === 'inner' ? 'bg-amber-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
-                                    }`}
-                                >
-                                    본체
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* 총 추가 능력치 요약 */}
-                        <div className="text-[12px] bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-md border border-emerald-500/20 font-bold">
-                            기본 특성 <span className="ml-1 text-white">7.00%</span>
-                        </div>
-                    </div>
-
-                    {/* 리스트 본문: flex-col 및 gap 조절 */}
-                    <div className="flex flex-col gap-1.5">
-                        {['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타', '얼굴1 아바타', '얼굴2 아바타', '악기 아바타', '이동 효과'].map((type) => {
+                        // [리스트용] 현재 탭에 따라 보여줄 데이터
+                        const displayAvatars = avatarTypes.map(type => {
                             const parts = avatars.filter(a => a.Type === type);
                             const innerAvatar = parts.find(a => a.IsInner === true);
                             const skinAvatar = parts.find(a => a.IsInner === false);
+                            const active = avatarViewMode === 'skin' ? (skinAvatar || innerAvatar) : (innerAvatar || skinAvatar);
+                            return { type, active };
+                        }).filter(item => item.active);
 
-                            if (!innerAvatar && !skinAvatar) return null;
+                        // [합산용 수정] 무기 아바타를 포함하여 본체 스탯을 정확히 계산
+                        const totalInnerStat = avatarTypes.reduce((acc, type) => {
+                            const parts = avatars.filter(a => a.Type === type);
+                            // 1. 우선 IsInner가 true인 것을 찾음
+                            // 2. 만약 본체/덧입기 구분이 없는 부위라면 첫 번째 아이템을 참조
+                            const target = parts.find(a => a.IsInner === true) || parts[0];
 
-                            const activeDisplay = avatarViewMode === 'skin' ? (skinAvatar || innerAvatar) : (innerAvatar || skinAvatar);
-                            const isLegendary = activeDisplay.Grade === "전설";
-                            const statMatch = activeDisplay.Tooltip.match(/(?:힘|민첩|지능)\s*\+[\d.]+%/);
+                            if (target) {
+                                const match = target.Tooltip.match(/(?:힘|민첩|지능)\s*\+([\d.]+)%/);
+                                return acc + (match ? parseFloat(match[1]) : 0);
+                            }
+                            return acc;
+                        }, 0);
 
-                            return (
-                                /* 활성 각인 행(Row)과 동일한 padding(px-4 py-2),
-                                   동일한 justify-between 및 group 애니메이션 적용
-                                */
-                                <div key={type} className="flex items-center justify-between px-4 py-2 rounded-sm group transition-all duration-200 cursor-default hover:bg-white/[0.02]">
-                                    <div className="flex items-center min-w-0">
-                                        {/* 1. 아바타 아이콘 (활성 각인 아이콘과 크기 통일) */}
-                                        <div className={`w-10 h-10 shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center transition-all ${
-                                            isLegendary
-                                                ? 'border-orange-500/40 bg-gradient-to-br from-[#3e270a] to-zinc-900'
-                                                : 'border-purple-500/40 bg-gradient-to-br from-[#2a133d] to-zinc-900'
-                                        } mr-4`}>
-                                            <img src={activeDisplay.Icon} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" alt="" />
-                                        </div>
+                        return (
+                            <>
+                                {/* 헤더 부분 */}
+                                <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                                        <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
+                                            아바타
+                                        </h1>
 
-                                        {/* 2. 아바타 정보 */}
-                                        <div className="flex flex-col min-w-0">
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <span className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">{type}</span>
-                                                <span className={`text-[10px] font-black ${isLegendary ? 'text-orange-400' : 'text-purple-400'}`}>
-                                                    {activeDisplay.Grade}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <p className="text-[17px] font-bold text-[#efeff0] truncate">
-                                                    {activeDisplay.Name}
-                                                </p>
-                                                <span className="text-[11px] text-emerald-400 font-bold">
-                                                    {statMatch ? statMatch[0] : ''}
-                                                </span>
-                                            </div>
+                                        <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 shadow-inner">
+                                            <button
+                                                onClick={() => setAvatarViewMode('skin')}
+                                                className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${
+                                                    avatarViewMode === 'skin' ? 'bg-sky-500 text-white' : 'text-zinc-500'
+                                                }`}
+                                            >
+                                                덧입기
+                                            </button>
+                                            <button
+                                                onClick={() => setAvatarViewMode('inner')}
+                                                className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${
+                                                    avatarViewMode === 'inner' ? 'bg-amber-500 text-white' : 'text-zinc-500'
+                                                }`}
+                                            >
+                                                본체
+                                            </button>
                                         </div>
                                     </div>
+
+                                    {/* 본체 고정 스탯 배지 */}
+                                    <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5">
+                                        <div className="w-1 h-3 bg-emerald-500 rounded-full shadow-[0_0_5px_#10b981]"></div>
+                                        <span className="text-[12px] text-zinc-400 font-bold">힘민지 총합</span>
+                                        <span className="text-[14px] text-white font-black tracking-tight tabular-nums">
+                            {totalInnerStat.toFixed(2)}%
+                        </span>
+                                    </div>
                                 </div>
-                            );
-                        })}
-                    </div>
+
+                                {/* 리스트 본문 */}
+                                <div className="flex flex-col gap-1.5">
+                                    {displayAvatars.map(({ type, active }) => {
+                                        const isLegendary = active.Grade === "전설";
+                                        const statMatch = active.Tooltip.match(/(?:힘|민첩|지능)\s*\+([\d.]+)%/);
+
+                                        return (
+                                            <div key={type} className="flex items-center justify-between px-4 py-2 rounded-sm group transition-all duration-200 hover:bg-white/[0.02]">
+                                                <div className="flex items-center min-w-0">
+                                                    <div className={`w-10 h-10 shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center transition-all ${
+                                                        isLegendary
+                                                            ? 'border-orange-500/40 bg-gradient-to-br from-[#3e270a] to-zinc-900'
+                                                            : 'border-purple-500/40 bg-gradient-to-br from-[#2a133d] to-zinc-900'
+                                                    } mr-4`}>
+                                                        <img src={active.Icon} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" alt="" />
+                                                    </div>
+
+                                                    <div className="flex flex-col min-w-0">
+                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                            <span className="text-[10px] text-zinc-500 font-black uppercase tracking-wider">{type}</span>
+                                                            <span className={`text-[10px] font-black ${isLegendary ? 'text-orange-400' : 'text-purple-400'}`}>
+                                                {active.Grade}
+                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <p className="text-[17px] font-bold text-[#efeff0] truncate">
+                                                                {active.Name}
+                                                            </p>
+                                                            <span className="text-[11px] text-emerald-400 font-bold">
+                                                {statMatch ? statMatch[0] : ''}
+                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        );
+                    })()}
                 </section>
             </div>
         </div>
