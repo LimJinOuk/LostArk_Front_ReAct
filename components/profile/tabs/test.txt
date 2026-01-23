@@ -2,101 +2,183 @@
 2. 아크 패시브 탭: 상하 ui 크기 줄이기
 3. CharacterHeader 상하 ui 줄이기
 
-const EquipmentItem = ({
-                           item, i, theme, tooltip, quality, reinforceLevel,
-                           advancedReinforce, itemName, REINFORCE_OPTIONS,
-                           setHoveredIndex, setHoveredData
-                       }: EquipmentItemProps) => {
+         <div className="absolute right-[2%] top-[-10%] w-[550px] h-[120%] z-0 text-white">
+                <div className="relative w-full h-full">
+                    <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#0c0e12] via-[#0c0e12]/80 to-transparent z-10" />
+                    <img
+                        src={character.CharacterImage}
+                        alt={character.CharacterName}
+                        className="w-full h-full object-cover object-top opacity-90 contrast-[1.1]"
+                    />
+                </div>
+            </div>
 
-    const [localQuality, setLocalQuality] = useState(quality);
-    const [localAdv, setLocalAdv] = useState(advancedReinforce);
 
-    // 초기 로드 시 딱 한 번만 실행되도록 함수형 업데이트 사용
-    const [selectedOption, setSelectedOption] = useState(() => {
-        const level = reinforceLevel.replace('+', '');
-        // 현재 장비 수치와 일치하는 옵션을 찾되, 없으면 4티어 기본값
-        return REINFORCE_OPTIONS.find(opt => String(opt.value) === level) || REINFORCE_OPTIONS[0];
-    });
+            {/* 배경 광원 유지 */}
+            <div className="absolute -bottom-1/4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+                 style={{
+                     width: '150%',
+                     height: '120%',
+                     background: `radial-gradient(circle at center, ${randomColor} 0%, transparent 40%)`,
+                     mixBlendMode: 'screen',
+                     filter: 'blur(120px)'
+                 }}
+            />
 
-    // ⚠️ [수정 포인트] 의존성 배열에서 REINFORCE_OPTIONS를 제거하거나,
-    // 부모로부터 넘어오는 값이 실제로 '변경'되었을 때만 초기화하도록 조건 추가
-    useEffect(() => {
-        const level = reinforceLevel.replace('+', '');
-        const found = REINFORCE_OPTIONS.find(opt => String(opt.value) === level);
 
-        // 사용자가 선택한 값과 서버에서 온 초기값이 다를 때만 동기화 (캐릭터 검색 시)
-        if (found) {
-            setLocalQuality(quality);
-            setLocalAdv(advancedReinforce);
-            setSelectedOption(found);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [reinforceLevel, quality, advancedReinforce]);
-    // 💡 REINFORCE_OPTIONS를 의존성에서 제외하여 리렌더링 시 초기화를 방지합니다.
 
-    const handleKeyDown = (e: any, type: string, value: any) => {
-        if (e.key === 'Enter') e.currentTarget.blur();
-    };
+
+
+import React, { useMemo } from 'react';
+import { Shield, Swords, Zap, Target, Flame, Trophy, GripVertical, Users } from 'lucide-react';
+
+// 1. 하위 컴포넌트: SlimStat (치명, 특화, 신속) - 크기 축소
+const SlimStat = ({ icon, label, value }: any) => (
+    <div className="flex flex-col gap-0.5">
+        <div className="flex items-center gap-1.5">
+            {React.cloneElement(icon as React.ReactElement, { size: 12 })}
+            <span className="text-[10px] text-zinc-500 font-bold tracking-tight">{label}</span>
+        </div>
+        <span className="text-lg font-black leading-none">{value}</span>
+    </div>
+);
+
+// 2. 하위 컴포넌트: SimpleStat (아이템 레벨, 전투력 등) - 크기 축소
+const SimpleStat = ({ label, value, icon, color = "text-white" }: any) => (
+    <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-1.5 text-zinc-500">
+            {React.cloneElement(icon as React.ReactElement, { size: 18 })}
+            <span className="text-[10px] font-black tracking-widest uppercase">{label}</span>
+        </div>
+        <span className={`text-xl font-[1000] tracking-tighter ${color} leading-none`}>{value}</span>
+    </div>
+);
+
+// 칭호 파싱 함수
+const parseTitle = (titleStr: string) => {
+    if (!titleStr) return { iconName: null, text: "원정대의 희망" };
+    const imgMatch = titleStr.match(/src='([^']+)'/);
+    const iconName = imgMatch ? imgMatch[1] : null;
+    const pureText = titleStr.replace(/<[^>]*>?/gm, '').replace(/<\/?[^>]+(>|$)/g, "").trim();
+    return { iconName, text: pureText };
+};
+
+// 3. 메인 컴포넌트
+export const CharacterHeader = ({ character }: { character: any }) => {
+    const { iconName, text } = useMemo(() => parseTitle(character.Title), [character.Title]);
+    const stats = character.Stats || [];
+    const getStat = (type: string) => stats.find((s: any) => s.Type === type)?.Value || "-";
+
+    const lightColors = useMemo(
+        () => [
+            'rgba(168, 85, 247, 0.45)', 'rgba(232, 103, 50, 0.45)',
+            'rgba(30, 58, 138, 0.6)', 'rgba(16, 185, 129, 0.4)',
+            'rgba(244, 63, 94, 0.45)', 'rgba(6, 182, 212, 0.45)',
+        ],
+        []
+    );
+
+    const randomColor = useMemo(() => lightColors[Math.floor(Math.random() * lightColors.length)], [lightColors]);
 
     return (
-        <div
-            onMouseEnter={() => { setHoveredIndex(i); setHoveredData(tooltip); }}
-            onMouseLeave={() => { setHoveredIndex(null); setHoveredData(null); }}
-            className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
-        >
-            <div className="relative shrink-0">
-                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
-                    <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt={itemName} />
-                </div>
-                <input
-                    type="number"
-                    min="0" max="100"
-                    value={localQuality}
-                    onChange={(e) => setLocalQuality(e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, '품질', localQuality)}
-                    className={`absolute -bottom-1 -right-1 w-7 px-0.5 rounded-md text-[10px] font-black border border-zinc-700 bg-zinc-900 text-center focus:outline-none focus:ring-1 focus:ring-yellow-500
-                    ${getQualityColor(Number(localQuality))} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors`}
-                />
+        /* 전체 컨테이너: min-h를 240px로 대폭 줄이고 패딩을 p-6으로 조정 */
+        <div className="relative w-full max-w-8xl mx-auto min-h-[240px] bg-[#0c0e12] text-white p-6 overflow-hidden rounded-2xl border border-white/5 group shadow-2xl">
+
+            {/* 배경 눈 내리는 효과 (투명도 조절) */}
+            <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-30">
+                <div className="absolute inset-[-100px] animate-snow-fast brightness-[200%]"
+                     style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/stardust.png')", backgroundSize: '600px' }} />
             </div>
 
-            <div className="flex-1 min-w-0">
-                <h3 className={`font-bold text-[12px] truncate mb-1 ${theme.text}`}>{itemName}</h3>
+            {/* 캐릭터 이미지: 크기와 위치를 슬림한 높이에 맞춰 재조정 */}
+            <div className="absolute right-[-2%] top-[-15%] w-[500px] h-[130%] z-0 animate-soft-float">
+                <div className="relative w-full h-full">
+                    <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-[#0c0e12] via-[#0c0e12]/70 to-transparent z-10" />
+                    <img src={character.CharacterImage} alt={character.CharacterName} className="w-full h-full object-cover object-top opacity-85 contrast-[1.05]" />
+                </div>
+            </div>
+
+            {/* 메인 콘텐츠: flex 레이아웃으로 간격 최적화 */}
+            <div className="relative z-10 flex flex-col justify-between h-full min-h-[190px]">
+
+                {/* 1. 상단 라벨 라인 */}
                 <div className="flex items-center gap-2">
-                    <select
-                        className="bg-zinc-800 text-white/70 text-[10px] px-2 py-0.5 rounded border border-zinc-700 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer scrollbar-hide"
-                        value={`${selectedOption.tier}-${selectedOption.value}`}
-                        onChange={(e) => {
-                            const [tier, val] = e.target.value.split('-');
-                            const found = REINFORCE_OPTIONS.find(opt => opt.tier === Number(tier) && opt.value === Number(val));
-                            if (found) {
-                                setSelectedOption(found); // 여기서 상태가 변경되면 위 useEffect는 실행되지 않아야 함
-                            }
-                        }}
-                    >
-                        {REINFORCE_OPTIONS.map(opt => (
-                            <option
-                                key={`${opt.tier}-${opt.value}`}
-                                value={`${opt.tier}-${opt.value}`}
-                                className="bg-zinc-900 text-white"
-                            >
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
+                    <span className="bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                        {character.ServerName}
+                    </span>
+                    <span className="bg-white/5 px-2 py-0.5 rounded text-[10px] font-bold text-zinc-400 border border-white/10">
+                        {character.CharacterClassName}
+                    </span>
+                    {character.GuildName && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md">
+                            <Users size={10} className="text-zinc-500" />
+                            <span className="text-[10px] font-bold text-zinc-300">
+                                {character.GuildName} <span className="opacity-50 ml-0.5 text-[9px]">{character.GuildMemberGrade}</span>
+                            </span>
+                        </div>
+                    )}
+                </div>
 
-                       <div className="flex items-center gap-1 bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 focus-within:border-sky-500 transition-colors">
-                                            <span className="text-sky-400 text-[10px] font-bold">상재</span>
-                                            <input
-                                                type="number"
-                                                min="0" max="20"
-                                                value={localAdv}
-                                                onChange={(e) => setLocalAdv(e.target.value)}
-                                                onKeyDown={(e) => handleKeyDown(e, '상재', localAdv)}
-                                                className="w-5 bg-transparent text-sky-400 text-[10px] font-bold focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
-                                            />
-                                        </div>
+                {/* 2. 중앙 이름 및 주요 스탯 섹션 */}
+                <div className="mt-3">
+                    {/* 칭호 영역: 텍스트 및 아이콘 크기 축소 */}
+                    <div className="flex items-center gap-1 mb-0.5">
+                        <GripVertical size={14} className={`${iconName ? 'text-pink-500/50' : 'text-zinc-600'}`} />
+                        {iconName && (
+                            <img
+                                src={`https://cdn-lostark.game.onstove.com/2018/obt/assets/images/common/emoticon/${iconName}.png`}
+                                alt="title-icon"
+                                className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(255,20,147,0.3)]"
+                                onError={(e) => (e.currentTarget.style.display = 'none')}
+                            />
+                        )}
+                        <span className={`text-sm font-bold tracking-widest leading-none ${iconName ? 'text-pink-300' : 'text-zinc-500'}`}>
+                            {text}
+                        </span>
+                    </div>
+
+                    {/* 이름: text-5xl -> text-3xl */}
+                    <h1 className="text-3xl font-black tracking-tighter mb-4 drop-shadow-lg">
+                        {character.CharacterName}
+                    </h1>
+
+                    <div className="flex items-center gap-8">
+                        {/* 레벨 표시 */}
+                        <div className="flex items-center gap-2 border-r border-white/10 pr-8 font-black italic">
+                            <Trophy size={16} className="text-amber-500" />
+                            <span className="text-xl text-white">Lv.{character.CharacterLevel}</span>
+                        </div>
+                        {/* 전투 특성 */}
+                        <div className="flex items-center gap-6">
+                            <SlimStat icon={<Target className="text-orange-400" />} label="치명" value={getStat("치명")} />
+                            <SlimStat icon={<Flame className="text-rose-400" />} label="특화" value={getStat("특화")} />
+                            <SlimStat icon={<Zap className="text-cyan-400" />} label="신속" value={getStat("신속")} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. 하단 요약 스탯 섹션 */}
+                <div className="flex justify-between items-end mt-4">
+                    <div className="flex gap-10">
+                        <SimpleStat label="아이템 레벨" value={character.ItemAvgLevel} icon={<Shield />} />
+                        <SimpleStat label="전투력" value={character.CombatPower} color="text-rose-500" icon={<Swords />} />
+                        <SimpleStat label="원정대" value={`Lv.${character.ExpeditionLevel}`} icon={<Zap />} />
+                    </div>
                 </div>
             </div>
+
+            {/* 하단 글로우 광원 (범위 및 블러 조절) */}
+            <div className="absolute -bottom-1/3 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-light-pulse"
+                 style={{ width: '130%', height: '100%', background: `radial-gradient(circle at center, ${randomColor} 0%, transparent 45%)`, mixBlendMode: 'screen', filter: 'blur(100px)' }} />
+
+            <style>{`
+                @keyframes snow-vertical { 0% { background-position: 0px 0px; } 100% { background-position: 50px 1000px; } }
+                .animate-snow-fast { animation: snow-vertical 20s linear infinite; }
+                @keyframes light-pulse { 0%, 100% { opacity: 0.4; transform: translate(-50%, 0) scale(1); } 50% { opacity: 0.7; transform: translate(-50%, -5%) scale(1.05); } }
+                .animate-light-pulse { animation: light-pulse 10s ease-in-out infinite; }
+                @keyframes soft-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+                .animate-soft-float { animation: soft-float 8s ease-in-out infinite; }
+            `}</style>
         </div>
     );
 };

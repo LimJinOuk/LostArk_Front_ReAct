@@ -328,15 +328,15 @@ export const CombatTab = ({ character }: { character: any }) => {
 
     /* ================= 렌더 ================= */
     return (
-        <div className="flex flex-col gap-6 p-4 text-zinc-300 min-h-screen max-w-[1200px] mx-auto">
+        <div className="flex flex-col-2 gap-6 p-4 bg-[#0f0f0f] text-zinc-300 min-h-screen max-w-[1600px] mx-auto">
 
             {/* 왼쪽 섹션: 장비 & 각인 & 아크패시브 */}
-            <div className="flex-1 min-w-0 space-y-6">
-                <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-4 items-stretch bg-[#121213] p-5 rounded-2xl border border-white/5">
+            <div className="flex-1 min-w-0 space-y-10">
+                <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-6 items-start bg-[#121213] p-6 rounded-2xl border border-white/5">
                     {/* 왼쪽: 전투 장비 Section (가로 너비 유지) */}
                     <div className="w-full lg:w-[38%] flex flex-col shrink-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
+                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
                             <h1 className="text-base font-extrabold text-white tracking-tight uppercase">전투 장비</h1>
                         </div>
 
@@ -385,7 +385,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                  setHoveredIndex(null);
                                                  setHoveredData(null);
                                              }}
-                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
+                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
                                         >
                                             {/* 아이콘 영역 */}
                                             <div className="relative shrink-0">
@@ -431,7 +431,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                     {/* [오른쪽: 액세서리 Section] 여유 공간 확보 */}
                     <div className="w-full lg:flex-1 flex flex-col min-w-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
+                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
                             <h1 className="text-base font-extrabold text-white tracking-tight uppercase">악세사리</h1>
                         </div>
 
@@ -485,7 +485,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                  setAccHoverIdx(null);
                                                  setAccHoverData(null);
                                              }}
-                                        className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help min-w-0 min-w-0">
+                                        className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help min-w-0 min-w-0">
 
                                             {/* 아이콘 및 품질 (툴팁 기준점) */}
                                             <div className="relative shrink-0">
@@ -579,28 +579,193 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     );
                                 })}
 
-                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[62px] text-[10px]">
+                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[72px] text-[10px]">
                                 팔찌 효율 계산 행
                             </div>
                         </div>
                     </div>
                 </section>
 
+                {/*====================보석 시작=============================*/}
+                <section className="mt-10 w-full flex flex-col items-center px-4 select-none">
+                    {/* 1. 헤더 */}
+                    <div className="w-full max-w-3xl flex items-center justify-between border-b border-zinc-800/50 pb-2 mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-1 h-4 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
+                            <h1 className="text-base font-extrabold text-zinc-200 tracking-tight uppercase">보석</h1>
+                        </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                        {/* 미니멀 고스트 배지 디자인 적용 */}
+                        <div className="flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-sm">
+                            <div className="w-1 h-3 bg-sky-400 rounded-full"></div>
+                            <span className="text-[12px] text-[#efeff0] font-semibold tracking-tight leading-none truncate max-w-[200px] md:max-w-none">
+                {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
+            </span>
+                        </div>
+                    </div>
 
-                    {/* [좌측 박스] 아크 그리드 섹션 */}
-                    <section className="bg-[#121213] pt-5 pb-2 px-5 rounded-2xl border border-white/5 shadow-2xl flex flex-col h-fit">
+                    {/* 2. 메인 보드 */}
+                    <div className="relative w-full max-w-2xl rounded-[40px] border border-white/5 flex items-center justify-center min-h-[280px] md:min-h-[280px] overflow-visible shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+                         style={{
+                             background: `radial-gradient(circle at center, #1a202c 0%, #0d1117 40%, #05070a 100%)`,
+                         }}>
+
+                        {/* 배경 특수 효과 */}
+                        <div className="absolute inset-0 z-0 pointer-events-none rounded-[40px] overflow-hidden">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.15)_0%,_transparent_70%)] animate-pulse" />
+                            <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg_at_50%_50%,_transparent_0%,_rgba(139,92,246,0.08)_15%,_transparent_30%,_rgba(56,189,248,0.08)_60%,_transparent_100%)] animate-[spin_25s_linear_infinite]" />
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.4)_100%)]" />
+                        </div>
+
+                        {/* 3. 보석 배치 */}
+                        <div className="relative z-10 flex flex-col items-center gap-2 transform scale-[0.85] sm:scale-100 transition-all duration-500">
+                            {/* 1행 */}
+                            <div className="flex items-center gap-12 md:gap-20 mb-1">
+                                <div className="flex gap-3">
+                                    {[0, 1].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
+                                </div>
+                                <div className="flex gap-3">
+                                    {[2, 3].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 2행 */}
+                            <div className="flex items-center justify-center gap-4 md:gap-6 -mt-1 relative">
+                                <GemSlot gem={gems?.Gems?.[4]} index={4} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-blue-500/20 blur-[40px] rounded-full scale-150 animate-pulse"></div>
+                                    <GemSlot gem={gems?.Gems?.[5]} index={5} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} isCenter={true} />
+                                </div>
+                                <GemSlot gem={gems?.Gems?.[6]} index={6} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                            </div>
+
+                            {/* 3행 */}
+                            <div className="flex items-center gap-12 md:gap-20 -mt-1">
+                                <div className="flex gap-3">
+                                    {[7, 8].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
+                                </div>
+                                <div className="flex gap-3">
+                                    {[9, 10].map(idx => (
+                                        <GemSlot key={idx} gem={gems?.Gems?.[idx]} index={idx} hoverIdx={jewlryHoverIdx} hoverData={jewlryHoverData} setHoverIdx={setJewlryHoverIdx} setHoverData={setJewlryHoverData} />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                {/* [우측] 장착 카드 섹션 (가로 정렬) */}
+                <section className="flex-1 space-y-4">
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                        <div className="flex items-center gap-2">
+
+                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
+                                카드
+                            </h1>
+
+                            {selectedCard && (
+                                <span className="text-[10px] text-orange-500 font-bold animate-pulse">
+                                    ● {selectedCard} 상세 보기 중
+                                </span>
+                            )}
+                        </div>
+                        {cards?.Effects?.[0] && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-zinc-500 font-medium">
+                                    {cards.Effects[0].Items[cards.Effects[0].Items.length - 1].Name.split(' 6세트')[0]}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 카드 6종 그리드 */}
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                        {cards?.Cards.map((card, idx) => {
+                            const isSelected = selectedCard === card.Name;
+                            return (
+                                <div
+                                    key={idx}
+                                    onClick={() => setSelectedCard(isSelected ? null : card.Name)}
+                                    className={`cursor-pointer rounded border transition-all duration-200 overflow-hidden group ${
+                                        isSelected
+                                            ? 'border-orange-500 ring-2 ring-orange-500/20 translate-y-[-4px]'
+                                            : 'border-white/5 hover:border-white/20 hover:translate-y-[-2px]'
+                                    }`}
+                                >
+                                    <div className="relative aspect-[3/4] bg-zinc-900 overflow-hidden">
+                                        <img
+                                            src={card.Icon}
+                                            className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}
+                                            alt=""
+                                        />
+                                        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
+                                            {[...Array(5)].map((_, i) => (
+                                                <div key={i} className={`w-1.5 h-1.5 rounded-full border-[1px] border-black/40 ${
+                                                    i < card.AwakeCount ? 'bg-yellow-400 shadow-[0_0_4px_#fbbf24]' : 'bg-zinc-800'
+                                                }`} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className={`p-1.5 text-center transition-colors ${isSelected ? 'bg-orange-600 text-white' : 'bg-[#1c1c1c] text-zinc-400'}`}>
+                                        <p className="text-[11px] font-bold truncate">{card.Name}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* 카드 세트 효과 요약 배너 (조건부 렌더링) */}
+                    <div className="min-h-[100px] transition-all duration-300">
+                        {selectedCard ? (
+                            <div className="p-4 bg-gradient-to-br from-orange-500/10 to-zinc-900/50 rounded border border-orange-500/20 animate-in fade-in slide-in-from-top-2">
+                                <h3 className="text-[12px] text-orange-400 font-black mb-3 flex items-center gap-2">
+                                    <span className="w-1.5 h-3.5 bg-orange-500 rounded-sm"></span>
+                                    {cards?.Effects[0]?.Items[0].Name.split(' 2세트')[0]} 세트 효과
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                                    {cards?.Effects[0]?.Items.map((item: any, i: number) => (
+                                        <div key={i} className="flex flex-col py-1.5 border-b border-white/5">
+                                            <span className="text-[11px] text-orange-300/80 font-bold mb-0.5">{item.Name}</span>
+                                            <span className="text-[12px] text-zinc-200 leading-relaxed font-medium">{item.Description}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            /* 카드를 선택하지 않았을 때 보여줄 가이드 문구 */
+                            <div className="h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
+                                <p className="text-zinc-500 text-sm font-medium">카드를 클릭하면 상세 세트 효과를 확인할 수 있습니다.</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+                {/* ================= 아바타 섹션 수정 끝 ================= */}
+            </div>
+
+
+            {/* 오른쪽 섹션: 장비 & 각인 & 아크패시브 */}
+
+            <div className="flex-1 min-w-0 flex flex-col space-y-10">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#121213] p-6 rounded-xl border border-white/5 items-stretch">
+                    {/* 왼쪽: 코어 섹션 */}
+                    <section className="flex flex-col">
                         {/* 타이틀 영역 */}
-                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
-                            <h1 className="text-[15px] font-extrabold text-white tracking-tight uppercase">
+                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-2">
+                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
                                 아크 그리드
                             </h1>
                         </div>
 
-                        {/* 6행 1열 레이아웃 */}
-                        <div className="flex flex-col gap-0.5 mb-0">
+                        {/* 6행 1열 레이아웃: p-0 또는 p-1 등으로 왼쪽 여백 최소화 */}
+                        <div className="flex flex-col">
                             {arkGrid?.Slots?.map((slot, i) => {
                                 const nameParts = slot.Name.split(/\s*:\s*/);
                                 const category = nameParts[0];
@@ -613,11 +778,13 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 else if (rawGrade.includes('전설')) currentGrade = '전설';
                                 else if (rawGrade.includes('영웅')) currentGrade = '영웅';
 
+                                // 등급에 따른 테마 가져오기
                                 const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
 
                                 return (
                                     <div key={i}
-                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-all h-[62px] cursor-help px-2 pl-0"
+                                        // p-1.5로 줄여서 전체적으로 왼쪽으로 더 붙임
+                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors h-[72px] cursor-help"
                                          onMouseEnter={() => {
                                              setArkCoreHoverIdx(i);
                                              const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
@@ -628,12 +795,16 @@ export const CombatTab = ({ character }: { character: any }) => {
                                              setArkCoreHoverData(null);
                                          }}
                                     >
-                                        {/* 아이콘 영역 */}
+                                        {/* [좌측] 아이콘 영역 */}
                                         <div className="relative shrink-0">
+                                            {/* 아이콘 배경: 고대 등급 고정 */}
                                             <div className={`w-12 h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
-                                    bg-gradient-to-br ${theme.bg} overflow-hidden
-                                    border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
+                                            bg-gradient-to-br ${theme.bg} overflow-hidden
+                                            border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
+
                                                 <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
+
+                                                {/* 젬 장착 표시: 등급에 맞는 색상(theme.accent) 적용 */}
                                                 {slot.Gems?.length > 0 && (
                                                     <div className={`absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
                                                         <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
@@ -641,10 +812,13 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                 )}
                                             </div>
 
-                                            {/* 툴팁 모달 (박스 밖으로 표시되도록 z-index 확보) */}
+                                            {/* 툴팁 모달 */}
                                             {arkCoreHoverIdx === i && arkCoreHoverData && (
-                                                <div className="absolute left-full top-0 z-[100] pl-3 pointer-events-none">
-                                                    <div className="animate-in fade-in slide-in-from-left-2 duration-200">
+                                                <div
+                                                    className="absolute left-full top-0 z-[9999] pointer-events-auto flex items-start"
+                                                    style={{ paddingLeft: '12px', width: 'max-content' }}
+                                                >
+                                                    <div className="animate-in fade-in slide-in-from-left-1 duration-200">
                                                         <ArkCoreTooltip
                                                             data={arkCoreHoverData.core}
                                                             Gems={arkCoreHoverData.gems}
@@ -654,9 +828,9 @@ export const CombatTab = ({ character }: { character: any }) => {
                                             )}
                                         </div>
 
-                                        {/* 텍스트 정보 */}
+                                        {/* [중앙] 텍스트 정보: 간격 gap-3으로 왼쪽으로 당김 */}
                                         <div className="flex-1 min-w-0">
-                                            <div className={`text-[10.5px] font-bold leading-tight opacity-80 ${theme.text}`}>
+                                            <div className="text-[11px] font-bold text-sky-400/90 leading-tight">
                                                 {category}
                                             </div>
                                             <div className={`text-[13px] font-extrabold mt-0.5 truncate ${theme.text}`}>
@@ -664,30 +838,29 @@ export const CombatTab = ({ character }: { character: any }) => {
                                             </div>
                                         </div>
 
-                                        {/* 포인트 정보 */}
-                                        <div className="shrink-0 text-right">
-                                    <span className="text-[14px] font-black text-white/90 tracking-tighter">
-                                        {slot.Point}P
-                                    </span>
+                                        {/* [우측] 포인트 정보 */}
+                                        <div className="shrink-0 text-right pr-1">
+                        <span className="text-[14px] font-black text-[#f18c2d] tracking-tighter">
+                            {slot.Point}P
+                        </span>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
                     </section>
-
-                    {/* [우측 박스] 젬 효과 섹션 */}
-                    <section className="bg-[#121213] p-6 rounded-2xl border border-white/5 shadow-2xl flex flex-col h-full">
-                        {/* 타이틀 영역 */}
+                    {/* 오른쪽: 젬 효과 섹션 */}
+                    <section className="flex flex-col border-l border-zinc-800/30 md:pl-8">
+                        {/* 타이틀 영역 높이 통일 */}
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
-                            <h1 className="text-[15px] font-extrabold text-white tracking-tight uppercase">
+                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
                                 젬 효과
                             </h1>
                         </div>
 
                         {/* 젬 효과 리스트 */}
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-5">
                             {arkGrid?.Effects?.map((effect, i) => {
                                 const cleanText = effect.Tooltip
                                     .replace(/<[^>]*>?/gm, '')
@@ -698,15 +871,13 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 const val = cleanText.substring(splitPos + 1);
 
                                 return (
-                                    <div key={i} className="flex flex-col gap-1 px-1">
-                                        <div className="flex items-center justify-between">
+                                    <div key={i} className="flex flex-col leading-snug">
+                                        <div className="flex items-center gap-2">
                                             <span className="text-zinc-100 font-bold text-[13px]">{effect.Name}</span>
-                                            <span className="bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400 text-[10px] font-black tracking-widest uppercase">
-                                        Lv.{effect.Level}
-                                    </span>
+                                            <span className="text-zinc-500 text-[11px] font-bold">Lv.{effect.Level}</span>
                                         </div>
-                                        <div className="text-[12px] text-zinc-400 font-medium leading-relaxed">
-                                            {desc} <span className="text-[#ffd200] font-bold ml-1">{val}</span>
+                                        <div className="text-[12px] text-zinc-400 font-medium">
+                                            {desc} <span className="text-[#ffd200] font-bold">{val}</span>
                                         </div>
                                     </div>
                                 );
@@ -716,10 +887,10 @@ export const CombatTab = ({ character }: { character: any }) => {
                 </div>
 
 
-
-                <section className="bg-[#121213] rounded-xl border border-white/5 p-6 shadow-2xl">
-                    <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-2 mb-2">
-                        <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
+                {/* ✅ 여기만 교체됨: 활성 각인 (아크 패시브) 1열 N행 */}
+                <section className="bg-[#121213] rounded-xl border border-white/5 p-6 space-y-6 shadow-2xl">
+                    <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
+                        <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
                         <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
                             활성 각인
                         </h1>
@@ -735,7 +906,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                             return (
                                 <div
                                     key={i}
-                                    className="relative flex items-center justify-between px-2 py-1 rounded-sm group transition-all duration-200 cursor-default hover:bg-white/[0.02]"
+                                    className="relative flex items-center justify-between px-4 py-2 rounded-sm group transition-all duration-200 cursor-default hover:bg-white/[0.02]"
                                     onMouseEnter={() => {
                                         setEngrHoverIdx(i);
                                         setEngrHoverName(eng.Name || null);
@@ -758,7 +929,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                         </div>
 
                                         {/* 2. 단계 표시 */}
-                                        <div className="flex items-center gap-1.5 mr-4">
+                                        <div className="flex items-center gap-1.5 mr-5">
                                             <Diamond
                                                 size={14}
                                                 className="text-[#f16022] fill-[#f16022] drop-shadow-[0_0_5px_rgba(241,96,34,0.5)]"
@@ -828,87 +999,8 @@ export const CombatTab = ({ character }: { character: any }) => {
                             );
                         })}
                     </div>
+
                 </section>
-                {/* [우측] 장착 카드 섹션 (가로 정렬) */}
-                <section className="flex-1 space-y-4">
-                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
-                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
-                                카드
-                            </h1>
-
-                        </div>
-                        {cards?.Effects?.[0] && (
-                            <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500 font-medium">
-                    {cards.Effects[0].Items[cards.Effects[0].Items.length - 1].Name.split(' 6세트')[0]}
-                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 카드 6종 그리드 */}
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                        {cards?.Cards.map((card, idx) => {
-                            const isSelected = selectedCard === card.Name;
-                            return (
-                                <div
-                                    key={idx}
-                                    onClick={() => setSelectedCard(isSelected ? null : card.Name)}
-                                    className={`cursor-pointer rounded border transition-all duration-200 overflow-hidden group ${
-                                        isSelected
-                                            ? 'border-orange-500 ring-2 ring-orange-500/20 translate-y-[-4px]'
-                                            : 'border-white/5 hover:border-white/20 hover:translate-y-[-2px]'
-                                    }`}
-                                >
-                                    <div className="relative aspect-[3/4] bg-zinc-900 overflow-hidden">
-                                        <img
-                                            src={card.Icon}
-                                            className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}
-                                            alt=""
-                                        />
-                                        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
-                                            {[...Array(5)].map((_, i) => (
-                                                <div key={i} className={`w-1.5 h-1.5 rounded-full border-[1px] border-black/40 ${
-                                                    i < card.AwakeCount ? 'bg-yellow-400 shadow-[0_0_4px_#fbbf24]' : 'bg-zinc-800'
-                                                }`} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className={`p-1.5 text-center transition-colors ${isSelected ? 'bg-orange-600 text-white' : 'bg-[#1c1c1c] text-zinc-400'}`}>
-                                        <p className="text-[11px] font-bold truncate">{card.Name}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* 카드 세트 효과 요약 배너 (항상 표시되도록 수정) */}
-                    <div className="min-h-[100px]">
-                        <div className={`p-4 bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded border transition-all duration-300 ${selectedCard ? 'border-orange-500/40 bg-orange-500/5' : 'border-white/5'}`}>
-                            <h3 className="text-[12px] text-orange-400 font-black mb-3 flex items-center gap-2">
-                                <span className={`w-1.5 h-3.5 rounded-sm transition-colors ${selectedCard ? 'bg-orange-500' : 'bg-zinc-600'}`}></span>
-                                {cards?.Effects[0]?.Items[0].Name.split(' 2세트')[0]} 세트 효과 요약
-                            </h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                                {cards?.Effects[0]?.Items.map((item: any, i: number) => (
-                                    <div key={i} className="flex flex-col py-1.5 border-b border-white/5 last:border-0">
-                                        <span className="text-[11px] text-orange-300/80 font-bold mb-0.5">{item.Name}</span>
-                                        <span className="text-[11.5px] text-zinc-200 leading-relaxed font-medium">{item.Description}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                {/* ================= 아바타 섹션 수정 끝 ================= */}
-            </div>
-
-
-            {/* 오른쪽 섹션: 장비 & 각인 & 아크패시브 */}
-            <div className="flex-1 min-w-0 flex flex-col space-y-10">
                 {/* ================= 아바타 섹션 수정 시작 ================= */}
                 <section className="bg-[#121213] rounded-xl border border-white/5 p-6 space-y-6 shadow-2xl">
                     {/* 데이터 처리 및 본체 전용 합산 로직 */}
@@ -943,7 +1035,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 {/* 헤더 부분 */}
                                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
+                                        <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
                                         <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
                                             아바타
                                         </h1>
