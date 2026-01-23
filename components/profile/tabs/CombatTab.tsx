@@ -619,7 +619,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                             <h1 className="text-lg font-extrabold text-white tracking-tight uppercase">
                                 보석
                             </h1>
-                        </div>z
+                        </div>
                         <div className="text-[10px] md:text-[12px] bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full border border-blue-500/20 font-black shadow-[0_0_10px_rgba(59,130,246,0.2)] whitespace-nowrap">
                             {gems?.Effects?.Description?.replace(/<[^>]*>?/gm, '').trim() || "정보 없음"}
                         </div>
