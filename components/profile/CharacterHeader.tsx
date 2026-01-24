@@ -44,7 +44,7 @@ export const CharacterHeader = ({ character }: { character: any }) => {
                 <div className="relative w-full h-full">
                     <div className="absolute inset-y-0 left-0 w-64 bg-gradient-to-r from-[#0c0e12] via-[#0c0e12]/80 to-transparent z-10" />
                     <img src={character.CharacterImage} alt={character.CharacterName}
-                         className="w-full h-full object-cover object-top contrast-[1.1] animate-soft-float scale-[1.1]" />
+                         className="w-full h-full object-cover object-top contrast-[1.1]" />
                 </div>
             </div>
 
@@ -111,7 +111,7 @@ export const CharacterHeader = ({ character }: { character: any }) => {
                 @keyframes snow-vertical { 0% { background-position: 0px 0px; } 100% { background-position: 50px 1000px; } }
                 .animate-snow-fast { animation: snow-vertical 16s linear infinite; }
                 .animate-light-pulse { animation: light-pulse 8s ease-in-out infinite; }
-                @keyframes light-pulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
+                @keyframes light-pulse { 0%, 100% { opacity: 0.9; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
                 .animate-soft-float { animation: soft-float 6s ease-in-out infinite; }
                 @keyframes soft-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
             `}</style>

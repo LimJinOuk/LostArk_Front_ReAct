@@ -74,9 +74,7 @@ const JewelryTooltip = ({ gemData }: { gemData: any }) => {
     const rawEffect = effectSection?.value?.Element_001 || "";
     const [mainEffectRaw, additionalEffectRaw] = rawEffect.split("추가 효과");
     const mainEffects = mainEffectRaw.split('\n').map(cleanText).filter(Boolean);
-    console.log("mainEffects: ",mainEffects);
     const additionalEffect = cleanText(additionalEffectRaw);
-    console.log("additionalEffect",additionalEffect);
 
     return (
         <div className="w-[340px] bg-[#1c1e23] border border-[#4d4d4d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-sm overflow-hidden text-[13px] font-sans text-left">

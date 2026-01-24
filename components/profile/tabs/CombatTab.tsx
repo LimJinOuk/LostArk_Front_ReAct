@@ -336,7 +336,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                     {/* 왼쪽: 전투 장비 Section (가로 너비 유지) */}
                     <div className="w-full lg:w-[38%] flex flex-col shrink-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
                             <h1 className="text-base font-extrabold text-white tracking-tight uppercase">전투 장비</h1>
                         </div>
 
@@ -431,7 +431,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                     {/* [오른쪽: 액세서리 Section] 여유 공간 확보 */}
                     <div className="w-full lg:flex-1 flex flex-col min-w-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
                             <h1 className="text-base font-extrabold text-white tracking-tight uppercase">악세사리</h1>
                         </div>
 
@@ -586,6 +586,250 @@ export const CombatTab = ({ character }: { character: any }) => {
                     </div>
                 </section>
 
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+
+                    {/* [좌측 박스] 아크 그리드 섹션 */}
+                    <section className="bg-[#121213] pt-5 pb-2 px-5 rounded-2xl border border-white/5 shadow-2xl flex flex-col h-fit">
+                        {/* 타이틀 영역 */}
+                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1">
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
+                            <h1 className="text-[15px] font-extrabold text-white tracking-tight uppercase">
+                                아크 그리드
+                            </h1>
+                        </div>
+
+                        {/* 6행 1열 레이아웃 */}
+                        <div className="flex flex-col gap-0.5 mb-0">
+                            {arkGrid?.Slots?.map((slot, i) => {
+                                const nameParts = slot.Name.split(/\s*:\s*/);
+                                const category = nameParts[0];
+                                const subName = nameParts[1];
+
+                                const rawGrade = (slot.Grade || "").trim();
+                                let currentGrade = "일반";
+                                if (rawGrade.includes('고대')) currentGrade = '고대';
+                                else if (rawGrade.includes('유물')) currentGrade = '유물';
+                                else if (rawGrade.includes('전설')) currentGrade = '전설';
+                                else if (rawGrade.includes('영웅')) currentGrade = '영웅';
+
+                                const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
+
+                                return (
+                                    <div key={i}
+                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-all h-[62px] cursor-help px-2 pl-0"
+                                         onMouseEnter={() => {
+                                             setArkCoreHoverIdx(i);
+                                             const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
+                                             setArkCoreHoverData({ core: parsedTooltip, gems: slot.Gems });
+                                         }}
+                                         onMouseLeave={() => {
+                                             setArkCoreHoverIdx(null);
+                                             setArkCoreHoverData(null);
+                                         }}
+                                    >
+                                        {/* 아이콘 영역 */}
+                                        <div className="relative shrink-0">
+                                            <div className={`w-12 h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
+                                    bg-gradient-to-br ${theme.bg} overflow-hidden
+                                    border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
+                                                <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
+                                                {slot.Gems?.length > 0 && (
+                                                    <div className={`absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
+                                                        <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* 툴팁 모달 (박스 밖으로 표시되도록 z-index 확보) */}
+                                            {arkCoreHoverIdx === i && arkCoreHoverData && (
+                                                <div className="absolute left-full top-0 z-[100] pl-3 pointer-events-none">
+                                                    <div className="animate-in fade-in slide-in-from-left-2 duration-200">
+                                                        <ArkCoreTooltip
+                                                            data={arkCoreHoverData.core}
+                                                            Gems={arkCoreHoverData.gems}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 텍스트 정보 */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className={`text-[10.5px] font-bold leading-tight opacity-80 ${theme.text}`}>
+                                                {category}
+                                            </div>
+                                            <div className={`text-[13px] font-extrabold mt-0.5 truncate ${theme.text}`}>
+                                                {subName}
+                                            </div>
+                                        </div>
+
+                                        {/* 포인트 정보 */}
+                                        <div className="shrink-0 text-right">
+                                    <span className="text-[14px] font-black text-white/90 tracking-tighter">
+                                        {slot.Point}P
+                                    </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+
+                    {/* [우측 박스] 젬 효과 섹션 */}
+                    <section className="bg-[#121213] p-6 rounded-2xl border border-white/5 shadow-2xl flex flex-col h-full">
+                        {/* 타이틀 영역 */}
+                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
+                            <h1 className="text-[15px] font-extrabold text-white tracking-tight uppercase">
+                                젬 효과
+                            </h1>
+                        </div>
+
+                        {/* 젬 효과 리스트 */}
+                        <div className="flex flex-col gap-4">
+                            {arkGrid?.Effects?.map((effect, i) => {
+                                const cleanText = effect.Tooltip
+                                    .replace(/<[^>]*>?/gm, '')
+                                    .replace(/\s*\+\s*$/, '');
+
+                                const splitPos = cleanText.lastIndexOf(' +');
+                                const desc = cleanText.substring(0, splitPos);
+                                const val = cleanText.substring(splitPos + 1);
+
+                                return (
+                                    <div key={i} className="flex flex-col gap-1 px-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-zinc-100 font-bold text-[13.5px]">{effect.Name}</span>
+                                            <span className="bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400 text-[10px] font-black tracking-widest uppercase">
+                                        Lv.{effect.Level}
+                                    </span>
+                                        </div>
+                                        <div className="text-[12.5px] text-zinc-400 font-medium leading-relaxed">
+                                            {desc} <span className="text-[#ffd200] font-bold ml-1">{val}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                </div>
+
+
+
+                <section className="bg-[#121213] rounded-xl border border-white/5 p-6 shadow-2xl">
+                    <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-2 mb-2">
+                        <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
+                        <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
+                            활성 각인
+                        </h1>
+                    </div>
+
+                    <div className="flex flex-col gap-0.5">
+                        {(engravings?.ArkPassiveEffects ?? []).map((eng, i) => {
+                            const n = typeof eng.Level === "number" ? eng.Level : 0;
+                            const m = typeof eng.AbilityStoneLevel === "number" ? eng.AbilityStoneLevel : 0;
+                            const iconUrl = getEngravingIconUrl(eng.Name);
+                            const stoneIcon = eng.AbilityStoneIcon || FALLBACK_ABILITY_STONE_ICON;
+
+                            return (
+                                <div
+                                    key={i}
+                                    className="relative flex items-center justify-between px-2 py-1 rounded-sm group transition-all duration-200 cursor-default hover:bg-white/[0.02]"
+                                    onMouseEnter={() => {
+                                        setEngrHoverIdx(i);
+                                        setEngrHoverName(eng.Name || null);
+                                        setEngrHoverDesc(eng.Description || "");
+                                    }}
+                                    onMouseLeave={() => {
+                                        setEngrHoverIdx(null);
+                                        setEngrHoverName(null);
+                                        setEngrHoverDesc("");
+                                    }}
+                                >
+                                    <div className="flex items-center min-w-0">
+                                        {/* 1. 각인 원형 아이콘 */}
+                                        <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-black/60 mr-4 border border-[#3e444d]">
+                                            <img
+                                                src={iconUrl}
+                                                alt={eng.Name}
+                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                            />
+                                        </div>
+
+                                        {/* 2. 단계 표시 */}
+                                        <div className="flex items-center gap-1.5 mr-4">
+                                            <Diamond
+                                                size={14}
+                                                className="text-[#f16022] fill-[#f16022] drop-shadow-[0_0_5px_rgba(241,96,34,0.5)]"
+                                            />
+                                            <span className="text-[#a8a8a8] text-sm font-medium">x</span>
+                                            <span className="text-white text-base font-bold leading-none tabular-nums">{n}</span>
+                                        </div>
+
+                                        {/* 3. 각인명 + (이름 옆 툴팁 앵커) */}
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            {/* ✅ 이름 래퍼를 relative로 만들고, 여기서 툴팁을 '옆'에 띄움 */}
+                                            <div className="relative min-w-0">
+                                                <span className="text-[#efeff0] font-bold text-[14px] tracking-tight truncate">
+                                                    {eng.Name}
+                                                </span>
+
+                                                {/* ✅ 이름 옆 툴팁 */}
+                                                {engrHoverIdx === i && engrHoverDesc && (
+                                                    <div
+                                                        className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-[9999]"
+                                                        onMouseEnter={() => setEngrHoverIdx(i)}
+                                                        onMouseLeave={() => {
+                                                            setEngrHoverIdx(null);
+                                                            setEngrHoverName(null);
+                                                            setEngrHoverDesc("");
+                                                        }}
+                                                    >
+                                                        <div className="w-[380px] max-w-[60vw] rounded-xl border border-white/10 bg-[#0b0c10]/95 shadow-2xl backdrop-blur-md p-4 animate-in fade-in zoom-in-95 duration-150">
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-9 h-9 rounded-lg overflow-hidden border border-white/10 bg-black/40 shrink-0">
+                                                                    <img src={iconUrl} alt="" className="w-full h-full object-cover" />
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <div className="text-[13px] font-black text-white mb-1 truncate">
+                                                                        {engrHoverName}
+                                                                    </div>
+                                                                    <div
+                                                                        className="text-[12px] leading-relaxed text-zinc-200"
+                                                                        dangerouslySetInnerHTML={{
+                                                                            __html: engravingDescToHtml(engrHoverDesc),
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* 스톤 레벨 */}
+                                            {m > 0 && (
+                                                <div className="flex items-center gap-1.5 ml-2">
+                                                    <img
+                                                        src={stoneIcon}
+                                                        alt="Stone"
+                                                        className="w-4 h-5 object-contain brightness-125"
+                                                    />
+                                                    <div className="flex items-baseline gap-0.5">
+                                                        <span className="text-[#5e666f] text-[11px] font-bold">Lv.</span>
+                                                        <span className="text-[#00ccff] text-[17px] font-black">{m}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                </section>
                 {/*====================보석 시작=============================*/}
                 <section className="mt-10 w-full flex flex-col items-center px-4 select-none">
                     {/* 1. 헤더 */}
@@ -663,23 +907,17 @@ export const CombatTab = ({ character }: { character: any }) => {
                 <section className="flex-1 space-y-4">
                     <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
                         <div className="flex items-center gap-2">
-
-                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
                             <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
                                 카드
                             </h1>
 
-                            {selectedCard && (
-                                <span className="text-[10px] text-orange-500 font-bold animate-pulse">
-                                    ● {selectedCard} 상세 보기 중
-                                </span>
-                            )}
                         </div>
                         {cards?.Effects?.[0] && (
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-zinc-500 font-medium">
-                                    {cards.Effects[0].Items[cards.Effects[0].Items.length - 1].Name.split(' 6세트')[0]}
-                                </span>
+                <span className="text-xs text-zinc-500 font-medium">
+                    {cards.Effects[0].Items[cards.Effects[0].Items.length - 1].Name.split(' 6세트')[0]}
+                </span>
                             </div>
                         )}
                     </div>
@@ -720,29 +958,23 @@ export const CombatTab = ({ character }: { character: any }) => {
                         })}
                     </div>
 
-                    {/* 카드 세트 효과 요약 배너 (조건부 렌더링) */}
-                    <div className="min-h-[100px] transition-all duration-300">
-                        {selectedCard ? (
-                            <div className="p-4 bg-gradient-to-br from-orange-500/10 to-zinc-900/50 rounded border border-orange-500/20 animate-in fade-in slide-in-from-top-2">
-                                <h3 className="text-[12px] text-orange-400 font-black mb-3 flex items-center gap-2">
-                                    <span className="w-1.5 h-3.5 bg-orange-500 rounded-sm"></span>
-                                    {cards?.Effects[0]?.Items[0].Name.split(' 2세트')[0]} 세트 효과
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                                    {cards?.Effects[0]?.Items.map((item: any, i: number) => (
-                                        <div key={i} className="flex flex-col py-1.5 border-b border-white/5">
-                                            <span className="text-[11px] text-orange-300/80 font-bold mb-0.5">{item.Name}</span>
-                                            <span className="text-[12px] text-zinc-200 leading-relaxed font-medium">{item.Description}</span>
-                                        </div>
-                                    ))}
-                                </div>
+                    {/* 카드 세트 효과 요약 배너 (항상 표시되도록 수정) */}
+                    <div className="min-h-[100px]">
+                        <div className={`p-4 bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded border transition-all duration-300 ${selectedCard ? 'border-orange-500/40 bg-orange-500/5' : 'border-white/5'}`}>
+                            <h3 className="text-[12px] text-orange-400 font-black mb-3 flex items-center gap-2">
+                                <span className={`w-1.5 h-3.5 rounded-sm transition-colors ${selectedCard ? 'bg-orange-500' : 'bg-zinc-600'}`}></span>
+                                {cards?.Effects[0]?.Items[0].Name.split(' 2세트')[0]} 세트 효과 요약
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                                {cards?.Effects[0]?.Items.map((item: any, i: number) => (
+                                    <div key={i} className="flex flex-col py-1.5 border-b border-white/5 last:border-0">
+                                        <span className="text-[11px] text-orange-300/80 font-bold mb-0.5">{item.Name}</span>
+                                        <span className="text-[11.5px] text-zinc-200 leading-relaxed font-medium">{item.Description}</span>
+                                    </div>
+                                ))}
                             </div>
-                        ) : (
-                            /* 카드를 선택하지 않았을 때 보여줄 가이드 문구 */
-                            <div className="h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-                                <p className="text-zinc-500 text-sm font-medium">카드를 클릭하면 상세 세트 효과를 확인할 수 있습니다.</p>
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </section>
                 {/* ================= 아바타 섹션 수정 끝 ================= */}
@@ -750,257 +982,7 @@ export const CombatTab = ({ character }: { character: any }) => {
 
 
             {/* 오른쪽 섹션: 장비 & 각인 & 아크패시브 */}
-
             <div className="flex-1 min-w-0 flex flex-col space-y-10">
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-[#121213] p-6 rounded-xl border border-white/5 items-stretch">
-                    {/* 왼쪽: 코어 섹션 */}
-                    <section className="flex flex-col">
-                        {/* 타이틀 영역 */}
-                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-2">
-                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
-                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
-                                아크 그리드
-                            </h1>
-                        </div>
-
-                        {/* 6행 1열 레이아웃: p-0 또는 p-1 등으로 왼쪽 여백 최소화 */}
-                        <div className="flex flex-col">
-                            {arkGrid?.Slots?.map((slot, i) => {
-                                const nameParts = slot.Name.split(/\s*:\s*/);
-                                const category = nameParts[0];
-                                const subName = nameParts[1];
-
-                                const rawGrade = (slot.Grade || "").trim();
-                                let currentGrade = "일반";
-                                if (rawGrade.includes('고대')) currentGrade = '고대';
-                                else if (rawGrade.includes('유물')) currentGrade = '유물';
-                                else if (rawGrade.includes('전설')) currentGrade = '전설';
-                                else if (rawGrade.includes('영웅')) currentGrade = '영웅';
-
-                                // 등급에 따른 테마 가져오기
-                                const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
-
-                                return (
-                                    <div key={i}
-                                        // p-1.5로 줄여서 전체적으로 왼쪽으로 더 붙임
-                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
-                                         onMouseEnter={() => {
-                                             setArkCoreHoverIdx(i);
-                                             const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
-                                             setArkCoreHoverData({ core: parsedTooltip, gems: slot.Gems });
-                                         }}
-                                         onMouseLeave={() => {
-                                             setArkCoreHoverIdx(null);
-                                             setArkCoreHoverData(null);
-                                         }}
-                                    >
-                                        {/* [좌측] 아이콘 영역 */}
-                                        <div className="relative shrink-0">
-                                            {/* 아이콘 배경: 고대 등급 고정 */}
-                                            <div className={`w-12 h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
-                                            bg-gradient-to-br ${theme.bg} overflow-hidden
-                                            border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
-
-                                                <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
-
-                                                {/* 젬 장착 표시: 등급에 맞는 색상(theme.accent) 적용 */}
-                                                {slot.Gems?.length > 0 && (
-                                                    <div className={`absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
-                                                        <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* 툴팁 모달 */}
-                                            {arkCoreHoverIdx === i && arkCoreHoverData && (
-                                                <div
-                                                    className="absolute left-full top-0 z-[9999] pointer-events-auto flex items-start"
-                                                    style={{ paddingLeft: '12px', width: 'max-content' }}
-                                                >
-                                                    <div className="animate-in fade-in slide-in-from-left-1 duration-200">
-                                                        <ArkCoreTooltip
-                                                            data={arkCoreHoverData.core}
-                                                            Gems={arkCoreHoverData.gems}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* [중앙] 텍스트 정보: 간격 gap-3으로 왼쪽으로 당김 */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-[11px] font-bold text-sky-400/90 leading-tight">
-                                                {category}
-                                            </div>
-                                            <div className={`text-[13px] font-extrabold mt-0.5 truncate ${theme.text}`}>
-                                                {subName}
-                                            </div>
-                                        </div>
-
-                                        {/* [우측] 포인트 정보 */}
-                                        <div className="shrink-0 text-right pr-1">
-                        <span className="text-[14px] font-black text-[#f18c2d] tracking-tighter">
-                            {slot.Point}P
-                        </span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </section>
-                    {/* 오른쪽: 젬 효과 섹션 */}
-                    <section className="flex flex-col border-l border-zinc-800/30 md:pl-8">
-                        {/* 타이틀 영역 높이 통일 */}
-                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
-                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
-                                젬 효과
-                            </h1>
-                        </div>
-
-                        {/* 젬 효과 리스트 */}
-                        <div className="flex flex-col gap-5">
-                            {arkGrid?.Effects?.map((effect, i) => {
-                                const cleanText = effect.Tooltip
-                                    .replace(/<[^>]*>?/gm, '')
-                                    .replace(/\s*\+\s*$/, '');
-
-                                const splitPos = cleanText.lastIndexOf(' +');
-                                const desc = cleanText.substring(0, splitPos);
-                                const val = cleanText.substring(splitPos + 1);
-
-                                return (
-                                    <div key={i} className="flex flex-col leading-snug">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-zinc-100 font-bold text-[13px]">{effect.Name}</span>
-                                            <span className="text-zinc-500 text-[11px] font-bold">Lv.{effect.Level}</span>
-                                        </div>
-                                        <div className="text-[12px] text-zinc-400 font-medium">
-                                            {desc} <span className="text-[#ffd200] font-bold">{val}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </section>
-                </div>
-
-
-                {/* ✅ 여기만 교체됨: 활성 각인 (아크 패시브) 1열 N행 */}
-                <section className="bg-[#121213] rounded-xl border border-white/5 p-6 space-y-6 shadow-2xl">
-                    <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                        <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
-                        <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
-                            활성 각인
-                        </h1>
-                    </div>
-
-                    <div className="flex flex-col gap-0.5">
-                        {(engravings?.ArkPassiveEffects ?? []).map((eng, i) => {
-                            const n = typeof eng.Level === "number" ? eng.Level : 0;
-                            const m = typeof eng.AbilityStoneLevel === "number" ? eng.AbilityStoneLevel : 0;
-                            const iconUrl = getEngravingIconUrl(eng.Name);
-                            const stoneIcon = eng.AbilityStoneIcon || FALLBACK_ABILITY_STONE_ICON;
-
-                            return (
-                                <div
-                                    key={i}
-                                    className="relative flex items-center justify-between px-4 py-2 rounded-sm group transition-all duration-200 cursor-default hover:bg-white/[0.02]"
-                                    onMouseEnter={() => {
-                                        setEngrHoverIdx(i);
-                                        setEngrHoverName(eng.Name || null);
-                                        setEngrHoverDesc(eng.Description || "");
-                                    }}
-                                    onMouseLeave={() => {
-                                        setEngrHoverIdx(null);
-                                        setEngrHoverName(null);
-                                        setEngrHoverDesc("");
-                                    }}
-                                >
-                                    <div className="flex items-center min-w-0">
-                                        {/* 1. 각인 원형 아이콘 */}
-                                        <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-black/60 mr-4 border border-[#3e444d]">
-                                            <img
-                                                src={iconUrl}
-                                                alt={eng.Name}
-                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                            />
-                                        </div>
-
-                                        {/* 2. 단계 표시 */}
-                                        <div className="flex items-center gap-1.5 mr-5">
-                                            <Diamond
-                                                size={14}
-                                                className="text-[#f16022] fill-[#f16022] drop-shadow-[0_0_5px_rgba(241,96,34,0.5)]"
-                                            />
-                                            <span className="text-[#a8a8a8] text-sm font-medium">x</span>
-                                            <span className="text-white text-base font-bold leading-none tabular-nums">{n}</span>
-                                        </div>
-
-                                        {/* 3. 각인명 + (이름 옆 툴팁 앵커) */}
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            {/* ✅ 이름 래퍼를 relative로 만들고, 여기서 툴팁을 '옆'에 띄움 */}
-                                            <div className="relative min-w-0">
-                                                <span className="text-[#efeff0] font-bold text-[14px] tracking-tight truncate">
-                                                    {eng.Name}
-                                                </span>
-
-                                                {/* ✅ 이름 옆 툴팁 */}
-                                                {engrHoverIdx === i && engrHoverDesc && (
-                                                    <div
-                                                        className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-[9999]"
-                                                        onMouseEnter={() => setEngrHoverIdx(i)}
-                                                        onMouseLeave={() => {
-                                                            setEngrHoverIdx(null);
-                                                            setEngrHoverName(null);
-                                                            setEngrHoverDesc("");
-                                                        }}
-                                                    >
-                                                        <div className="w-[380px] max-w-[60vw] rounded-xl border border-white/10 bg-[#0b0c10]/95 shadow-2xl backdrop-blur-md p-4 animate-in fade-in zoom-in-95 duration-150">
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="w-9 h-9 rounded-lg overflow-hidden border border-white/10 bg-black/40 shrink-0">
-                                                                    <img src={iconUrl} alt="" className="w-full h-full object-cover" />
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <div className="text-[13px] font-black text-white mb-1 truncate">
-                                                                        {engrHoverName}
-                                                                    </div>
-                                                                    <div
-                                                                        className="text-[12px] leading-relaxed text-zinc-200"
-                                                                        dangerouslySetInnerHTML={{
-                                                                            __html: engravingDescToHtml(engrHoverDesc),
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* 스톤 레벨 */}
-                                            {m > 0 && (
-                                                <div className="flex items-center gap-1.5 ml-2">
-                                                    <img
-                                                        src={stoneIcon}
-                                                        alt="Stone"
-                                                        className="w-4 h-5 object-contain brightness-125"
-                                                    />
-                                                    <div className="flex items-baseline gap-0.5">
-                                                        <span className="text-[#5e666f] text-[11px] font-bold">Lv.</span>
-                                                        <span className="text-[#00ccff] text-[17px] font-black">{m}</span>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                </section>
                 {/* ================= 아바타 섹션 수정 시작 ================= */}
                 <section className="bg-[#121213] rounded-xl border border-white/5 p-6 space-y-6 shadow-2xl">
                     {/* 데이터 처리 및 본체 전용 합산 로직 */}
@@ -1035,7 +1017,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 {/* 헤더 부분 */}
                                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-1.5 h-5 bg-purple-500 rounded-full"></div>
+                                        <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
                                         <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
                                             아바타
                                         </h1>

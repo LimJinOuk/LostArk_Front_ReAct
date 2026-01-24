@@ -9,6 +9,7 @@ import { CombatTab } from './tabs/CombatTab';
 import { SkillTab } from "@/components/profile/tabs/SkillTab.tsx";
 import { ArkPassiveTab } from "@/components/profile/tabs/ArkPassiveTab.tsx";
 import { CharacterDetailTab } from "@/components/profile/tabs/CharacterDetailTab.tsx";
+import {Jewely} from "@/components/profile/Jewerly.tsx";
 
 
 export const CharacterCard: React.FC<{
@@ -58,6 +59,11 @@ export const CharacterCard: React.FC<{
                         onSimulator={goToSimulator}
                     />
                 </div>
+
+                {/* 3. 보석 정보: 패딩(p-3) 제거 및 테두리 정렬 */}
+                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
+                    <Jewely character={character} />
+                </div>
             </aside>
 
             {/* [우측 구역]: 정보들이 나열되는 곳 (flex-1로 남은 공간 전체 활용) */}
@@ -74,11 +80,7 @@ export const CharacterCard: React.FC<{
                     </motion.div>
                 </AnimatePresence>
 
-                {/* 하단 추가 정보 그리드 */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                    <div className="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50">추가 정보 A</div>
-                    <div className="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50">추가 정보 B</div>
-                </div>
+
             </main>
         </div>
     );

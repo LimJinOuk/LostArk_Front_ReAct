@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-
 // 레이아웃 및 컴포넌트
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import { SidebarAds } from './components/layout/SidebarAds';
 import { FloatingBanner } from './components/layout/FloatingBanner';
+import {Sidebar} from  './components/layout/SideMenuBar';
 
 // 페이지 컴포넌트
 import HomePage from './pages/HomePage';
@@ -52,6 +52,11 @@ export default function App() {
               theme={theme}
               setTheme={setTheme}
               setIsMenuOpen={setIsMenuOpen}
+          />
+          {/* 사이드바 컴포넌트 삽입 */}
+          <Sidebar
+              isOpen={isMenuOpen}
+              onClose={() => setIsMenuOpen(false)}
           />
           //width를 max-w-[2190px]에서 조절
           <div className="pt-20 pb-10 px-16 mx-auto flex gap-8 transition-all duration-500 max-w-[1920]px]">

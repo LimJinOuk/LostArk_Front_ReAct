@@ -143,7 +143,7 @@ export const CharacterDetailTab = ({ character }: CharacterDetailTabProps) => {
                         <div className="h-[1px] flex-1 bg-gradient-to-r from-zinc-500/40 to-transparent" />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 gap-2"> {/* 1열 고정 및 박스 간 간격 축소 */}
                         <AnimatePresence>
                             {characters.map((item) => {
                                 const isCurrent = item.CharacterName === character?.CharacterName;
@@ -152,51 +152,58 @@ export const CharacterDetailTab = ({ character }: CharacterDetailTabProps) => {
                                 return (
                                     <motion.div
                                         key={item.CharacterName}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
                                         onClick={() => !isCurrent && navigate(`/profilePage?name=${encodeURIComponent(item.CharacterName)}`)}
-                                        className={`group relative overflow-hidden rounded-2xl border p-4 transition-all duration-300
-                                            ${isCurrent
-                                            ? `bg-white/[0.05] ${grade.border} ${grade.glow} ring-1 ring-white/10`
-                                            : 'bg-white/[0.02] border-white/[0.05] backdrop-blur-sm hover:bg-white/[0.06] hover:border-white/20 cursor-pointer'}`}
+                                        className={`group relative overflow-hidden rounded-xl border px-4 py-2 transition-all duration-300
+                        ${isCurrent
+                                            ? `bg-white/[0.07] ${grade.border} ${grade.glow} ring-1 ring-white/10`
+                                            : 'bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.06] hover:border-white/20 cursor-pointer'}`}
                                     >
-                                        <div className="relative z-10 flex flex-col h-full">
-                                            <div className="flex items-center gap-3">
+                                        <div className="relative z-10 flex items-center justify-between gap-4">
+                                            {/* [좌측] 캐릭터 기본 정보 */}
+                                            <div className="flex items-center gap-3 min-w-0 flex-1">
                                                 <div className="shrink-0">
                                                     <img
                                                         src={CLASS_ICON_MAP[item.CharacterClassName] || DEFAULT_ICON}
                                                         alt=""
-                                                        className={`w-11 h-11 rounded-full border p-0.5 bg-black/40
-                                                            ${isCurrent ? grade.border : 'border-white/10'}`}
+                                                        className={`w-8 h-8 rounded-full border p-0.5 bg-black/40
+                                        ${isCurrent ? grade.border : 'border-white/10'}`}
                                                     />
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-1.5 leading-tight">
-                                                        <h4 className={`text-[15px] font-black truncate ${isCurrent ? 'text-white' : 'text-zinc-200'}`}>
+                                                <div className="flex items-baseline gap-3 min-w-0">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <h4 className={`text-[14px] font-black truncate ${isCurrent ? 'text-white' : 'text-zinc-200'}`}>
                                                             {item.CharacterName}
                                                         </h4>
                                                         {isCurrent && <Sparkles size={12} className="text-purple-400 shrink-0" />}
                                                     </div>
-                                                    <p className="text-[11px] font-bold text-zinc-500 mt-0.5">
+                                                    <p className="text-[11px] font-bold text-zinc-500 whitespace-nowrap">
                                                         {item.CharacterClassName} <span className="text-zinc-800 px-1">|</span> Lv.{item.CharacterLevel}
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            <div className="mt-4 pt-3 border-t border-white/[0.05] flex items-center justify-between">
+                                            {/* [우측] 레벨 및 이동 아이콘 */}
+                                            <div className="flex items-center gap-4 shrink-0">
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`p-1.5 rounded-lg ${grade.bg} ${grade.text}`}>
-                                                        <Trophy size={14} fill="currentColor" fillOpacity={0.2} />
+                                                    <div className={`p-1 rounded-md ${grade.bg} ${grade.text}`}>
+                                                        <Trophy size={12} fill="currentColor" fillOpacity={0.2} />
                                                     </div>
-                                                    <span className={`text-lg font-black tracking-tighter ${grade.text}`}>
-                                                        {item.ItemAvgLevel}
-                                                    </span>
+                                                    <span className={`text-[15px] font-black tracking-tighter ${grade.text}`}>
+                                    {item.ItemAvgLevel}
+                                </span>
                                                 </div>
                                                 {!isCurrent && (
-                                                    <ChevronRight size={16} className="text-zinc-600 group-hover:text-white transition-colors" />
+                                                    <ChevronRight size={16} className="text-zinc-700 group-hover:text-white transition-colors" />
                                                 )}
                                             </div>
                                         </div>
+
+                                        {/* 현재 캐릭터일 경우 우측 끝에 아주 얇은 강조 선 추가 */}
+                                        {isCurrent && (
+                                            <div className={`absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b ${grade.bg}`} />
+                                        )}
                                     </motion.div>
                                 );
                             })}

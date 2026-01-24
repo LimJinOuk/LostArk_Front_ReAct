@@ -96,22 +96,22 @@ export const ArkPassiveTab = ({ character }: { character: any }) => {
         <span className="text-zinc-500 text-sm font-medium tracking-widest animate-pulse">ARCHIVE LOADING...</span></div>;
 
     return (
-        <div className="w-full bg-[#0d0d0f] text-zinc-300 p-8 space-y-4 font-sans relative overflow-hidden rounded-2xl shadow-2xl border border-white/5">
+        <div className="w-full bg-[#0d0d0f] text-zinc-300 p-2 space-y-1 font-sans relative overflow-hidden rounded-2xl shadow-2xl border border-white/5">
             {/* 상단 앰비언트 라이트 (모션 포함) */}
             <motion.div
                 animate={{ backgroundColor: activeTab === '진화' ? '#3b82f6' : activeTab === '깨달음' ? '#a855f7' : '#f59e0b' }}
-                className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[600px] h-[300px] blur-[120px] opacity-[0.07] pointer-events-none transition-colors duration-1000"
+                className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[400px] h-[300px] blur-[120px] opacity-[0.07] pointer-events-none transition-colors duration-1000"
             />
 
             {/* 헤더 부위: 탭 & 포인트 */}
-            <div className="relative z-10 flex flex-col items-center gap-4">
+            <div className="relative z-10 flex flex-col items-center gap-3">
                 {/* 탭 네비게이션 */}
                 <div className="inline-flex p-1.5 bg-black/40 backdrop-blur-xl rounded-xl border border-white/5 shadow-2xl">
                     {TABS.map((tab) => (
                         <button
                             key={tab}
                             onClick={() => handleTabChange(tab)}
-                            className={`relative px-8 py-2 rounded-lg text-sm font-bold transition-all duration-500 overflow-hidden
+                            className={`relative px-8 py-2 rounded-lg text-xs font-bold transition-all duration-500 overflow-hidden
                                 ${activeTab === tab ? theme.color : 'text-zinc-500 hover:text-zinc-300'}`}
                         >
                             {activeTab === tab && (
@@ -133,7 +133,7 @@ export const ArkPassiveTab = ({ character }: { character: any }) => {
                             className="flex items-center gap-3"
                         >
                             <div className="flex items-baseline gap-1.5">
-                                <span className={`text-5xl font-black tracking-tighter ${theme.color} drop-shadow-2xl`}>
+                                <span className={`text-3xl font-black tracking-tighter ${theme.color} drop-shadow-2xl`}>
                                     {data?.Points?.find((p: any) => p.Name === activeTab)?.Value || 0}
                                 </span>
                                 <span className="text-2xl font-bold text-zinc-700">/</span>
@@ -141,7 +141,7 @@ export const ArkPassiveTab = ({ character }: { character: any }) => {
                                     {activeTab === "진화" ? 140 : activeTab === "깨달음" ? 101 : 70}
                                 </span>
                             </div>
-                            <div className={`relative z-10 translate-y-[10px] flex items-center gap-2.5 px-3.5 py-1 rounded-lg border-t border-white/10 shadow-lg ${theme.bg} ${theme.border} backdrop-blur-md relative overflow-hidden`}>
+                            <div className={`relative z-10 translate-y-[2px] flex items-center gap-2.5 px-3.5 py-1 rounded-lg relative overflow-hidden`}>
                                 {/* translate-y-[-4px] 값을 조절하여 1px 단위로 세밀하게 이동 가능합니다 */}
                                 <div className={`absolute inset-0 opacity-20 bg-gradient-to-tr from-transparent via-white/5 to-white/10`} />
                                 <span className={`relative z-10 text-[12px] font-black tracking-widest uppercase ${theme.color}`}>
@@ -169,14 +169,14 @@ export const ArkPassiveTab = ({ character }: { character: any }) => {
                             const tierNodes = currentMaster.filter(m => Number(m.tier) === tierNum);
                             if (tierNodes.length === 0) return null;
                             return (
-                                <div key={tierNum} className="flex items-stretch w-full min-h-[140px] border-white/[0.02] last:border-0 group">
+                                <div key={tierNum} className="flex items-stretch w-full min-h-[120px] border-white/[0.02] last:border-0 group">
                                     {/* 티어 표시 */}
-                                    <div className="flex flex-col items-center justify-center w-24 shrink-0 from-transparent to-white/[0.01]">
-                                        <span className="text-3xl font-black text-zinc-500 group-hover:text-zinc-300 transition-colors">{tierNum}</span>
+                                    <div className="flex flex-col items-center justify-center w-20 shrink-0 from-transparent to-white/[0.01]">
+                                        <span className="text-2xl font-black text-zinc-500 group-hover:text-zinc-300 transition-colors">{tierNum}</span>
                                     </div>
 
                                     {/* 노드 그리드 */}
-                                    <div className="flex-1 flex justify-center items-center gap-x-12 px-10">
+                                    <div className="flex-1 flex justify-center items-center gap-x-1 px-10">
                                         {tierNodes.map((node) => {
                                             const activeEffect = data?.Effects?.find((eff: any) =>
                                                 eff.Name?.includes(activeTab) &&
@@ -193,7 +193,7 @@ export const ArkPassiveTab = ({ character }: { character: any }) => {
                                                         whileTap={{ scale: 0.95 }}
                                                         className={`relative rounded-xl border-2 transition-all duration-500 
                                                             ${isActive ? `cursor-pointer ${theme.border} ${theme.shadow} bg-zinc-900 shadow-2xl` : 'grayscale opacity-20 border-white/5 bg-zinc-950 scale-90'}`}
-                                                        style={{ width: '60px', height: '60px' }}
+                                                        style={{ width: '50px', height: '50px' }}
                                                         onClick={() => isActive && setSelectedEffect(activeEffect)}
                                                         onMouseEnter={(e) => isActive && setHoverInfo({ effect: activeEffect, rect: e.currentTarget.getBoundingClientRect() })}
                                                         onMouseLeave={() => setHoverInfo(null)}
@@ -204,7 +204,7 @@ export const ArkPassiveTab = ({ character }: { character: any }) => {
                                                         {isActive && <div className={`absolute inset-0 blur-lg opacity-40 ${theme.bg}`} />}
                                                     </motion.div>
 
-                                                    <div className="mt-4 text-center w-full">
+                                                    <div className="mt-2 text-center w-full">
                                                         <p className={`text-[12px] font-bold leading-tight line-clamp-2 min-h-[20px] ${isActive ? 'text-zinc-100' : 'text-zinc-700'}`}>
                                                             {node.name}
                                                         </p>
@@ -214,11 +214,11 @@ export const ArkPassiveTab = ({ character }: { character: any }) => {
                                                             <motion.div
                                                                 initial={{ opacity: 0, y: 5 }}
                                                                 animate={{ opacity: 1, y: 0 }}
-                                                                className="flex flex-col items-center gap-1.5"
+                                                                className="flex flex-col items-center gap-0.5"
                                                             >
                                                                 {/* 랭크, 레벨 디자인 */}
                                                                 <div className="flex items-baseline gap-0.5">
-                                                                    <span className={`text-[12px] font-black tracking-tighter ${theme.color}`}>
+                                                                    <span className={`text-[10px] font-black tracking-tighter ${theme.color}`}>
                                                                         LV.{currentLv}
                                                                     </span>
                                                                     <span className="text-[9px] font-bold text-zinc-700">/</span>

@@ -29,156 +29,128 @@
 
 
 
-import React, { useMemo } from 'react';
-import { Shield, Swords, Zap, Target, Flame, Trophy, GripVertical, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import { CharacterInfo } from '../../types.ts';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
-// 1. 하위 컴포넌트: SlimStat (치명, 특화, 신속) - 크기 축소
-const SlimStat = ({ icon, label, value }: any) => (
-    <div className="flex flex-col gap-0.5">
-        <div className="flex items-center gap-1.5">
-            {React.cloneElement(icon as React.ReactElement, { size: 12 })}
-            <span className="text-[10px] text-zinc-500 font-bold tracking-tight">{label}</span>
-        </div>
-        <span className="text-lg font-black leading-none">{value}</span>
-    </div>
-);
+import { CharacterHeader } from './CharacterHeader';
+import { TabNavigation } from './TabNavigation';
+import { CombatTab } from './tabs/CombatTab';
+import { SkillTab } from "@/components/profile/tabs/SkillTab.tsx";
+import { ArkPassiveTab } from "@/components/profile/tabs/ArkPassiveTab.tsx";
+import { CharacterDetailTab } from "@/components/profile/tabs/CharacterDetailTab.tsx";
+import {Jewely} from "@/components/profile/Jewerly.tsx";
 
-// 2. 하위 컴포넌트: SimpleStat (아이템 레벨, 전투력 등) - 크기 축소
-const SimpleStat = ({ label, value, icon, color = "text-white" }: any) => (
-    <div className="flex flex-col gap-1.5">
-        <div className="flex items-center gap-1.5 text-zinc-500">
-            {React.cloneElement(icon as React.ReactElement, { size: 18 })}
-            <span className="text-[10px] font-black tracking-widest uppercase">{label}</span>
-        </div>
-        <span className={`text-xl font-[1000] tracking-tighter ${color} leading-none`}>{value}</span>
-    </div>
-);
 
-// 칭호 파싱 함수
-const parseTitle = (titleStr: string) => {
-    if (!titleStr) return { iconName: null, text: "원정대의 희망" };
-    const imgMatch = titleStr.match(/src='([^']+)'/);
-    const iconName = imgMatch ? imgMatch[1] : null;
-    const pureText = titleStr.replace(/<[^>]*>?/gm, '').replace(/<\/?[^>]+(>|$)/g, "").trim();
-    return { iconName, text: pureText };
-};
+export const CharacterCard: React.FC<{
+    character: CharacterInfo;
+    characterName: string;
+    onUpdate: () => void; // ✅ ProfilePage의 handleUpdateClick
+}> = ({ character, characterName, onUpdate }) => {
+    const [activeTab, setActiveTab] = useState('전투');
+    const navigate = useNavigate();
 
-// 3. 메인 컴포넌트
-export const CharacterHeader = ({ character }: { character: any }) => {
-    const { iconName, text } = useMemo(() => parseTitle(character.Title), [character.Title]);
-    const stats = character.Stats || [];
-    const getStat = (type: string) => stats.find((s: any) => s.Type === type)?.Value || "-";
+    const goToSimulator = () => {
+        const name = (characterName || '').trim();
+        if (!name) {
+            navigate('/simulatorPage');
+            return;
+        }
+        navigate(`/simulatorPage?name=${encodeURIComponent(name)}`);
+    };
 
-    const lightColors = useMemo(
-        () => [
-            'rgba(168, 85, 247, 0.45)', 'rgba(232, 103, 50, 0.45)',
-            'rgba(30, 58, 138, 0.6)', 'rgba(16, 185, 129, 0.4)',
-            'rgba(244, 63, 94, 0.45)', 'rgba(6, 182, 212, 0.45)',
-        ],
-        []
-    );
-
-    const randomColor = useMemo(() => lightColors[Math.floor(Math.random() * lightColors.length)], [lightColors]);
+    const renderContent = () => {
+        switch (activeTab) {
+            case '전투': return <CombatTab character={character} />;
+            case '스킬': return <SkillTab character={character} />;
+            case '아크 패시브': return <ArkPassiveTab character={character} />;
+            case '캐릭터': return <CharacterDetailTab character={character}/>;
+            default: return <CombatTab character={character} />;
+        }
+    };
 
     return (
-        /* 전체 컨테이너: min-h를 240px로 대폭 줄이고 패딩을 p-6으로 조정 */
-        <div className="relative w-full max-w-8xl mx-auto min-h-[240px] bg-[#0c0e12] text-white p-6 overflow-hidden rounded-2xl border border-white/5 group shadow-2xl">
+        /* 전체 컨테이너 gap을 8(32px)로 늘려 좌우 구분을 더 명확히 함 */
+        <div className="flex flex-col lg:flex-row gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 w-full">
 
-            {/* 배경 눈 내리는 효과 (투명도 조절) */}
-            <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden opacity-30">
-                <div className="absolute inset-[-100px] animate-snow-fast brightness-[200%]"
-                     style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/stardust.png')", backgroundSize: '600px' }} />
-            </div>
-
-            {/* 캐릭터 이미지: 크기와 위치를 슬림한 높이에 맞춰 재조정 */}
-            <div className="absolute right-[-2%] top-[-15%] w-[500px] h-[130%] z-0 animate-soft-float">
-                <div className="relative w-full h-full">
-                    <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-[#0c0e12] via-[#0c0e12]/70 to-transparent z-10" />
-                    <img src={character.CharacterImage} alt={character.CharacterName} className="w-full h-full object-cover object-top opacity-85 contrast-[1.05]" />
-                </div>
-            </div>
-
-            {/* 메인 콘텐츠: flex 레이아웃으로 간격 최적화 */}
-            <div className="relative z-10 flex flex-col justify-between h-full min-h-[190px]">
-
-                {/* 1. 상단 라벨 라인 */}
-                <div className="flex items-center gap-2">
-                    <span className="bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
-                        {character.ServerName}
-                    </span>
-                    <span className="bg-white/5 px-2 py-0.5 rounded text-[10px] font-bold text-zinc-400 border border-white/10">
-                        {character.CharacterClassName}
-                    </span>
-                    {character.GuildName && (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md">
-                            <Users size={10} className="text-zinc-500" />
-                            <span className="text-[10px] font-bold text-zinc-300">
-                                {character.GuildName} <span className="opacity-50 ml-0.5 text-[9px]">{character.GuildMemberGrade}</span>
-                            </span>
-                        </div>
-                    )}
+            {/* [좌측 구역]: 너비를 420px로 확장 */}
+            <aside className="w-full lg:w-[420px] shrink-0 lg:sticky lg:top-24 h-fit space-y-5">
+                {/* 1. 캐릭터 아이콘/헤더 */}
+                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
+                    <CharacterHeader character={character} />
                 </div>
 
-                {/* 2. 중앙 이름 및 주요 스탯 섹션 */}
-                <div className="mt-3">
-                    {/* 칭호 영역: 텍스트 및 아이콘 크기 축소 */}
-                    <div className="flex items-center gap-1 mb-0.5">
-                        <GripVertical size={14} className={`${iconName ? 'text-pink-500/50' : 'text-zinc-600'}`} />
-                        {iconName && (
-                            <img
-                                src={`https://cdn-lostark.game.onstove.com/2018/obt/assets/images/common/emoticon/${iconName}.png`}
-                                alt="title-icon"
-                                className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(255,20,147,0.3)]"
-                                onError={(e) => (e.currentTarget.style.display = 'none')}
-                            />
-                        )}
-                        <span className={`text-sm font-bold tracking-widest leading-none ${iconName ? 'text-pink-300' : 'text-zinc-500'}`}>
-                            {text}
-                        </span>
-                    </div>
-
-                    {/* 이름: text-5xl -> text-3xl */}
-                    <h1 className="text-3xl font-black tracking-tighter mb-4 drop-shadow-lg">
-                        {character.CharacterName}
-                    </h1>
-
-                    <div className="flex items-center gap-8">
-                        {/* 레벨 표시 */}
-                        <div className="flex items-center gap-2 border-r border-white/10 pr-8 font-black italic">
-                            <Trophy size={16} className="text-amber-500" />
-                            <span className="text-xl text-white">Lv.{character.CharacterLevel}</span>
-                        </div>
-                        {/* 전투 특성 */}
-                        <div className="flex items-center gap-6">
-                            <SlimStat icon={<Target className="text-orange-400" />} label="치명" value={getStat("치명")} />
-                            <SlimStat icon={<Flame className="text-rose-400" />} label="특화" value={getStat("특화")} />
-                            <SlimStat icon={<Zap className="text-cyan-400" />} label="신속" value={getStat("신속")} />
-                        </div>
-                    </div>
+                {/* 2. 탭 네비게이션 */}
+                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 p-3 shadow-xl">
+                    <TabNavigation
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        onUpdate={onUpdate}
+                        onSimulator={goToSimulator}
+                    />
                 </div>
 
-                {/* 3. 하단 요약 스탯 섹션 */}
-                <div className="flex justify-between items-end mt-4">
-                    <div className="flex gap-10">
-                        <SimpleStat label="아이템 레벨" value={character.ItemAvgLevel} icon={<Shield />} />
-                        <SimpleStat label="전투력" value={character.CombatPower} color="text-rose-500" icon={<Swords />} />
-                        <SimpleStat label="원정대" value={`Lv.${character.ExpeditionLevel}`} icon={<Zap />} />
-                    </div>
+                {/* 3. 보석 정보: 패딩(p-3) 제거 및 테두리 정렬 */}
+                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
+                    <Jewely character={character} />
                 </div>
-            </div>
+            </aside>
 
-            {/* 하단 글로우 광원 (범위 및 블러 조절) */}
-            <div className="absolute -bottom-1/3 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-light-pulse"
-                 style={{ width: '130%', height: '100%', background: `radial-gradient(circle at center, ${randomColor} 0%, transparent 45%)`, mixBlendMode: 'screen', filter: 'blur(100px)' }} />
+            {/* [우측 구역]: 정보들이 나열되는 곳 (flex-1로 남은 공간 전체 활용) */}
+            <main className="flex-1 min-w-0 space-y-6">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, x: 20 }} // 좌우 구조이므로 옆에서 나타나는 효과가 더 세련됨
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="min-h-[600px]"
+                    >
+                        {renderContent()}
+                    </motion.div>
+                </AnimatePresence>
 
-            <style>{`
-                @keyframes snow-vertical { 0% { background-position: 0px 0px; } 100% { background-position: 50px 1000px; } }
-                .animate-snow-fast { animation: snow-vertical 20s linear infinite; }
-                @keyframes light-pulse { 0%, 100% { opacity: 0.4; transform: translate(-50%, 0) scale(1); } 50% { opacity: 0.7; transform: translate(-50%, -5%) scale(1.05); } }
-                .animate-light-pulse { animation: light-pulse 10s ease-in-out infinite; }
-                @keyframes soft-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-                .animate-soft-float { animation: soft-float 8s ease-in-out infinite; }
-            `}</style>
+                {/* 하단 추가 정보 그리드 */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <div className="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50">추가 정보 A</div>
+                    <div className="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50">추가 정보 B</div>
+                </div>
+            </main>
         </div>
     );
 };
+
+
+
+ {/* ✅ 이름 옆 툴팁 */}
+                                                {engrHoverIdx === i && engrHoverDesc && (
+                                                    <div
+                                                        className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-[9999]"
+                                                        onMouseEnter={() => setEngrHoverIdx(i)}
+                                                        onMouseLeave={() => {
+                                                            setEngrHoverIdx(null);
+                                                            setEngrHoverName(null);
+                                                            setEngrHoverDesc("");
+                                                        }}
+                                                    >
+                                                        <div className="w-[380px] max-w-[60vw] rounded-xl border border-white/10 bg-[#0b0c10]/95 shadow-2xl backdrop-blur-md p-4 animate-in fade-in zoom-in-95 duration-150">
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-9 h-9 rounded-lg overflow-hidden border border-white/10 bg-black/40 shrink-0">
+                                                                    <img src={iconUrl} alt="" className="w-full h-full object-cover" />
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <div className="text-[13px] font-black text-white mb-1 truncate">
+                                                                        {engrHoverName}
+                                                                    </div>
+                                                                    <div
+                                                                        className="text-[12px] leading-relaxed text-zinc-200"
+                                                                        dangerouslySetInnerHTML={{
+                                                                            __html: engravingDescToHtml(engrHoverDesc),
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
