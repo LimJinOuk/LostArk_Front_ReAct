@@ -10,7 +10,6 @@ const cleanText = (str: string) => {
         .trim();
 };
 
-// --- 연마 등급 기준표 적용 ---
 const thresholds: Record<string, { 상: number; 중: number; 하: number }> = {
     '추가 피해': { 상: 2.6, 중: 1.6, 하: 0.6 },
     '적에게 주는 피해': { 상: 2.0, 중: 1.2, 하: 0.55 },
@@ -43,7 +42,6 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
 
     const elements = Object.values(data) as any[];
 
-    // 데이터 추출
     const itemName = cleanText(data.Element_000?.value || "");
     const titleInfo = data.Element_001?.value || {};
     const quality = titleInfo.qualityValue ?? -1;
@@ -55,20 +53,18 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
     const bindingInfo = cleanText(data.Element_002?.value || "");
     const tradeInfo = cleanText(data.Element_003?.value || "").replace('|', '');
 
-    // 효과 섹션 탐색
     const baseEffectObj = elements.find((el: any) => el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000) === '기본 효과');
     const specialEffectObj = elements.find((el: any) => el?.type === 'ItemPartBox' && ["연마 효과", "팔찌 효과", "특수 효과", "추가 효과"].includes(cleanText(el?.value?.Element_000)));
     const arcPassiveObj = elements.find((el: any) => el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000).includes('아크 패시브'));
 
-    // 등급별 테마 (앞선 요청에 맞춘 고대 전용 색상)
+    // [수정] 헤더 테마 투명화
     const themes: any = {
-        '고대': { bg: 'from-[#3d3325] via-[#1a1a1c] to-[#111]', text: 'text-[#d6aa71]', border: 'border-[#d6aa71]/50' },
-        '유물': { bg: 'from-[#2a1a12] via-[#111] to-[#111]', text: 'text-[#e7a15d]', border: 'border-[#a6632d]/40' },
-        '전설': { bg: 'from-[#362e15] via-[#111] to-[#111]', text: 'text-[#f9ae00]', border: 'border-[#f9ae00]/30' },
+        '고대': { bg: 'from-[#3d3325]/60 to-transparent', text: 'text-[#d6aa71]', border: 'border-[#d6aa71]/50' },
+        '유물': { bg: 'from-[#2a1a12]/60 to-transparent', text: 'text-[#e7a15d]', border: 'border-[#a6632d]/40' },
+        '전설': { bg: 'from-[#362e15]/60 to-transparent', text: 'text-[#f9ae00]', border: 'border-[#f9ae00]/30' },
     };
     const theme = themes[itemGradeName] || themes['고대'];
 
-    // 연마 효과 텍스트 색상 판별 함수
     const renderGrindEffect = (text: string) => {
         const lines = text.split('\n');
         return lines.map((line, i) => {
@@ -84,7 +80,7 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
             else if (name === '무기 공격력') targetKey = isPercent ? '무기 공격력_PCT' : '무기 공격력_FIXED';
 
             const criteria = thresholds[targetKey];
-            let colorClass = "text-blue-400"; // 기본 색상 (하늘색)
+            let colorClass = "text-blue-400";
 
             if (criteria) {
                 if (value >= criteria.상) colorClass = "text-yellow-400 font-bold";
@@ -105,56 +101,57 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
     };
 
     return (
-        <div className={`z-[9999] w-[340px] bg-[#111111] border border-[#333] rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden font-sans ${className}`}>
+        <div
+            className={`z-[9999] w-[280px] border border-white/10 rounded-sm shadow-2xl backdrop-blur-md overflow-hidden font-sans ${className}`}
+            style={{ backgroundColor: 'rgba(17, 17, 17, 0.6)' }} // 확실한 60% 투명도 적용
+        >
             {/* 헤더 섹션 */}
-            <div className={`p-4 bg-gradient-to-br ${theme.bg} border-b border-white/5`}>
+            <div className={`p-2 bg-gradient-to-br ${theme.bg} border-b border-white/5`}>
                 <div className="flex gap-4 items-center">
-                    <div className="relative shrink-0 w-[58px] h-[58px]">
-                        <div className={`w-full h-full overflow-hidden rounded-md border-2 ${theme.border} bg-black`}>
+                    <div className="relative shrink-0 w-[50px] h-[50px]">
+                        <div className={`w-full h-full overflow-hidden rounded-md border-2 ${theme.border} bg-black/40`}>
                             <img src={itemIcon} className="w-full h-full object-cover" alt="" />
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h4 className={`text-[19px] font-bold leading-tight drop-shadow-md truncate ${theme.text}`}>
+                        <h4 className={`text-[14px] font-bold leading-tight drop-shadow-md truncate ${theme.text}`}>
                             {itemName}
                         </h4>
                         <div className="mt-1">
-                            <div className="text-[13px] font-medium text-[#c6c6c6]">{cleanText(itemGradeFull)}</div>
+                            <div className="text-[12px] font-medium text-white/60">{cleanText(itemGradeFull)}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="p-4 space-y-5 bg-[#111111]">
-                {/* 귀속/거래/레벨 정보 */}
+            {/* 본문 콘텐츠 영역 */}
+            <div className="p-3 space-y-3 bg-transparent">
                 <div className="space-y-1 pb-3 border-b border-white/5">
-                    <div className="text-[12px] text-[#a9a9a9]">{bindingInfo}</div>
-                    <div className="text-[12px] text-[#4cdfff] font-medium">{tradeInfo}</div>
-                    <div className="text-[13px] text-[#eee] font-medium pt-1">{itemLevelAndTier}</div>
+                    <div className="text-[11px] text-white/40">{bindingInfo}</div>
+                    <div className="text-[11px] text-[#4cdfff] font-medium">{tradeInfo}</div>
+                    <div className="text-[12px] text-white font-medium pt-1">{itemLevelAndTier}</div>
                     {arcPassiveObj && (
-                        <div className="text-[13px] font-bold text-[#ffcf4d]">{cleanText(arcPassiveObj.value.Element_001)}</div>
+                        <div className="text-[12px] font-bold text-[#ffcf4d]">{cleanText(arcPassiveObj.value.Element_001)}</div>
                     )}
                 </div>
 
-                {/* 품질 바 */}
                 {quality !== -1 && (
                     <div className="space-y-1">
                         <div className="flex justify-between items-end">
-                            <span className="text-[#a9a9a9] text-[12px]">품질</span>
-                            <span className="text-[14px] font-bold" style={{ color: getQualityColorHex(quality) }}>{quality}</span>
+                            <span className="text-white/40 text-[11px]">품질</span>
+                            <span className="text-[12px] font-bold" style={{ color: getQualityColorHex(quality) }}>{quality}</span>
                         </div>
-                        <div className="h-2 w-full bg-[#222] rounded-full overflow-hidden border border-black">
+                        <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
                             <div className="h-full transition-all duration-700" style={{ width: `${quality}%`, backgroundColor: getQualityColorHex(quality), boxShadow: `0 0 8px ${getQualityColorHex(quality)}80` }} />
                         </div>
                     </div>
                 )}
 
-                {/* 효과 정보 섹션 */}
-                <div className="space-y-5">
+                <div className="space-y-3">
                     {baseEffectObj?.value?.Element_001 && (
                         <div className="space-y-1">
-                            <div className="text-[#a9a9a9] text-[12px] font-bold">[기본 효과]</div>
-                            <div className="text-[#eee] text-[13px] leading-relaxed whitespace-pre-line font-medium">
+                            <div className="text-white/30 text-[11px] font-bold">[기본 효과]</div>
+                            <div className="text-white/90 text-[12px] leading-relaxed whitespace-pre-line font-medium">
                                 {cleanText(baseEffectObj.value.Element_001)}
                             </div>
                         </div>
@@ -162,15 +159,16 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
 
                     {specialEffectObj?.value?.Element_001 && (
                         <div className="space-y-1">
-                            <div className="text-[#a9a9a9] text-[12px] font-bold">[{cleanText(specialEffectObj.value.Element_000)}]</div>
-                            <div className="text-[13px] font-medium whitespace-pre-line leading-relaxed">
+                            <div className="text-white/30 text-[11px] font-bold">[{cleanText(specialEffectObj.value.Element_000)}]</div>
+                            {/* 박스 스타일 제거: 텍스트만 노출 */}
+                            <div className="text-[12px] font-medium whitespace-pre-line leading-relaxed pl-1">
                                 {renderGrindEffect(cleanText(specialEffectObj.value.Element_001))}
                             </div>
                         </div>
                     )}
                 </div>
             </div>
-            <div className="h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+            <div className="h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
     );
 };

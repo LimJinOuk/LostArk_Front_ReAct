@@ -1,3 +1,5 @@
+import React from 'react';
+
 const JewelryTooltip = ({ gemData }: { gemData: any }) => {
     if (!gemData) return null;
 
@@ -10,16 +12,17 @@ const JewelryTooltip = ({ gemData }: { gemData: any }) => {
             .trim();
     };
 
-    // --- [추가] 특정 단어를 감지하여 스타일을 입히는 함수 ---
+    // --- [개선] 모든 숫자, %, +, Lv, 초 단위를 초록색으로 강조 ---
     const highlightEffect = (text: string) => {
-        const parts = text.split(/(\[.*?\])|(\d+(?:\.\d+)?%)|(?<=\] )(.*?)(?= 피해| 재사용)/g).filter(Boolean);
+        // 정규식: [직업명] 추출 또는 (숫자, %, +, Lv, 초) 패턴 추출
+        const parts = text.split(/(\[.*?\])|((?:\+|Lv\s*)?\d+(?:\.\d+)?(?:%|초)?)/gi).filter(Boolean);
 
         return parts.map((part, i) => {
             const trimmedPart = part.trim();
 
-            // 1. 수치 (% 포함) -> 초록색
-            if (/\d+(?:\.\d+)?%/.test(part)) {
-                return <span key={i} className="text-[#8de27a] font-bold">{part}</span>;
+            // 1. 수치 관련 (숫자, %, +, Lv, 초) -> 초록색
+            if (/((?:\+|Lv\s*)?\d+(?:\.\d+)?(?:%|초)?)/gi.test(part)) {
+                return <span key={i} className="text-[#48c948] font-bold">{part}</span>;
             }
 
             // 2. 직업명 ([블레이드]) -> 연한 회색
@@ -27,11 +30,8 @@ const JewelryTooltip = ({ gemData }: { gemData: any }) => {
                 return <span key={i} className="text-zinc-400 mr-1">{part}</span>;
             }
 
-            // 3. 스킬명 판단 (직업명 뒤에 오는 텍스트 덩어리)
-            // '피해', '재사용', '공격력', '증가' 등 기능어는 제외
+            // 3. 스킬명 판단 (직업명 뒤에 오는 특정 키워드가 아닌 텍스트) -> 노란색
             const isFunctionWord = /피해|재사용|대기시간|증가|감소|공격력|기본/.test(trimmedPart);
-
-            // 직업명 바로 뒤에 오는 덩어리이거나 특정 키워드가 아닌 경우 노란색
             if (!isFunctionWord && trimmedPart.length > 0 && !/\d/.test(trimmedPart)) {
                 return <span key={i} className="text-[#f9ba2e] font-bold">{part}</span>;
             }
@@ -60,10 +60,11 @@ const JewelryTooltip = ({ gemData }: { gemData: any }) => {
 
     const gradeColor = isAncient ? "#dcc999" : isRelic ? "#fa5d00" : isLegendary ? "#f9ba2e" : "#ffffff";
 
-    let headerGradient = "from-[#2a2e36] via-[#1c1e23] to-[#252d2d]";
-    if (isAncient) headerGradient = "from-[#3d3325] via-[#1c1e23] to-[#1c1e23]";
-    else if (isRelic) headerGradient = "from-[#412608] via-[#1c1e23] to-[#1c1e23]";
-    else if (isLegendary) headerGradient = "from-[#362f1b] via-[#1c1e23] to-[#1c1e23]";
+    // 헤더 그라데이션에 투명도 적용
+    let headerGradient = "from-[#2a2e36]/60 to-transparent";
+    if (isAncient) headerGradient = "from-[#3d3325]/60 to-transparent";
+    else if (isRelic) headerGradient = "from-[#412608]/60 to-transparent";
+    else if (isLegendary) headerGradient = "from-[#362f1b]/60 to-transparent";
 
     const elements = Object.values(tooltipData) as any[];
     const effectSection = elements.find(el =>
@@ -77,41 +78,41 @@ const JewelryTooltip = ({ gemData }: { gemData: any }) => {
     const additionalEffect = cleanText(additionalEffectRaw);
 
     return (
-        <div className="w-[340px] bg-[#1c1e23] border border-[#4d4d4d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-sm overflow-hidden text-[13px] font-sans text-left">
+        // [변경 포인트] bg-[#111111]/60 와 backdrop-blur-md 적용
+        <div className="w-[280px] bg-[#111111]/60 backdrop-blur-md border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-sm overflow-hidden text-[13px] font-sans text-left">
+
             {/* 헤더 섹션 */}
-            <div className={`p-4 bg-gradient-to-br ${headerGradient} border-b border-white/5 relative`}>
-                <span className="absolute top-4 right-4 text-[#8de27a] font-medium text-[11px] drop-shadow-md">장착중</span>
+            <div className={`p-2 bg-gradient-to-br ${headerGradient} border-b border-white/5 relative`}>
                 <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 bg-black border rounded-md p-1.5 relative shadow-inner"
+                    <div className="w-[50px] h-[50px] bg-black/60 border rounded-md p-1 relative shadow-inner"
                          style={{ borderColor: `${gradeColor}66` }}>
                         <img src={gemData.Icon} alt="" className="w-full h-full object-contain transform scale-105" />
-                        <span className="absolute bottom-0 right-1 text-[10px] text-white font-bold drop-shadow-md">
+                        <span className="absolute bottom-0 right-1 text-[10px] text-white font-black drop-shadow-md">
                             Lv.{gemData.Level}
                         </span>
                     </div>
-                    <div className="flex flex-col gap-0.5">
-                        <h4 style={{ color: gradeColor }} className="text-[17px] font-bold leading-tight drop-shadow-md tracking-tight">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                        <h4 style={{ color: gradeColor }} className="text-[14px] font-bold leading-tight drop-shadow-md tracking-tight truncate">
                             {itemName}
                         </h4>
-                        <span style={{ color: gradeColor }} className="text-[12px] font-medium opacity-90">
+                        <span style={{ color: gradeColor }} className="text-[11px] font-bold opacity-90">
                             {gradeName}
                         </span>
-                        <span className="text-zinc-400 text-[11px] font-medium">{tierInfo}</span>
+                        <span className="text-white/40 text-[10px] font-medium">{tierInfo}</span>
                     </div>
                 </div>
             </div>
 
-            {/* 본문 섹션 */}
-            <div className="p-4 space-y-5 bg-[#17191e]">
+            {/* 본문 섹션: bg-transparent로 설정하여 뒷배경 비침 효과 극대화 */}
+            <div className="p-3 space-y-3 bg-transparent">
                 {/* 메인 효과 (보석 효과) */}
                 <div className="space-y-2">
-                    <div className="text-[#a3dcff] font-bold text-[12px] flex items-center gap-1.5">
-                        <span className="w-1 h-3 rounded-full" />
+                    <div className="text-white/30 font-bold text-[10px] tracking-widest flex items-center gap-1.5 uppercase">
                         [보석 효과]
                     </div>
-                    <div className="pl-2 space-y-1.5">
+                    <div className="space-y-1.5">
                         {mainEffects.map((eff, i) => (
-                            <p key={i} className="text-[#eee] leading-relaxed font-medium">
+                            <p key={i} className="text-white/90 text-[11px] leading-relaxed font-medium break-words">
                                 {highlightEffect(eff)}
                             </p>
                         ))}
@@ -120,19 +121,21 @@ const JewelryTooltip = ({ gemData }: { gemData: any }) => {
 
                 {/* 추가 효과 (기본 공격력 등) */}
                 {additionalEffect && (
-                    <div className="pt-3 border-t border-white/5">
-                        <div className="text-[#a3dcff] font-bold text-[12px] mb-2 flex items-center gap-1.5">
-                            <span className="w-1 h-3 rounded-full" />
+                    <div className="pt-4 border-t border-white/5">
+                        <div className="text-white/30 font-bold text-[10px] tracking-widest mb-1 flex items-center gap-1.5 uppercase">
                             [추가 효과]
                         </div>
-                        <div className="pl-2">
-                            <p className="text-[#eee] leading-relaxed font-medium">
+                        <div className="">
+                            <p className="text-white/90 leading-relaxed font-medium break-words text-[11px]">
                                 {highlightEffect(additionalEffect)}
                             </p>
                         </div>
                     </div>
                 )}
             </div>
+
+            {/* 하단 마무리 데코 */}
+            <div className="h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
     );
 };
