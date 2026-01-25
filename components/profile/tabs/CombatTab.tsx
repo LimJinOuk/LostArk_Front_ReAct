@@ -700,12 +700,12 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 return (
                                     <div key={i} className="flex flex-col gap-1 px-1">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-zinc-100 font-bold text-[13.5px]">{effect.Name}</span>
+                                            <span className="text-zinc-100 font-bold text-[13px]">{effect.Name}</span>
                                             <span className="bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400 text-[10px] font-black tracking-widest uppercase">
                                         Lv.{effect.Level}
                                     </span>
                                         </div>
-                                        <div className="text-[12.5px] text-zinc-400 font-medium leading-relaxed">
+                                        <div className="text-[12px] text-zinc-400 font-medium leading-relaxed">
                                             {desc} <span className="text-[#ffd200] font-bold ml-1">{val}</span>
                                         </div>
                                     </div>
@@ -903,6 +903,9 @@ export const CombatTab = ({ character }: { character: any }) => {
                         </div>
                     </div>
                 </section>
+
+
+
                 {/* [우측] 장착 카드 섹션 (가로 정렬) */}
                 <section className="flex-1 space-y-4">
                     <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
