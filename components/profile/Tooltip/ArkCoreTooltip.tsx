@@ -84,13 +84,13 @@ const ArkCoreTooltip = ({ data, Gems }: ArkCoreTooltipProps) => {
 
     return (
         <div
-            className="w-[300px] border border-white/10 rounded-lg shadow-2xl overflow-hidden font-sans text-sm backdrop-blur-md"
-            style={{ backgroundColor: 'rgba(28, 29, 33, 0.6)' }} // 배경 60% 투명도
+            className="w-[300px] flex flex-col border border-white/10 rounded-lg shadow-2xl overflow-hidden font-sans text-sm transition-all duration-200"
+            style={{ maxHeight: '50vh' }} // 높이 제한 40vh
         >
-            {/* 헤더 영역 */}
-            <div className={`p-3 bg-gradient-to-br ${theme.bg} border-b border-black/30 relative overflow-hidden`}>
+            {/* 1. 고정 헤더 영역 (불투명) */}
+            <div className={`p-3 shrink-0 bg-[#1c1d21] bg-gradient-to-br ${theme.bg} border-b border-black/30 relative overflow-hidden z-10`}>
                 {['고대', '에스더'].includes(currentGrade) && (
-                    <div className={`absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent`} />
+                    <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent" />
                 )}
 
                 <div className="relative z-10 flex flex-col gap-3">
@@ -109,87 +109,80 @@ const ArkCoreTooltip = ({ data, Gems }: ArkCoreTooltipProps) => {
                                 <img src={itemIcon} className="w-11 h-11 rounded-md object-cover bg-black/40" alt="" />
                             </div>
                         </div>
-
                         <div className="flex flex-col flex-1 min-w-0">
-                            <div className={`text-[12px] font-bold ${theme.text} truncate leading-tight`}>
-                                {itemGradeRaw}
-                            </div>
-                            <div className="text-[11px] text-white/50 font-medium leading-tight mb-1.5">
-                                {coreSubTitle}
-                            </div>
-
+                            <div className={`text-[12px] font-bold ${theme.text} truncate leading-tight`}>{itemGradeRaw}</div>
+                            <div className="text-[11px] text-white/50 font-medium leading-tight mb-1.5">{coreSubTitle}</div>
                             <div className="mt-0 flex flex-col gap-1">
-                                {headerSummaryLines.slice(0, 2).map((line, i) => {
-                                    const pointMatch = line.match(/^(\[\d+(?:~\d+)?P\])(.*)/);
-                                    if (!pointMatch) return null;
-
-                                    return (
-                                        <div key={i} className="flex gap-1.5 items-start">
-                                            <span className="text-[11px] font-black shrink-0 text-[#f18c2d] leading-[1.4]">
-                                                {pointMatch[1]}
-                                            </span>
-                                            <span className="text-[11px] font-semibold text-zinc-100 leading-[1.4] break-keep whitespace-pre-wrap">
-                                                {pointMatch[2].trim().split(/((?:\+)?\d+(?:\.\d+)?(?:%|초)?)/).map((part, index) =>
-                                                    /((?:\+)?\d+(?:\.\d+)?(?:%|초)?)/.test(part)
-                                                        ? <span key={index} className="text-[#48c948] font-bold">{part}</span>
-                                                        : part
-                                                )}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                                {headerSummaryLines.slice(0, 2).map((line, i) => (
+                                    <div key={i} className="flex gap-1.5 items-start">
+                                        <span className="text-[11px] font-black shrink-0 text-[#f18c2d] leading-[1.4]">
+                                            {line.match(/^(\[\d+(?:~\d+)?P\])/)?.[0]}
+                                        </span>
+                                        <span className="text-[11px] font-semibold text-zinc-100 leading-[1.4] break-keep whitespace-pre-wrap">
+                                            {line.replace(/^(\[\d+(?:~\d+)?P\])/, '').trim().split(/((?:\+)?\d+(?:\.\d+)?(?:%|초)?)/).map((part, index) =>
+                                                /((?:\+)?\d+(?:\.\d+)?(?:%|초)?)/.test(part) ? <span key={index} className="text-[#48c948] font-bold">{part}</span> : part
+                                            )}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* 본문 콘텐츠 영역 */}
-            <div className="p-2 space-y-3 bg-transparent">
-                {Gems && Gems.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2">
-                        {Gems.map((gem, idx) => {
-                            let gemTooltip;
-                            try {
-                                gemTooltip = typeof gem.Tooltip === 'string' ? JSON.parse(gem.Tooltip) : gem.Tooltip;
-                            } catch { return null; }
+            {/* 2. 스크롤 본문 콘텐츠 영역 (투명도 60% + 블러) */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#1c1d21]/60 backdrop-blur-md
+                /* Webkit 스크롤바 커스텀 */
+                [&::-webkit-scrollbar]:w-1.5
+                [&::-webkit-scrollbar-track]:bg-white/5
+                [&::-webkit-scrollbar-thumb]:bg-white/20
+                [&::-webkit-scrollbar-thumb]:rounded-full
+                hover:[&::-webkit-scrollbar-thumb]:bg-white/40">
 
-                            const gemEffect = gemTooltip?.Element_005?.value?.Element_001 || "";
-                            const gemPointMatch = (gemTooltip?.Element_004?.value?.Element_001 || "").match(/젬 포인트\s*:\s*(\d+)/);
-                            const gemPoint = gemPointMatch ? gemPointMatch[1] : null;
+                <div className="p-3 space-y-3">
+                    {Gems && Gems.length > 0 && (
+                        <div className="grid grid-cols-1 gap-2"> {/* 1열로 수정 */}
+                            {Gems.map((gem, idx) => {
+                                let gemTooltip;
+                                try { gemTooltip = typeof gem.Tooltip === 'string' ? JSON.parse(gem.Tooltip) : gem.Tooltip; } catch { return null; }
+                                const gemEffect = gemTooltip?.Element_005?.value?.Element_001 || "";
+                                const gemPointMatch = (gemTooltip?.Element_004?.value?.Element_001 || "").match(/젬 포인트\s*:\s*(\d+)/);
+                                const gemPoint = gemPointMatch ? gemPointMatch[1] : null;
 
-                            return (
-                                <div key={idx} className="bg-white/[0.05] border border-white/5 p-2 rounded flex flex-col gap-1.5 min-h-[85px]">
-                                    <div className="flex items-center gap-2">
-                                        <img src={gem.Icon} className={`w-8 h-8 rounded bg-black/40 border ${theme.border} p-0.5`} alt="" />
-                                        {gemPoint && <span className="text-[10px] text-[#9299FF] font-black">+{gemPoint}P</span>}
+                                return (
+                                    <div key={idx} className="bg-white/[0.05] border border-white/5 p-2 rounded flex items-start gap-3 min-h-[60px]">
+                                        <div className="flex flex-col items-center gap-1 shrink-0">
+                                            <img src={gem.Icon} className={`w-9 h-9 rounded bg-black/40 border ${theme.border} p-0.5`} alt="" />
+                                            {gemPoint && <span className="text-[10px] text-[#9299FF] font-black">+{gemPoint}P</span>}
+                                        </div>
+                                        <div className="text-[11px] text-zinc-200 leading-snug font-medium break-words pt-0.5">
+                                            {cleanText(gemEffect).split('\n')
+                                                .filter(l => !l.includes('필요') && !l.includes('포인트'))
+                                                .map((line, li) => (
+                                                    <div key={li} className="mb-0.5 last:mb-0">
+                                                        {line.split(/((?:\+|Lv.\s*)?\d+(?:\.\d+)?%?)/i).map((part, pi) =>
+                                                            /((?:\+|Lv.\s*)?\d+(?:\.\d+)?%?)/i.test(part) ? <span key={pi} className="text-[#48c948] font-bold">{part}</span> : part
+                                                        )}
+                                                    </div>
+                                                ))}
+                                        </div>
                                     </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-                                    <div className="text-[10.5px] text-zinc-300 leading-snug font-medium break-words">
-                                        {cleanText(gemEffect).split('\n')
-                                            .filter(l => !l.includes('필요') && !l.includes('포인트'))
-                                            .map((line, li) => (
-                                                <div key={li} className="mb-0.5 last:mb-0">
-                                                    {line.split(/((?:\+|Lv.\s*)?\d+(?:\.\d+)?%?)/i).map((part, pi) =>
-                                                        /((?:\+|Lv.\s*)?\d+(?:\.\d+)?%?)/i.test(part)
-                                                            ? <span key={pi} className="text-[#48c948] font-bold">{part}</span>
-                                                            : part
-                                                    )}
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {coreCondition && (
-                    <div className="pt-2 border-t border-white/5 text-[11px] text-white/40 leading-relaxed italic px-1 pb-1">
-                        {cleanText(coreCondition)}
-                    </div>
-                )}
+                    {coreCondition && (
+                        <div className="pt-2 border-t border-white/5 text-[11px] text-white/40 leading-relaxed italic px-1 pb-1">
+                            {cleanText(coreCondition)}
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* 하단 데코 라인 */}
+            <div className="h-[1px] shrink-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
     );
 };
