@@ -2,155 +2,101 @@
 2. 아크 패시브 탭: 상하 ui 크기 줄이기
 3. CharacterHeader 상하 ui 줄이기
 
-         <div className="absolute right-[2%] top-[-10%] w-[550px] h-[120%] z-0 text-white">
-                <div className="relative w-full h-full">
-                    <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[#0c0e12] via-[#0c0e12]/80 to-transparent z-10" />
-                    <img
-                        src={character.CharacterImage}
-                        alt={character.CharacterName}
-                        className="w-full h-full object-cover object-top opacity-90 contrast-[1.1]"
-                    />
-                </div>
-            </div>
+const EquipmentItem = ({
+                           item, i, theme, tooltip, quality, reinforceLevel,
+                           advancedReinforce, itemName, REINFORCE_OPTIONS,
+                           setHoveredIndex, setHoveredData
+                       }: EquipmentItemProps) => {
 
+    const [localQuality, setLocalQuality] = useState(quality);
+    const [localAdv, setLocalAdv] = useState(advancedReinforce);
 
-            {/* 배경 광원 유지 */}
-            <div className="absolute -bottom-1/4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-                 style={{
-                     width: '150%',
-                     height: '120%',
-                     background: `radial-gradient(circle at center, ${randomColor} 0%, transparent 40%)`,
-                     mixBlendMode: 'screen',
-                     filter: 'blur(120px)'
-                 }}
-            />
+    // 초기 로드 시 딱 한 번만 실행되도록 함수형 업데이트 사용
+    const [selectedOption, setSelectedOption] = useState(() => {
+        const level = reinforceLevel.replace('+', '');
+        // 현재 장비 수치와 일치하는 옵션을 찾되, 없으면 4티어 기본값
+        return REINFORCE_OPTIONS.find(opt => String(opt.value) === level) || REINFORCE_OPTIONS[0];
+    });
 
+    // ⚠️ [수정 포인트] 의존성 배열에서 REINFORCE_OPTIONS를 제거하거나,
+    // 부모로부터 넘어오는 값이 실제로 '변경'되었을 때만 초기화하도록 조건 추가
+    useEffect(() => {
+        const level = reinforceLevel.replace('+', '');
+        const found = REINFORCE_OPTIONS.find(opt => String(opt.value) === level);
 
-
-
-
-import React, { useState } from 'react';
-import { CharacterInfo } from '../../types.ts';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-
-import { CharacterHeader } from './CharacterHeader';
-import { TabNavigation } from './TabNavigation';
-import { CombatTab } from './tabs/CombatTab';
-import { SkillTab } from "@/components/profile/tabs/SkillTab.tsx";
-import { ArkPassiveTab } from "@/components/profile/tabs/ArkPassiveTab.tsx";
-import { CharacterDetailTab } from "@/components/profile/tabs/CharacterDetailTab.tsx";
-import {Jewely} from "@/components/profile/Jewerly.tsx";
-
-
-export const CharacterCard: React.FC<{
-    character: CharacterInfo;
-    characterName: string;
-    onUpdate: () => void; // ✅ ProfilePage의 handleUpdateClick
-}> = ({ character, characterName, onUpdate }) => {
-    const [activeTab, setActiveTab] = useState('전투');
-    const navigate = useNavigate();
-
-    const goToSimulator = () => {
-        const name = (characterName || '').trim();
-        if (!name) {
-            navigate('/simulatorPage');
-            return;
+        // 사용자가 선택한 값과 서버에서 온 초기값이 다를 때만 동기화 (캐릭터 검색 시)
+        if (found) {
+            setLocalQuality(quality);
+            setLocalAdv(advancedReinforce);
+            setSelectedOption(found);
         }
-        navigate(`/simulatorPage?name=${encodeURIComponent(name)}`);
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [reinforceLevel, quality, advancedReinforce]);
+    // 💡 REINFORCE_OPTIONS를 의존성에서 제외하여 리렌더링 시 초기화를 방지합니다.
 
-    const renderContent = () => {
-        switch (activeTab) {
-            case '전투': return <CombatTab character={character} />;
-            case '스킬': return <SkillTab character={character} />;
-            case '아크 패시브': return <ArkPassiveTab character={character} />;
-            case '캐릭터': return <CharacterDetailTab character={character}/>;
-            default: return <CombatTab character={character} />;
-        }
+    const handleKeyDown = (e: any, type: string, value: any) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
     };
 
     return (
-        /* 전체 컨테이너 gap을 8(32px)로 늘려 좌우 구분을 더 명확히 함 */
-        <div className="flex flex-col lg:flex-row gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 w-full">
-
-            {/* [좌측 구역]: 너비를 420px로 확장 */}
-            <aside className="w-full lg:w-[420px] shrink-0 lg:sticky lg:top-24 h-fit space-y-5">
-                {/* 1. 캐릭터 아이콘/헤더 */}
-                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
-                    <CharacterHeader character={character} />
+        <div
+            onMouseEnter={() => { setHoveredIndex(i); setHoveredData(tooltip); }}
+            onMouseLeave={() => { setHoveredIndex(null); setHoveredData(null); }}
+            className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
+        >
+            <div className="relative shrink-0">
+                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
+                    <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt={itemName} />
                 </div>
+                <input
+                    type="number"
+                    min="0" max="100"
+                    value={localQuality}
+                    onChange={(e) => setLocalQuality(e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, '품질', localQuality)}
+                    className={`absolute -bottom-1 -right-1 w-7 px-0.5 rounded-md text-[10px] font-black border border-zinc-700 bg-zinc-900 text-center focus:outline-none focus:ring-1 focus:ring-yellow-500
+                    ${getQualityColor(Number(localQuality))} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors`}
+                />
+            </div>
 
-                {/* 2. 탭 네비게이션 */}
-                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 p-3 shadow-xl">
-                    <TabNavigation
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        onUpdate={onUpdate}
-                        onSimulator={goToSimulator}
-                    />
-                </div>
-
-                {/* 3. 보석 정보: 패딩(p-3) 제거 및 테두리 정렬 */}
-                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
-                    <Jewely character={character} />
-                </div>
-            </aside>
-
-            {/* [우측 구역]: 정보들이 나열되는 곳 (flex-1로 남은 공간 전체 활용) */}
-            <main className="flex-1 min-w-0 space-y-6">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, x: 20 }} // 좌우 구조이므로 옆에서 나타나는 효과가 더 세련됨
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="min-h-[600px]"
+            <div className="flex-1 min-w-0">
+                <h3 className={`font-bold text-[12px] truncate mb-1 ${theme.text}`}>{itemName}</h3>
+                <div className="flex items-center gap-2">
+                    <select
+                        className="bg-zinc-800 text-white/70 text-[10px] px-2 py-0.5 rounded border border-zinc-700 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer scrollbar-hide"
+                        value={`${selectedOption.tier}-${selectedOption.value}`}
+                        onChange={(e) => {
+                            const [tier, val] = e.target.value.split('-');
+                            const found = REINFORCE_OPTIONS.find(opt => opt.tier === Number(tier) && opt.value === Number(val));
+                            if (found) {
+                                setSelectedOption(found); // 여기서 상태가 변경되면 위 useEffect는 실행되지 않아야 함
+                            }
+                        }}
                     >
-                        {renderContent()}
-                    </motion.div>
-                </AnimatePresence>
+                        {REINFORCE_OPTIONS.map(opt => (
+                            <option
+                                key={`${opt.tier}-${opt.value}`}
+                                value={`${opt.tier}-${opt.value}`}
+                                className="bg-zinc-900 text-white"
+                            >
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
 
-                {/* 하단 추가 정보 그리드 */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                    <div className="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50">추가 정보 A</div>
-                    <div className="bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50">추가 정보 B</div>
+                       <div className="flex items-center gap-1 bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 focus-within:border-sky-500 transition-colors">
+                                            <span className="text-sky-400 text-[10px] font-bold">상재</span>
+                                            <input
+                                                type="number"
+                                                min="0" max="20"
+                                                value={localAdv}
+                                                onChange={(e) => setLocalAdv(e.target.value)}
+                                                onKeyDown={(e) => handleKeyDown(e, '상재', localAdv)}
+                                                className="w-5 bg-transparent text-sky-400 text-[10px] font-bold focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
+                                            />
+                                        </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };
-
-
-
- {/* ✅ 이름 옆 툴팁 */}
-                                                {engrHoverIdx === i && engrHoverDesc && (
-                                                    <div
-                                                        className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-[9999]"
-                                                        onMouseEnter={() => setEngrHoverIdx(i)}
-                                                        onMouseLeave={() => {
-                                                            setEngrHoverIdx(null);
-                                                            setEngrHoverName(null);
-                                                            setEngrHoverDesc("");
-                                                        }}
-                                                    >
-                                                        <div className="w-[380px] max-w-[60vw] rounded-xl border border-white/10 bg-[#0b0c10]/95 shadow-2xl backdrop-blur-md p-4 animate-in fade-in zoom-in-95 duration-150">
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="w-9 h-9 rounded-lg overflow-hidden border border-white/10 bg-black/40 shrink-0">
-                                                                    <img src={iconUrl} alt="" className="w-full h-full object-cover" />
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <div className="text-[13px] font-black text-white mb-1 truncate">
-                                                                        {engrHoverName}
-                                                                    </div>
-                                                                    <div
-                                                                        className="text-[12px] leading-relaxed text-zinc-200"
-                                                                        dangerouslySetInnerHTML={{
-                                                                            __html: engravingDescToHtml(engrHoverDesc),
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
