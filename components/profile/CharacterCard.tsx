@@ -16,7 +16,9 @@ export const CharacterCard: React.FC<{
     character: CharacterInfo;
     characterName: string;
     onUpdate: () => void; // ✅ ProfilePage의 handleUpdateClick
-}> = ({ character, characterName, onUpdate }) => {
+    isCooldown: boolean;
+    timeLeft: number;
+}> = ({ character, characterName, onUpdate, isCooldown, timeLeft }) => {
     const [activeTab, setActiveTab] = useState('전투');
     const navigate = useNavigate();
 
@@ -57,6 +59,8 @@ export const CharacterCard: React.FC<{
                         setActiveTab={setActiveTab}
                         onUpdate={onUpdate}
                         onSimulator={goToSimulator}
+                        isCooldown={isCooldown}
+                        timeLeft={timeLeft}
                     />
                 </div>
 

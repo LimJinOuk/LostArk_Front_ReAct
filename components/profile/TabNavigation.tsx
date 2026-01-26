@@ -6,16 +6,23 @@ type Props = {
     setActiveTab: (tab: string) => void;
     onUpdate: () => void;
     onSimulator: () => void;
+    // 쿨타임 관련 Props 추가
+    isCooldown?: boolean;
+    timeLeft?: number;
 };
 
-export const TabNavigation: React.FC<Props> = ({ activeTab, setActiveTab, onUpdate, onSimulator }) => {
-    // 탭 텍스트에서 불필요한 공백 제거 (아크패시브 등)
+export const TabNavigation: React.FC<Props> = ({
+                                                   activeTab,
+                                                   setActiveTab,
+                                                   onUpdate,
+                                                   onSimulator,
+                                                   isCooldown = false,
+                                                   timeLeft = 0
+                                               }) => {
     const tabs = ["전투", "스킬", "아크 패시브", "캐릭터"];
 
     return (
-        <div className="flex flex-col gap-1.5 w-full"> {/* 전체 gap 축소 (3 -> 1.5) */}
-
-            {/* 🔹 탭 메뉴 섹션: 높이 및 여백 최소화 */}
+        <div className="flex flex-col gap-1.5 w-full">
             <div className="grid grid-cols-4 gap-1 p-0.5 bg-black/40 rounded-xl border border-white/5">
                 {tabs.map((t) => {
                     const isActive = activeTab === t;
@@ -36,7 +43,6 @@ export const TabNavigation: React.FC<Props> = ({ activeTab, setActiveTab, onUpda
                 })}
             </div>
 
-            {/* 🔹 하단 버튼 섹션: 상단 탭보다 더 슬림하게 배치 */}
             <div className="flex gap-1.5">
                 <button
                     onClick={onSimulator}
@@ -45,12 +51,24 @@ export const TabNavigation: React.FC<Props> = ({ activeTab, setActiveTab, onUpda
                     <Layout size={12} className="group-hover:rotate-6 transition-transform" />
                     시뮬레이터로 전환
                 </button>
+
+                {/* 갱신 버튼: 쿨타임 상태에 따라 스타일 및 텍스트 변경 */}
                 <button
                     onClick={onUpdate}
-                    className="group flex-[0.8] flex items-center justify-center gap-1.5 py-2.5 bg-zinc-900/60 text-zinc-500 text-[10px] font-bold rounded-lg border border-white/5 hover:border-zinc-700 hover:text-zinc-300 transition-all active:scale-[0.97]"
+                    disabled={isCooldown}
+                    className={`
+                        group flex-[0.8] flex items-center justify-center gap-1.5 py-2.5 rounded-lg border transition-all text-[10px] font-bold
+                        ${isCooldown
+                        ? "bg-zinc-800/40 text-zinc-600 border-white/5 cursor-not-allowed"
+                        : "bg-zinc-900/60 text-zinc-500 border-white/5 hover:border-zinc-700 hover:text-zinc-300 active:scale-[0.97]"
+                    }
+                    `}
                 >
-                    <RefreshCw size={11} className="group-hover:rotate-180 transition-transform duration-700" />
-                    갱신
+                    <RefreshCw
+                        size={11}
+                        className={`transition-transform duration-700 ${isCooldown ? "animate-spin-slow opacity-50" : "group-hover:rotate-180"}`}
+                    />
+                    {isCooldown ? `${timeLeft}s` : "갱신"}
                 </button>
             </div>
         </div>
