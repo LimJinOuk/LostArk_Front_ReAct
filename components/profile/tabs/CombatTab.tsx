@@ -669,6 +669,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                         <ArkCoreTooltip
                                                             data={arkCoreHoverData.core}
                                                             Gems={arkCoreHoverData.gems}
+                                                            currentPoint={slot.Point}
                                                         />
                                                     </div>
                                                 </div>
