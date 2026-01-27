@@ -59,7 +59,7 @@ export default function App() {
               onClose={() => setIsMenuOpen(false)}
           />
           //width를 max-w-[2190px]에서 조절
-          <div className="pt-20 pb-10 px-16 mx-auto flex gap-8 transition-all duration-500 max-w-[1920px]">
+          <div className="pt-20 pb-10 px-16 mx-auto flex gap-8 transition-all duration-500 max-w-[2000px]">
             {/* 왼쪽 사이드바 */}
             <div className="hidden 2xl:block w-72 shrink-0">
               <SidebarAds side="left" />

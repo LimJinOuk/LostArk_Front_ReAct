@@ -9,13 +9,12 @@ import { CombatTab } from './tabs/CombatTab';
 import { SkillTab } from "@/components/profile/tabs/SkillTab.tsx";
 import { ArkPassiveTab } from "@/components/profile/tabs/ArkPassiveTab.tsx";
 import { CharacterDetailTab } from "@/components/profile/tabs/CharacterDetailTab.tsx";
-import {Jewely} from "@/components/profile/Jewerly.tsx";
-
+import { Jewely } from "@/components/profile/Jewerly.tsx";
 
 export const CharacterCard: React.FC<{
     character: CharacterInfo;
     characterName: string;
-    onUpdate: () => void; // ✅ ProfilePage의 handleUpdateClick
+    onUpdate: () => void;
     isCooldown: boolean;
     timeLeft: number;
 }> = ({ character, characterName, onUpdate, isCooldown, timeLeft }) => {
@@ -42,18 +41,19 @@ export const CharacterCard: React.FC<{
     };
 
     return (
-        /* 전체 컨테이너 gap을 8(32px)로 늘려 좌우 구분을 더 명확히 함 */
-        <div className="flex flex-col lg:flex-row gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700 w-full">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700 w-full px-4 lg:px-0">
 
-            {/* [좌측 구역]: 너비를 420px로 확장 */}
-            <aside className="w-full lg:w-[420px] shrink-0 lg:sticky lg:top-24 h-fit space-y-5">
-                {/* 1. 캐릭터 아이콘/헤더 */}
-                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
+            {/* [좌측 구역]: 모바일에서는 상단에 위치 */}
+            <aside className="w-full lg:w-[420px] shrink-0 lg:sticky lg:top-24 h-fit space-y-4 lg:space-y-5">
+
+                {/* 1. 캐릭터 헤더: 모바일에서 너무 커지지 않도록 조정 */}
+                <div className="bg-zinc-900/60 rounded-2xl lg:rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
                     <CharacterHeader character={character} />
                 </div>
 
-                {/* 2. 탭 네비게이션 */}
-                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 p-3 shadow-xl">
+                {/* 2. 탭 네비게이션: 모바일에서 스티키 처리 (선택 사항) */}
+                {/* z-index를 주어 콘텐츠보다 위로 오게 설정 */}
+                <div className="sticky top-16 lg:static z-30 bg-zinc-900/90 lg:bg-zinc-900/60 backdrop-blur-md lg:backdrop-blur-none rounded-2xl lg:rounded-3xl border border-zinc-800/50 p-2 lg:p-3 shadow-xl">
                     <TabNavigation
                         activeTab={activeTab}
                         setActiveTab={setActiveTab}
@@ -64,27 +64,27 @@ export const CharacterCard: React.FC<{
                     />
                 </div>
 
-                {/* 3. 보석 정보: 패딩(p-3) 제거 및 테두리 정렬 */}
-                <div className="bg-zinc-900/60 rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
+                {/* 3. 보석 정보: 모바일에서는 탭 아래 혹은 가장 하단에 배치 */}
+                <div className="bg-zinc-900/60 rounded-2xl lg:rounded-3xl border border-zinc-800/50 overflow-hidden shadow-2xl">
                     <Jewely character={character} />
                 </div>
             </aside>
 
-            {/* [우측 구역]: 정보들이 나열되는 곳 (flex-1로 남은 공간 전체 활용) */}
-            <main className="flex-1 min-w-0 space-y-6">
+            {/* [우측 구역]: 메인 콘텐츠 */}
+            <main className="flex-1 min-w-0">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={activeTab}
-                        initial={{ opacity: 0, x: 20 }} // 좌우 구조이므로 옆에서 나타나는 효과가 더 세련됨
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="min-h-[600px]"
+                        /* 모바일에서는 위아래 전환(y), 데스크톱에서는 좌우 전환(x) */
+                        initial={{ opacity: 0, y: 10, x: 0 }}
+                        animate={{ opacity: 1, y: 0, x: 0 }}
+                        exit={{ opacity: 0, y: -10, x: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="min-h-[400px] lg:min-h-[600px]"
                     >
                         {renderContent()}
                     </motion.div>
                 </AnimatePresence>
-
-
             </main>
         </div>
     );
