@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, Clock, Sword, Timer, ShieldAlert } from 'lucide-react';
+import { Loader2, Clock, Sword, ShieldAlert, Sparkles } from 'lucide-react';
 import { SkillTooltip } from '@/components/profile/Tooltip/SkillTooltip';
 import JewelryTooltip from '@/components/profile/Tooltip/JewelryTooltip';
 
@@ -13,6 +13,17 @@ const gradeStyles: any = {
     '유물': { bg: 'from-[#351a0a] to-[#0a0a0a]', border: 'border-[#fa5d00]/50' },
     '고대': { bg: 'from-[#3d3325] to-[#0f0f10]', border: 'border-[#e9d2a6]/40' },
     '에스더': { bg: 'from-[#0d2e2e] to-[#050505]', border: 'border-[#2edbd3]/60' }
+};
+
+// ✅ 변신 스킬 노출 허용 직업군 (레벨 1이어도 키워드 매칭 시 노출)
+const ALLOW_LEVEL_1_TRANS = ['블래스터', '데모닉', '스카우터'];
+
+const TRANSFORMATION_KEYWORDS: Record<string, string> = {
+    '블래스터': '[포격 모드]',
+    '데모닉': '[악마 스킬]',
+    '스카우터': '[싱크 스킬]',
+    '환수사': '[둔갑 스킬]',
+    '가디언나이트': '[화신 스킬]'
 };
 
 const cleanHtml = (html: string) => {
@@ -36,7 +47,7 @@ const getSkillStats = (skills: any[]) => {
 const SkillStatsBar = ({ skills }: { skills: any[] }) => {
     const { counter, stagger, destruction } = getSkillStats(skills);
     return (
-        <div className="flex items-center justify-center mb-4 px-4">
+        <div className="flex items-center justify-center mb-6 px-4">
             <div className="flex items-center gap-4 px-5 py-2 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
                 {[
                     { label: '카운터', val: counter },
@@ -53,83 +64,58 @@ const SkillStatsBar = ({ skills }: { skills: any[] }) => {
     );
 };
 
-// ✅ GemItem: 호버 상태를 부모에게 보고하도록 수정
 const GemItem = ({ gem, onHoverChange }: { gem: any, onHoverChange: (isHover: boolean) => void }) => {
     const [isHover, setIsHover] = useState(false);
-
     return (
-        <div
-            className="relative flex flex-col items-end gap-0.5"
-            onMouseEnter={() => {
-                setIsHover(true);
-                onHoverChange(true);
-            }}
-            onMouseLeave={() => {
-                setIsHover(false);
-                onHoverChange(false);
-            }}
-        >
+        <div className="relative flex flex-col items-end gap-0.5"
+             onMouseEnter={() => { setIsHover(true); onHoverChange(true); }}
+             onMouseLeave={() => { setIsHover(false); onHoverChange(false); }}>
             <div className="relative group/gem cursor-help">
-                <img
-                    src={gem.Icon}
-                    className="w-7 h-7 object-contain drop-shadow-[0_0_3px_rgba(0,0,0,0.5)]"
-                    alt="gem"
-                />
-                <div className="absolute -top-1 -right-1 bg-zinc-900 text-[8px] px-0.5 rounded border border-zinc-700 font-bold text-white">
-                    {gem.Level}
-                </div>
+                <img src={gem.Icon} className="w-7 h-7 object-contain drop-shadow-[0_0_3px_rgba(0,0,0,0.5)]" alt="gem" />
+                <div className="absolute -top-1 -right-1 bg-zinc-900 text-[8px] px-0.5 rounded border border-zinc-700 font-bold text-white">{gem.Level}</div>
             </div>
-
             <div className="flex flex-col items-end leading-none">
-                {gem.Description.map((desc: string, dIdx: number) => {
-                    const isDmg = desc.includes("피해");
-                    return (
-                        <span key={dIdx} className={`text-[9px] font-black tracking-tighter ${isDmg ? 'text-orange-400' : 'text-cyan-400'}`}>
-                            {desc.match(/(\d+\.?\d*%)/)?.[0] || desc}
-                        </span>
-                    );
-                })}
+                {gem.Description.map((desc: string, dIdx: number) => (
+                    <span key={dIdx} className={`text-[9px] font-black tracking-tighter ${desc.includes("피해") ? 'text-orange-400' : 'text-cyan-400'}`}>
+                        {desc.match(/(\d+\.?\d*%)/)?.[0] || desc}
+                    </span>
+                ))}
             </div>
-
             {isHover && gem.originalData && (
                 <div className="absolute right-full top-0 z-[999] pr-4 pointer-events-none">
-                    <div className="animate-in fade-in zoom-in-95 duration-150">
-                        <JewelryTooltip gemData={gem.originalData} />
-                    </div>
+                    <div className="animate-in fade-in zoom-in-95 duration-150"><JewelryTooltip gemData={gem.originalData} /></div>
                 </div>
             )}
         </div>
     );
 };
 
-const SkillCard = ({ skill, matchedGems }: { skill: any, matchedGems: any[] }) => {
-    const [isGemHovering, setIsGemHovering] = useState(false); // 보석 호버 상태 관리
-
-    const sTooltip = JSON.parse(skill.Tooltip || "{}");
-    let cooldown = "", description = "";
-
-    Object.entries(sTooltip).forEach(([_, el]: [any, any]) => {
-        const val = el.value;
-        if (!val) return;
-        if (el.type === "CommonSkillTitle") cooldown = cleanHtml(val.leftText);
-        if (typeof val === 'string' && val.includes("피해를") && !description) description = cleanHtml(val.split('<BR>')[0]);
-    });
+const SkillCard = ({ skill, matchedGems, isTrans }: { skill: any, matchedGems: any[], isTrans?: boolean }) => {
+    const [isGemHovering, setIsGemHovering] = useState(false);
+    const { cooldown, description } = React.useMemo(() => {
+        try {
+            const sTooltip = JSON.parse(skill.Tooltip || "{}");
+            let cd = "", desc = "";
+            Object.values(sTooltip).forEach((el: any) => {
+                if (el.type === "CommonSkillTitle") cd = cleanHtml(el.value.leftText);
+                if (typeof el.value === 'string' && el.value.includes("피해를") && !desc) desc = cleanHtml(el.value.split('<BR>')[0]);
+            });
+            return { cooldown: cd, description: desc };
+        } catch { return { cooldown: "", description: "" }; }
+    }, [skill.Tooltip]);
 
     const selectedTripods = skill.Tripods?.filter((t: any) => t.IsSelected) || [];
     const rStyle = gradeStyles[skill.Rune?.Grade] || gradeStyles['일반'];
 
     return (
-        <div className="group relative px-3 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 w-full z-10 hover:z-[50] hover:bg-white/[0.04] border border-transparent hover:border-white/5">
-            {/* 1. 스킬 기본 정보 */}
+        <div className={`group relative px-3 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 w-full z-10 hover:z-[50] border border-transparent hover:border-white/10 ${isTrans ? 'bg-purple-500/[0.03] hover:bg-purple-500/[0.08]' : 'hover:bg-white/[0.04]'}`}>
             <div className="flex items-center gap-2.5 w-[180px] shrink-0">
                 <div className="relative shrink-0">
-                    <img src={skill.Icon} className="w-10 h-10 rounded-lg border border-zinc-700" alt="" />
-                    <div className="absolute -bottom-1 -right-1 bg-black/80 px-1 py-0 rounded text-[9px] font-black border border-white/20 text-zinc-100 leading-none">
-                        {skill.Level}
-                    </div>
+                    <img src={skill.Icon} className={`w-10 h-10 rounded-lg border ${isTrans ? 'border-purple-500/40' : 'border-zinc-700'}`} alt="" />
+                    <div className="absolute -bottom-1 -right-1 bg-black/80 px-1 py-0 rounded text-[9px] font-black border border-white/20 text-zinc-100 leading-none">{skill.Level}</div>
                 </div>
                 <div className="min-w-0">
-                    <h4 className="text-[13px] font-bold truncate text-zinc-100">{skill.Name}</h4>
+                    <h4 className={`text-[13px] font-bold truncate ${isTrans ? 'text-purple-200' : 'text-zinc-100'}`}>{skill.Name}</h4>
                     {cooldown && (
                         <div className="flex items-center gap-1 text-zinc-500">
                             <Clock size={10} />
@@ -139,7 +125,6 @@ const SkillCard = ({ skill, matchedGems }: { skill: any, matchedGems: any[] }) =
                 </div>
             </div>
 
-            {/* 2. 트라이포드 & 룬 */}
             <div className="flex-1 flex items-center justify-start gap-1 min-w-0 px-2 border-l border-white/5">
                 <div className="flex gap-1 shrink-0">
                     {selectedTripods.map((tp: any, i: number) => (
@@ -148,42 +133,26 @@ const SkillCard = ({ skill, matchedGems }: { skill: any, matchedGems: any[] }) =
                         </div>
                     ))}
                 </div>
-                <div className="ml-2 pl-2 border-l border-white/5 shrink-0">
-                    {skill.Rune ? (
+                {skill.Rune && (
+                    <div className="ml-2 pl-2 border-l border-white/5 shrink-0">
                         <div className={`w-7 h-7 rounded-md bg-gradient-to-br ${rStyle.bg} border ${rStyle.border} p-0.5 shadow-sm`}>
                             <img src={skill.Rune.Icon} className="w-full h-full object-contain" alt="" />
                         </div>
-                    ) : (
-                        <div className="w-7 h-7 rounded-md border border-dashed border-white/5 opacity-20" />
-                    )}
-                </div>
-            </div>
-
-            {/* 3. 장착 보석 정보 */}
-            <div className="w-[180px] shrink-0 flex justify-end gap-1.5 items-center">
-                {matchedGems && matchedGems.length > 0 ? (
-                    matchedGems.map((gem, i) => (
-                        <GemItem
-                            key={i}
-                            gem={gem}
-                            onHoverChange={(hover) => setIsGemHovering(hover)}
-                        />
-                    ))
-                ) : (
-                    <span className="text-[10px] text-zinc-800 font-bold pr-2">NO GEMS</span>
+                    </div>
                 )}
             </div>
 
-            {/* ✅ 보석을 호버 중이지 않을 때만 스킬 툴팁을 렌더링 */}
-            {!isGemHovering && (
-                <SkillTooltip description={description} selectedTripods={selectedTripods} rune={skill.Rune} />
-            )}
+            <div className="w-[180px] shrink-0 flex justify-end gap-1.5 items-center">
+                {matchedGems.map((gem, i) => <GemItem key={i} gem={gem} onHoverChange={setIsGemHovering} />)}
+            </div>
+            {!isGemHovering && <SkillTooltip description={description} selectedTripods={selectedTripods} rune={skill.Rune} />}
         </div>
     );
 };
 
 export const SkillTab = ({ character }: { character: any }) => {
-    const [skills, setSkills] = useState<any[]>([]);
+    const [normalSkills, setNormalSkills] = useState<any[]>([]);
+    const [transSkills, setTransSkills] = useState<any[]>([]);
     const [gems, setGems] = useState<any>(null);
     const [loading, setLoading] = useState(false);
 
@@ -196,12 +165,38 @@ export const SkillTab = ({ character }: { character: any }) => {
             fetch(`/gems?name=${encodeURIComponent(character.CharacterName)}`).then(res => res.json())
         ])
             .then(([skillJson, gemJson]) => {
-                setSkills(skillJson.filter((s: any) => s.SkillType !== 100 && s.Level > 1).sort((a: any, b: any) => b.Level - a.Level));
+                const className = character.CharacterClassName;
+                const keyword = TRANSFORMATION_KEYWORDS[className];
+                const allowLvl1 = ALLOW_LEVEL_1_TRANS.includes(className);
+
+                // 1. 공통 필터링: 각성기(100) 제외 + 툴팁 내 '초각성' 키워드 포함 스킬 제외
+                const filteredBySystem = skillJson.filter((s: any) => {
+                    const isAwakening = s.SkillType === 100;
+                    const isHyperAwakening = s.SkillType === 1;
+                    return !isAwakening && !isHyperAwakening;
+                });
+
+                // 2. 변신 스킬 분류
+                const trans = filteredBySystem.filter((s: any) => {
+                    const hasKeyword = keyword && s.Tooltip?.includes(keyword);
+                    if (!hasKeyword) return false;
+                    return allowLvl1 ? true : s.Level > 1;
+                });
+
+                // 3. 일반 스킬 분류 (레벨 1 제외 및 변신 스킬 중복 제거)
+                const normal = filteredBySystem.filter((s: any) => {
+                    const isLvlValid = s.Level > 1;
+                    const isAlreadyTrans = trans.some((ts: any) => ts.Name === s.Name);
+                    return isLvlValid && !isAlreadyTrans;
+                });
+
+                setNormalSkills(normal.sort((a: any, b: any) => b.Level - a.Level));
+                setTransSkills(trans);
                 setGems(gemJson);
                 setLoading(false);
             })
             .catch(() => setLoading(false));
-    }, [character?.CharacterName]);
+    }, [character?.CharacterName, character?.CharacterClassName]);
 
     if (loading) return (
         <div className="py-20 flex flex-col items-center justify-center">
@@ -210,28 +205,46 @@ export const SkillTab = ({ character }: { character: any }) => {
         </div>
     );
 
+    const renderSkillList = (skillList: any[], isTrans = false) => (
+        skillList.map((s, i) => {
+            const matchedGems = gems?.Effects?.Skills?.filter((gs: any) => gs.Name === s.Name) || [];
+            const enhancedGems = matchedGems.map((mg: any) => {
+                const originalGem = gems.Gems.find((g: any) => g.Slot === mg.GemSlot);
+                return { ...mg, Icon: originalGem?.Icon, Level: originalGem?.Level, originalData: originalGem };
+            });
+            return <SkillCard key={i} skill={s} matchedGems={enhancedGems} isTrans={isTrans} />;
+        })
+    );
+
+    const transTitle = TRANSFORMATION_KEYWORDS[character.CharacterClassName] || "Identity Skills";
+
     return (
         <section className="mt-4 pb-10">
             <div className="bg-[#0c0c0d] rounded-2xl border border-white/5 p-4 shadow-xl overflow-visible">
-                {skills.length > 0 && <SkillStatsBar skills={skills} />}
+                {(normalSkills.length > 0 || transSkills.length > 0) && <SkillStatsBar skills={[...normalSkills, ...transSkills]} />}
 
-                <div className="flex flex-col gap-1 overflow-visible">
-                    {skills.length > 0 ? (
-                        skills.map((s, i) => {
-                            const matchedGems = gems?.Effects?.Skills?.filter((gs: any) => gs.Name === s.Name) || [];
-                            const enhancedGems = matchedGems.map((mg: any) => {
-                                const originalGem = gems.Gems.find((g: any) => g.Slot === mg.GemSlot);
-                                return {
-                                    ...mg,
-                                    Icon: originalGem?.Icon,
-                                    Level: originalGem?.Level,
-                                    originalData: originalGem
-                                };
-                            });
+                <div className="flex flex-col gap-8 overflow-visible">
+                    {normalSkills.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                                <Sword size={14} className="text-zinc-600" />
+                                <span className="text-[11px] font-black text-zinc-500 uppercase tracking-widest">Combat Skills</span>
+                            </div>
+                            {renderSkillList(normalSkills)}
+                        </div>
+                    )}
 
-                            return <SkillCard key={i} skill={s} matchedGems={enhancedGems} />;
-                        })
-                    ) : (
+                    {transSkills.length > 0 && (
+                        <div className="flex flex-col gap-1 p-3.5 rounded-2xl bg-purple-500/[0.03] border border-purple-500/10 shadow-[inset_0_0_20px_rgba(168,85,247,0.02)]">
+                            <div className="flex items-center gap-2 mb-2.5 px-1">
+                                <Sparkles size={14} className="text-purple-400" />
+                                <span className="text-[11px] font-black text-purple-400 uppercase tracking-[0.15em]">{transTitle}</span>
+                            </div>
+                            {renderSkillList(transSkills, true)}
+                        </div>
+                    )}
+
+                    {normalSkills.length === 0 && transSkills.length === 0 && (
                         <div className="py-20 flex flex-col items-center gap-4 text-zinc-700">
                             <ShieldAlert size={40} strokeWidth={1} />
                             <p className="font-bold text-xs">데이터가 없습니다.</p>
