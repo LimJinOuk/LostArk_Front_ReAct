@@ -64,6 +64,12 @@ export default defineConfig(({ mode }) => {
             target: 'http://localhost:8080',
             changeOrigin: true,
             secure: false,
+          },
+
+          '/goldCalculator':{
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
           }
         },
       },
