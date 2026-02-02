@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Loader2, Clock, Sword, ShieldAlert, Sparkles } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Loader2, Clock, Sword, ShieldAlert, Sparkles, Copy, Check } from 'lucide-react';
 import { SkillTooltip } from '@/components/profile/Tooltip/SkillTooltip';
 import JewelryTooltip from '@/components/profile/Tooltip/JewelryTooltip';
 
@@ -15,7 +15,6 @@ const gradeStyles: any = {
     '에스더': { bg: 'from-[#0d2e2e] to-[#050505]', border: 'border-[#2edbd3]/60' }
 };
 
-// ✅ 변신 스킬 노출 허용 직업군 (레벨 1이어도 키워드 매칭 시 노출)
 const ALLOW_LEVEL_1_TRANS = ['블래스터', '데모닉', '스카우터'];
 
 const TRANSFORMATION_KEYWORDS: Record<string, string> = {
@@ -47,19 +46,17 @@ const getSkillStats = (skills: any[]) => {
 const SkillStatsBar = ({ skills }: { skills: any[] }) => {
     const { counter, stagger, destruction } = getSkillStats(skills);
     return (
-        <div className="flex items-center justify-center mb-6 px-4">
-            <div className="flex items-center gap-4 px-5 py-2 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
-                {[
-                    { label: '카운터', val: counter },
-                    { label: '무력화', val: stagger },
-                    { label: '부위 파괴', val: destruction }
-                ].map((item, idx) => (
-                    <div key={idx} className="flex items-baseline gap-2 pr-4 border-r border-white/5 last:border-0 last:pr-0">
-                        <span className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">{item.label}</span>
-                        <span className="text-base font-black tracking-tighter text-zinc-200">{item.val}</span>
-                    </div>
-                ))}
-            </div>
+        <div className="flex items-center gap-4 px-5 py-2 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-sm">
+            {[
+                { label: '카운터', val: counter },
+                { label: '무력화', val: stagger },
+                { label: '부위 파괴', val: destruction }
+            ].map((item, idx) => (
+                <div key={idx} className="flex items-baseline gap-2 pr-4 border-r border-white/5 last:border-0 last:pr-0">
+                    <span className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider">{item.label}</span>
+                    <span className="text-base font-black tracking-tighter text-zinc-200">{item.val}</span>
+                </div>
+            ))}
         </div>
     );
 };
@@ -92,7 +89,7 @@ const GemItem = ({ gem, onHoverChange }: { gem: any, onHoverChange: (isHover: bo
 
 const SkillCard = ({ skill, matchedGems, isTrans }: { skill: any, matchedGems: any[], isTrans?: boolean }) => {
     const [isGemHovering, setIsGemHovering] = useState(false);
-    const { cooldown, description } = React.useMemo(() => {
+    const { cooldown, description } = useMemo(() => {
         try {
             const sTooltip = JSON.parse(skill.Tooltip || "{}");
             let cd = "", desc = "";
@@ -156,6 +153,9 @@ export const SkillTab = ({ character }: { character: any }) => {
     const [gems, setGems] = useState<any>(null);
     const [loading, setLoading] = useState(false);
 
+    const [isCopying, setIsCopying] = useState(false);
+    const [copySuccess, setCopySuccess] = useState(false);
+
     useEffect(() => {
         if (!character?.CharacterName) return;
         setLoading(true);
@@ -169,21 +169,18 @@ export const SkillTab = ({ character }: { character: any }) => {
                 const keyword = TRANSFORMATION_KEYWORDS[className];
                 const allowLvl1 = ALLOW_LEVEL_1_TRANS.includes(className);
 
-                // 1. 공통 필터링: 각성기(100) 제외 + 툴팁 내 '초각성' 키워드 포함 스킬 제외
                 const filteredBySystem = skillJson.filter((s: any) => {
                     const isAwakening = s.SkillType === 100;
                     const isHyperAwakening = s.SkillType === 1;
                     return !isAwakening && !isHyperAwakening;
                 });
 
-                // 2. 변신 스킬 분류
                 const trans = filteredBySystem.filter((s: any) => {
                     const hasKeyword = keyword && s.Tooltip?.includes(keyword);
                     if (!hasKeyword) return false;
                     return allowLvl1 ? true : s.Level > 1;
                 });
 
-                // 3. 일반 스킬 분류 (레벨 1 제외 및 변신 스킬 중복 제거)
                 const normal = filteredBySystem.filter((s: any) => {
                     const isLvlValid = s.Level > 1;
                     const isAlreadyTrans = trans.some((ts: any) => ts.Name === s.Name);
@@ -197,6 +194,47 @@ export const SkillTab = ({ character }: { character: any }) => {
             })
             .catch(() => setLoading(false));
     }, [character?.CharacterName, character?.CharacterClassName]);
+
+    // ✅ 백엔드 Mono<String> 응답에 맞춘 복사 로직
+    const handleCopyCode = async () => {
+        if (isCopying || !character?.CharacterName) return;
+
+        setIsCopying(true);
+        try {
+            const res = await fetch(
+                `/skillcode?name=${encodeURIComponent(character.CharacterName)}&_t=${Date.now()}`,
+                { cache: 'no-store' }
+            );
+
+            if (!res.ok) throw new Error('API request failed');
+
+            // 🟢 중요: 백엔드가 Mono<String>을 반환하므로 res.text()로 직접 받습니다.
+            const skillCode = await res.text();
+
+            if (skillCode) {
+                // 클립보드 복사 (안전한 컨텍스트 우선)
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(skillCode.trim());
+                } else {
+                    // Fallback
+                    const textArea = document.createElement("textarea");
+                    textArea.value = skillCode.trim();
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+
+                setCopySuccess(true);
+                setTimeout(() => setCopySuccess(false), 2000);
+            }
+        } catch (err) {
+            console.error("복사 실패:", err);
+            alert("스킬 코드를 가져오는 데 실패했습니다.");
+        } finally {
+            setIsCopying(false);
+        }
+    };
 
     if (loading) return (
         <div className="py-20 flex flex-col items-center justify-center">
@@ -221,7 +259,32 @@ export const SkillTab = ({ character }: { character: any }) => {
     return (
         <section className="mt-4 pb-10">
             <div className="bg-[#0c0c0d] rounded-2xl border border-white/5 p-4 shadow-xl overflow-visible">
-                {(normalSkills.length > 0 || transSkills.length > 0) && <SkillStatsBar skills={[...normalSkills, ...transSkills]} />}
+
+                <div className="flex flex-col md:flex-row items-center justify-between mb-6 px-1 gap-4">
+                    {(normalSkills.length > 0 || transSkills.length > 0) ? (
+                        <SkillStatsBar skills={[...normalSkills, ...transSkills]} />
+                    ) : <div />}
+
+                    <button
+                        onClick={handleCopyCode}
+                        disabled={isCopying}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-200 group h-10
+                            ${copySuccess
+                            ? 'border-green-500/40 bg-green-500/10 text-green-400'
+                            : 'border-white/10 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white'}`}
+                    >
+                        {isCopying ? (
+                            <Loader2 size={14} className="animate-spin" />
+                        ) : copySuccess ? (
+                            <Check size={14} />
+                        ) : (
+                            <Copy size={14} className="group-hover:rotate-12 transition-transform" />
+                        )}
+                        <span className="text-[11px] font-black uppercase tracking-wider">
+                            {copySuccess ? 'Copied!' : 'Copy Skill Code'}
+                        </span>
+                    </button>
+                </div>
 
                 <div className="flex flex-col gap-8 overflow-visible">
                     {normalSkills.length > 0 && (
