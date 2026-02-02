@@ -141,16 +141,26 @@ const Header: React.FC<HeaderProps> = ({ setIsMenuOpen, isExploding, setIsExplod
             }
         }
     };
-
     const handleSearch = (e: React.FormEvent | string) => {
         if (typeof e !== 'string') e.preventDefault();
         const query = typeof e === 'string' ? e : searchQuery;
         const trimmedQuery = query.trim();
 
         if (trimmedQuery) {
-            const updatedHistory = [trimmedQuery, ...history.filter((item) => item !== trimmedQuery)].slice(0, 5);
-            setHistory(updatedHistory);
+            // 1. 기존 데이터 가져오기
+            const saved = localStorage.getItem('searchHistory');
+            const currentHistory = saved ? JSON.parse(saved) : [];
+
+            // 2. 새로운 히스토리 생성
+            const updatedHistory = [trimmedQuery, ...currentHistory.filter((item: string) => item !== trimmedQuery)].slice(0, 5);
+
+            // 3. 로컬 스토리지 저장
             localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+            setHistory(updatedHistory);
+
+            // 4. [중요] 다른 컴포넌트에 알림 전송
+            window.dispatchEvent(new Event("searchHistoryUpdated"));
+
             navigate(`/profilePage?name=${encodeURIComponent(trimmedQuery)}`);
             setSearchQuery("");
             setIsHistoryOpen(false);
@@ -160,9 +170,24 @@ const Header: React.FC<HeaderProps> = ({ setIsMenuOpen, isExploding, setIsExplod
     const deleteHistory = (e: React.MouseEvent, term: string) => {
         e.stopPropagation();
         const updatedHistory = history.filter((item) => item !== term);
-        setHistory(updatedHistory);
         localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+        setHistory(updatedHistory);
+        window.dispatchEvent(new Event("searchHistoryUpdated")); // 알림 추가
     };
+
+    // 동기화를 위한 useEffect 추가
+    useEffect(() => {
+        const syncHistory = () => {
+            const saved = localStorage.getItem('searchHistory');
+            if (saved) setHistory(JSON.parse(saved));
+        };
+        window.addEventListener("searchHistoryUpdated", syncHistory);
+        window.addEventListener("storage", syncHistory); // 다른 탭 대응
+        return () => {
+            window.removeEventListener("searchHistoryUpdated", syncHistory);
+            window.removeEventListener("storage", syncHistory);
+        };
+    }, []);
 
     return (
         <>
