@@ -11,6 +11,7 @@
   import AuctionPage from './pages/auctionPage';
   import ProfilePage from './pages/ProfilePage'; // 새로 만든 프로필 페이지
   import { SimulatorPage } from "@/pages/SimulatorPage";
+  import RankingPage from './pages/RankingPage';
   import { MOCK_CHARACTER } from './constants';
 
   // 애니메이션 래퍼 (페이지 전환 효과용)
@@ -27,6 +28,7 @@
 
   export default function App() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isExploding, setIsExploding] = useState(false);
 
   // 다크 모드 고정 적용
     useEffect(() => {
@@ -37,9 +39,14 @@
 
     return (
         <BrowserRouter>
-          <div className="min-h-screen font-sans text-[16px] dark bg-zinc-950 text-white overflow-x-hidden">
+          {/* [수정] isExploding 상태에 따라 배경에 미세한 핑크빛을 줄 수 있습니다. */}
+          <div className={`min-h-screen font-sans text-[16px] dark text-white overflow-x-hidden transition-colors duration-700
+        ${isExploding ? 'bg-[#0a0507]' : 'bg-zinc-950'}`}>
+
             <Header
                 setIsMenuOpen={setIsMenuOpen}
+                isExploding={isExploding}       // [추가] 상태 전달
+                setIsExploding={setIsExploding} // [추가] 상태 변경 함수 전달
             />
             {/* 사이드바 컴포넌트 삽입 */}
             <Sidebar
@@ -93,6 +100,12 @@
                         <AuctionPage />
                       </PageWrapper>
                     } />
+
+                      <Route path="/rankingPage" element={
+                          <PageWrapper>
+                              <RankingPage />
+                          </PageWrapper>
+                      } />
                   </Routes>
                 </AnimatePresence>
               </main>

@@ -179,17 +179,17 @@ const GoldCalculator = () => {
                     <div className="space-y-1 md:space-y-2">
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                            <p className="text-[11px] md:text-[13px] font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase">Weekly Estimated Gold</p>
+                            <p className="text-[11px] md:text-[12px] font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase">Weekly Estimated Gold</p>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <h1 className="text-4xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter drop-shadow-sm">
+                            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter drop-shadow-sm">
                                 {calculateTotalGold().toLocaleString()}
                             </h1>
                             <span className="text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-tr from-slate-400 to-slate-500 dark:from-zinc-500 dark:to-zinc-400">G</span>
                         </div>
                     </div>
                     <div className="hidden md:flex items-center gap-3">
-                        <button onClick={() => setSelectedRaids([])} className="group relative flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-br from-white/40 to-white/10 dark:from-white/10 dark:to-transparent text-slate-900 dark:text-zinc-200 rounded-2xl text-sm font-bold border border-white/50 dark:border-white/10 shadow-sm backdrop-blur-md transition-all active:scale-95">
+                        <button onClick={() => setSelectedRaids([])} className="group relative flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-white/40 to-white/10 dark:from-white/10 dark:to-transparent text-slate-900 dark:text-zinc-200 rounded-2xl text-sm font-bold border border-white/50 dark:border-white/10 shadow-sm backdrop-blur-md transition-all active:scale-95">
                             <RotateCcw size={18} className="relative z-10 opacity-70 group-hover:rotate-[-180deg] transition-all duration-500" />
                             <span className="relative z-10">전체 초기화</span>
                         </button>
