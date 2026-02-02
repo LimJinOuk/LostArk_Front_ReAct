@@ -49,6 +49,35 @@ const HomePage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'material' | 'engraving'>('material');
     const [listSearchTerm, setListSearchTerm] = useState("");
 
+    // --- [추가] 초기 로드시 로컬 스토리지에서 검색 기록 불러오기 ---
+    useEffect(() => {
+        const syncHistory = () => {
+            const saved = localStorage.getItem('searchHistory');
+            if (saved) {
+                setHistory(JSON.parse(saved));
+            } else {
+                setHistory([]);
+            }
+        };
+
+        syncHistory(); // 초기 로드
+
+        window.addEventListener("searchHistoryUpdated", syncHistory);
+        window.addEventListener("storage", syncHistory); // 다른 탭 대응
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (historyRef.current && !historyRef.current.contains(event.target as Node)) {
+                setIsHistoryOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            window.removeEventListener("searchHistoryUpdated", syncHistory);
+            window.removeEventListener("storage", syncHistory);
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     const fetchAndSaveData = async () => {
         setIsRefreshing(true);
         try {
@@ -106,22 +135,37 @@ const HomePage: React.FC = () => {
         }
     }, [selectedItem?.Id]);
 
+    // --- [수정] 검색 로직 보완 ---
     const handleSearch = (e: React.FormEvent | string) => {
         if (typeof e !== 'string') e.preventDefault();
         const q = typeof e === 'string' ? e : searchQuery.trim();
         if (!q) return;
-        const updated = [q, ...history.filter(item => item !== q)].slice(0, 5);
-        setHistory(updated);
+
+        // 로컬 스토리지 최신화 로직
+        const saved = localStorage.getItem('searchHistory');
+        const currentHistory = saved ? JSON.parse(saved) : [];
+        const updated = [q, ...currentHistory.filter((item: string) => item !== q)].slice(0, 5);
+
         localStorage.setItem('searchHistory', JSON.stringify(updated));
-        navigate(`/profilePage?name=${encodeURIComponent(q)}`);
+        setHistory(updated);
+
+        // [중요] Header 컴포넌트에 알림
+        window.dispatchEvent(new Event("searchHistoryUpdated"));
+
         setIsHistoryOpen(false);
+        setSearchQuery("");
+        navigate(`/profilePage?name=${encodeURIComponent(q)}`);
     };
 
+    // deleteHistory 수정
     const deleteHistory = (e: React.MouseEvent, term: string) => {
         e.stopPropagation();
         const updated = history.filter(item => item !== term);
-        setHistory(updated);
         localStorage.setItem('searchHistory', JSON.stringify(updated));
+        setHistory(updated);
+
+        // Header에 알림
+        window.dispatchEvent(new Event("searchHistoryUpdated"));
     };
 
     const filteredData = marketData.filter(item => {
@@ -144,7 +188,6 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center min-h-screen pt-6 lg:pt-10 mx-auto max-w-7xl px-4 lg:px-6 pb-20"
         >
-
             {/* 로고 영역 */}
             <div className="text-center mb-6 lg:mb-12">
                 <h1 className="text-[42px] lg:text-[80px] font-black tracking-tighter text-white mb-1 lg:mb-2 leading-none">LOAPANG</h1>
@@ -172,14 +215,32 @@ const HomePage: React.FC = () => {
                 {/* 검색 기록 드롭다운 */}
                 <AnimatePresence>
                     {isHistoryOpen && history.length > 0 && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-[110%] left-0 right-0 z-50 bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-1 lg:py-2">
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute top-[110%] left-0 right-0 z-50 bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-1 lg:py-2"
+                        >
+                            <div className="px-5 py-2 text-[11px] font-bold text-zinc-500 uppercase tracking-widest border-b border-white/5 flex justify-between items-center">
+                                <span>최근 검색 기록</span>
+                                <History size={12} />
+                            </div>
                             {history.map((term, index) => (
-                                <div key={index} onClick={() => handleSearch(term)} className="flex items-center justify-between px-5 py-3 lg:px-6 lg:py-3 hover:bg-white/5 cursor-pointer transition-colors">
+                                <div
+                                    key={index}
+                                    onClick={() => handleSearch(term)}
+                                    className="flex items-center justify-between px-5 py-3 lg:px-6 lg:py-3 hover:bg-white/5 cursor-pointer transition-colors group/item"
+                                >
                                     <div className="flex items-center gap-3 text-zinc-300">
-                                        <Clock size={14} className="text-zinc-600" />
+                                        <Clock size={14} className="text-zinc-600 group-hover/item:text-indigo-400 transition-colors" />
                                         <span className="text-sm lg:text-base font-medium">{term}</span>
                                     </div>
-                                    <button onClick={(e) => deleteHistory(e, term)} className="p-2 text-zinc-600 hover:text-red-500"><X size={16} /></button>
+                                    <button
+                                        onClick={(e) => deleteHistory(e, term)}
+                                        className="p-2 text-zinc-600 hover:text-red-500 transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
                                 </div>
                             ))}
                         </motion.div>
@@ -189,8 +250,7 @@ const HomePage: React.FC = () => {
 
             {/* 메인 콘텐츠 그리드 */}
             <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch max-w-[1000px]">
-
-                {/* 좌측: 아이템 목록 (모바일 높이 h-[400px]로 조정) */}
+                {/* 좌측: 아이템 목록 */}
                 <div className="bg-zinc-900/50 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col overflow-hidden shadow-2xl backdrop-blur-sm h-[400px] lg:h-[500px]">
                     <div className="flex border-b border-white/5 bg-white/5 p-2 gap-1.5 lg:gap-2 shrink-0">
                         <button onClick={() => { setActiveTab('material'); setListSearchTerm(""); }} className={`flex-1 flex items-center justify-center gap-1.5 lg:gap-2 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold text-[13px] lg:text-base ${activeTab === 'material' ? 'bg-indigo-600 text-white shadow-lg' : 'text-zinc-500 hover:bg-white/5'}`}>
@@ -205,7 +265,7 @@ const HomePage: React.FC = () => {
                     <div className="px-4 py-3 bg-white/[0.02] border-b border-white/5 shrink-0">
                         <div className="relative">
                             <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                            <input type="text" value={listSearchTerm} onChange={(e) => setListSearchTerm(e.target.value)} placeholder="검색..." className="w-full bg-zinc-800/50 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500" />
+                            <input type="text" value={listSearchTerm} onChange={(e) => setListSearchTerm(e.target.value)} placeholder="아이템 검색..." className="w-full bg-zinc-800/50 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500" />
                         </div>
                     </div>
 
@@ -216,10 +276,10 @@ const HomePage: React.FC = () => {
                                     <div className="flex items-center gap-3 lg:gap-4">
                                         <img src={item.Icon} className="w-9 h-9 lg:w-12 lg:h-12 bg-zinc-800 rounded-xl p-1" alt="" />
                                         <div className="min-w-0">
-                                            <p className={`font-bold text-[13px] lg:text-sm truncate ${item.Grade === '전설' ? 'text-orange-400' : 'text-zinc-200'}`}>
+                                            <p className={`font-bold text-[13px] lg:text-base truncate ${item.Grade === '전설' ? 'text-orange-400' : 'text-zinc-200'}`}>
                                                 {item.Name.replace(" 각인서", "").replace("유물 ", "").replace(" 융화 재료", "")}
                                             </p>
-                                            <p className="text-[9px] text-zinc-500 font-bold uppercase">{item.Grade}</p>
+                                            <p className="text-[12px] text-zinc-500 font-bold uppercase">{item.Grade}</p>
                                         </div>
                                     </div>
                                     <div className="text-right shrink-0">
@@ -234,7 +294,7 @@ const HomePage: React.FC = () => {
                 </div>
 
                 {/* 우측: 시세 상세 섹션 */}
-                <div ref={scrollRef} className="scroll-mt-20 bg-zinc-900/50 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col p-6 lg:p-10 shadow-2xl backdrop-blur-sm min-h-[400px] lg:h-[500px]">
+                <div ref={scrollRef} className="scroll-mt-20 bg-zinc-900/50 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col p-6 lg:p-10 shadow-2xl backdrop-blur-sm min-h-[4 00px] lg:h-[500px]">
                     {selectedItem ? (
                         <div className="flex flex-col h-full">
                             <div className="flex justify-between items-start mb-6 gap-2">
