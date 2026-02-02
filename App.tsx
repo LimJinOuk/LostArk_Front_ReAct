@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-// 레이아웃 및 컴포넌트
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import { SidebarAds } from './components/layout/SidebarAds';
 import { FloatingBanner } from './components/layout/FloatingBanner';
 import {Sidebar} from  './components/layout/SideMenuBar';
-
-// 페이지 컴포넌트
 import HomePage from './pages/HomePage';
 import RaidPage from './pages/RaidPage';
 import AuctionPage from './pages/auctionPage';
 import ProfilePage from './pages/ProfilePage'; // 새로 만든 프로필 페이지
 import { SimulatorPage } from "@/pages/SimulatorPage";
-
-// 타입 및 상수
 import { MOCK_CHARACTER } from './constants';
 
 // 애니메이션 래퍼 (페이지 전환 효과용)
@@ -31,26 +26,19 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function App() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+// 다크 모드 고정 적용
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      document.body.style.backgroundColor = '#09090b';
-    } else {
-      root.classList.remove('dark');
-      document.body.style.backgroundColor = '#f8fafc';
-    }
-  }, [theme]);
+    root.classList.add('dark');
+    document.body.style.backgroundColor = '#09090b';
+  }, []);
 
   return (
       <BrowserRouter>
-        <div className={`min-h-screen transition-colors duration-500 font-sans text-[16px] ${theme === 'dark' ? 'dark text-white' : 'text-slate-900'}`}>
+        <div className="min-h-screen font-sans text-[16px] dark bg-zinc-950 text-white overflow-x-hidden">
           <Header
-              theme={theme}
-              setTheme={setTheme}
               setIsMenuOpen={setIsMenuOpen}
           />
           {/* 사이드바 컴포넌트 삽입 */}
@@ -59,7 +47,7 @@ export default function App() {
               onClose={() => setIsMenuOpen(false)}
           />
           //width를 max-w-[2190px]에서 조절
-          <div className="pt-20 pb-10 px-16 mx-auto flex gap-8 transition-all duration-500 max-w-[2000px]">
+          <div className="pt-20 md:pt-24 pb-10 px-4 md:px-16 mx-auto flex flex-col lg:flex-row gap-4 lg:gap-8 transition-all duration-500 max-w-[2000px]">
             {/* 왼쪽 사이드바 */}
             <div className="hidden 2xl:block w-72 shrink-0">
               <SidebarAds side="left" />

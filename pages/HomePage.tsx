@@ -49,6 +49,8 @@ const HomePage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'material' | 'engraving'>('material');
     const [listSearchTerm, setListSearchTerm] = useState("");
 
+
+
     const fetchAndSaveData = async () => {
         setIsRefreshing(true);
         try {
@@ -130,6 +132,15 @@ const HomePage: React.FC = () => {
         const matchesSearch = item.Name.toLowerCase().includes(listSearchTerm.toLowerCase());
         return matchesTab && matchesSearch;
     }).sort((a, b) => b.CurrentMinPrice - a.CurrentMinPrice);
+
+// selectedItem이 있을 때만 계산하고, 없으면 0이나 기본값을 할당합니다.
+    const priceDiff = selectedItem ? selectedItem.CurrentMinPrice - selectedItem.YDayAvgPrice : 0;
+    const priceDiffPercent = selectedItem && selectedItem.YDayAvgPrice > 0
+        ? ((priceDiff / selectedItem.YDayAvgPrice) * 100).toFixed(1)
+        : "0.0";
+
+    const isUp = priceDiff > 0;
+    const isDown = priceDiff < 0;
 
     return (
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center min-h-screen pt-10 mx-auto max-w-7xl px-4 lg:px-6 pb-20">
@@ -229,12 +240,27 @@ const HomePage: React.FC = () => {
                                     <h2 className="text-xl lg:text-2xl font-black text-white tracking-tighter truncate">{selectedItem.Name}</h2>
                                     <div className="flex items-center gap-2 mt-1">
                                         <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                                        <span className="text-indigo-500 text-[10px] font-black uppercase">Price Comparison</span>
+                                        <span className="text-indigo-500 text-[10px] font-black uppercase">Live Price</span>
                                     </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <p className="text-zinc-500 text-[10px] font-bold mb-1">CURRENT MIN</p>
-                                    <p className="text-2xl lg:text-3xl font-black text-amber-400 leading-none">{selectedItem.CurrentMinPrice.toLocaleString()}G</p>
+                                    <p className="text-zinc-500 text-[10px] font-bold mb-1">현재 최저가</p>
+                                    <div className="flex flex-col items-end gap-1.5">
+                                        <p className="text-2xl lg:text-3xl font-black text-amber-400 leading-none">
+                                            {selectedItem.CurrentMinPrice.toLocaleString()}G
+                                        </p>
+                                        {/* 증감 퍼센트 배지: 전날 평균 대비 현재가 비교 */}
+                                        {selectedItem.YDayAvgPrice > 0 && (
+                                            <div className={`text-[10px] lg:text-[11px] font-black px-2 py-0.5 rounded-md flex items-center gap-0.5 ${
+                                                isUp ? 'bg-rose-500/10 text-rose-500' :
+                                                    isDown ? 'bg-blue-500/10 text-blue-500' :
+                                                        'bg-zinc-500/10 text-zinc-500'
+                                            }`}>
+                                                <span>{isUp ? '▲' : isDown ? '▼' : ''}</span>
+                                                <span>{Math.abs(Number(priceDiffPercent))}%</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -243,30 +269,51 @@ const HomePage: React.FC = () => {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         data={[
-                                            { name: '전날 평균', price: selectedItem.YDayAvgPrice, color: '#3f3f46' },
-                                            { name: '최근 거래', price: selectedItem.RecentPrice, color: '#818cf8' },
-                                            { name: '현재 최저', price: selectedItem.CurrentMinPrice, color: '#fbbf24' }
+                                            { name: '전날 평균', price: selectedItem.YDayAvgPrice },
+                                            { name: '최근 거래', price: selectedItem.RecentPrice },
+                                            { name: '현재 최저', price: selectedItem.CurrentMinPrice }
                                         ]}
-                                        margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+                                        margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
+                                        barCategoryGap="20%"
                                     >
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                                        <CartesianGrid
+                                            vertical={false}
+                                            stroke="#ffffff10" /* 너무 밝지 않게 수정 */
+                                            strokeDasharray="0"
+                                        />
                                         <XAxis
                                             dataKey="name"
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: '#71717a', fontSize: 12, fontWeight: 'bold' }}
+                                            tick={{ fill: '#71717a', fontSize: 11, fontWeight: 'bold' }}
+                                            interval={0}
                                         />
-                                        <YAxis hide domain={[0, 'dataMax + 1000']} />
+                                        <YAxis
+                                            hide
+                                            domain={[
+                                                (dataMin: number) => dataMin - (dataMin * 0.05),
+                                                (dataMax: number) => dataMax + (dataMax * 0.02)
+                                            ]}
+                                        />
+
+                                        {/* 툴팁 추가: 마우스 오버 시 상세 가격 표시 */}
                                         <Tooltip
-                                            cursor={{ fill: 'transparent' }}
-                                            contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                                            cursor={{ fill: 'white', opacity: 0.05 }}
+                                            contentStyle={{
+                                                backgroundColor: '#18181b',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '12px',
+                                                fontSize: '12px',
+                                                color: '#fff'
+                                            }}
+                                            itemStyle={{ color: '#fbbf24', fontWeight: 'bold' }}
                                             formatter={(value: number) => [`${value.toLocaleString()} G`, '가격']}
                                         />
-                                        <Bar dataKey="price" radius={[10, 10, 0, 0]} barSize={50}>
-                                            {/* 각 막대마다 다른 색상 적용 */}
-                                            {[0, 1, 2].map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={index === 0 ? '#3f3f46' : index === 1 ? '#818cf8' : '#fbbf24'} />
-                                            ))}
+
+                                        <Bar dataKey="price" radius={[10, 10, 0, 0]}>
+                                            <Cell fill="#3f3f46" /> {/* 전날 평균 */}
+                                            <Cell fill="#818cf8" /> {/* 최근 거래 */}
+                                            <Cell fill="#fbbf24" /> {/* 현재 최저 */}
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -275,21 +322,23 @@ const HomePage: React.FC = () => {
                             {/* 하단 상세 정보 리스트 */}
                             <div className="mt-6 grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
                                 <div className="text-center">
-                                    <p className="text-[10px] text-zinc-500 font-bold mb-1 uppercase">Yesterday</p>
+                                    <p className="text-[10px] text-zinc-500 font-bold mb-1 uppercase tracking-tighter">전날 평균가</p>
                                     <p className="text-sm font-bold text-zinc-300">{selectedItem.YDayAvgPrice.toLocaleString()}G</p>
                                 </div>
                                 <div className="text-center border-x border-white/5">
-                                    <p className="text-[10px] text-zinc-500 font-bold mb-1 uppercase">Recent</p>
+                                    <p className="text-[10px] text-zinc-500 font-bold mb-1 uppercase tracking-tighter">최근 거래가</p>
                                     <p className="text-sm font-bold text-indigo-400">{selectedItem.RecentPrice.toLocaleString()}G</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[10px] text-zinc-500 font-bold mb-1 uppercase">Min Price</p>
+                                    <p className="text-[10px] text-zinc-500 font-bold mb-1 uppercase tracking-tighter">현재 최저가</p>
                                     <p className="text-sm font-bold text-amber-400">{selectedItem.CurrentMinPrice.toLocaleString()}G</p>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-zinc-600 font-bold border-2 border-dashed border-white/5 rounded-[2rem]">아이템을 선택하세요.</div>
+                        <div className="h-full flex items-center justify-center text-zinc-600 font-bold border-2 border-dashed border-white/5 rounded-[2rem]">
+                            아이템을 선택하세요.
+                        </div>
                     )}
                 </div>
             </div>
