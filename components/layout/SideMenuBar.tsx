@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Home, Shield, Calculator, Gavel, Settings, ExternalLink } from 'lucide-react';
+import { X, Home, Shield, Calculator, Gavel, Settings, ExternalLink,Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
@@ -16,6 +16,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         { label: '군단장 레이드', icon: Shield, path: '/raidPage' },
         { label: '전투 시뮬레이터', icon: Calculator, path: '/simulatorPage' },
         { label: '경매 계산기', icon: Gavel, path: '/auctionPage' },
+        { label: '랭킹', icon: Crown, path: '/rankingPage' },
     ];
 
     return (
