@@ -75,7 +75,27 @@ export default defineConfig(({ mode }) => {
             target: 'http://localhost:8080',
             changeOrigin: true,
             secure: false,
-          }
+          },
+          '/ranking/combat-power': {
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/ranking/class': {
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/ranking/item-level': {
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/ranking/update': {
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
         },
       },
       plugins: [react()],
