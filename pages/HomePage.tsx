@@ -136,27 +136,37 @@ const HomePage: React.FC = () => {
     }, [selectedItem?.Id]);
 
     // --- [수정] 검색 로직 보완 ---
-    const handleSearch = (e: React.FormEvent | string) => {
+// --- [수정] 검색 로직: API 호출 추가 ---
+    const handleSearch = async (e: React.FormEvent | string) => {
         if (typeof e !== 'string') e.preventDefault();
         const q = typeof e === 'string' ? e : searchQuery.trim();
         if (!q) return;
 
-        // 로컬 스토리지 최신화 로직
+        // 1. 로컬 스토리지 검색 기록 업데이트
         const saved = localStorage.getItem('searchHistory');
         const currentHistory = saved ? JSON.parse(saved) : [];
         const updated = [q, ...currentHistory.filter((item: string) => item !== q)].slice(0, 5);
-
         localStorage.setItem('searchHistory', JSON.stringify(updated));
         setHistory(updated);
-
-        // [중요] Header 컴포넌트에 알림
         window.dispatchEvent(new Event("searchHistoryUpdated"));
 
+        // 2. [추가] 백엔드 API 호출 (랭킹/캐릭터 정보 업데이트)
+        // 캐릭터 정보를 로스트아크 API에서 가져와 DB에 저장하는 과정입니다.
+        try {
+            // 전적 검색 페이지로 가기 전에 DB를 최신화합니다.
+            // await를 사용하여 업데이트가 완료될 때까지 잠시 기다립니다.
+            await axios.post(`/ranking/update/${encodeURIComponent(q)}`);
+            console.log(`${q} 캐릭터 정보 업데이트 성공`);
+        } catch (error) {
+            // API 호출 실패 시에도 페이지 이동은 시키기 위해 에러 로그만 남깁니다.
+            console.error("캐릭터 정보 업데이트 중 에러 발생:", error);
+        }
+
+        // 3. 페이지 이동 및 초기화
         setIsHistoryOpen(false);
         setSearchQuery("");
         navigate(`/profilePage?name=${encodeURIComponent(q)}`);
     };
-
     // deleteHistory 수정
     const deleteHistory = (e: React.MouseEvent, term: string) => {
         e.stopPropagation();
@@ -191,7 +201,7 @@ const HomePage: React.FC = () => {
             {/* 로고 영역 */}
             <div className="text-center mb-6 lg:mb-12">
                 <h1 className="text-[42px] lg:text-[80px] font-black tracking-tighter text-white mb-1 lg:mb-2 leading-none">LOAPANG</h1>
-                <p className="text-zinc-500 lg:text-zinc-400 text-[12px] lg:text-lg font-medium tracking-tight">로스트아크 실시간 시세 및 전적 검색</p>
+                <p className="text-zinc-500 lg:text-zinc-400 text-[12px] lg:text-lg font-medium tracking-tight">로스트아크 전적 검색 및 시뮬레이션</p>
             </div>
 
             {/* 메인 검색창 */}
