@@ -96,6 +96,11 @@ export default defineConfig(({ mode }) => {
             changeOrigin: true,
             secure: false,
           },
+          '/ranking/arkpassive': {
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            secure: false,
+          },
         },
       },
       plugins: [react()],
