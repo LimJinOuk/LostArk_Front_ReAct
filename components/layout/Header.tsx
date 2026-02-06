@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Home, Shield, Calculator, Gavel, Search, X, Clock, Sparkles, Heart,Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import mokoko from "../../assets/모코코.png";
+import axios from 'axios';
 
 interface HeaderProps {
     setIsMenuOpen: (open: boolean) => void;
@@ -38,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ setIsMenuOpen, isExploding, setIsExplod
 
         const particles: any[] = [];
         const colors = [THEME_PINK, '#FFD1DC', '#FFF0F5', '#ffffff', '#FFB6C1'];
-        const duration = 10000; // 10초 지속
+        const duration = 5000; // 10초 지속
         const startTime = Date.now();
 
         const createParticle = () => ({
@@ -141,30 +142,38 @@ const Header: React.FC<HeaderProps> = ({ setIsMenuOpen, isExploding, setIsExplod
             }
         }
     };
-    const handleSearch = (e: React.FormEvent | string) => {
+    const handleSearch = async (e: React.FormEvent | string) => {
+        // 1. 이벤트 기본 동작 방지 및 쿼리 추출
         if (typeof e !== 'string') e.preventDefault();
-        const query = typeof e === 'string' ? e : searchQuery;
-        const trimmedQuery = query.trim();
+        const q = typeof e === 'string' ? e : searchQuery.trim();
 
-        if (trimmedQuery) {
-            // 1. 기존 데이터 가져오기
-            const saved = localStorage.getItem('searchHistory');
-            const currentHistory = saved ? JSON.parse(saved) : [];
+        if (!q) return;
 
-            // 2. 새로운 히스토리 생성
-            const updatedHistory = [trimmedQuery, ...currentHistory.filter((item: string) => item !== trimmedQuery)].slice(0, 5);
+        // 2. 로컬 스토리지 검색 기록 업데이트
+        const saved = localStorage.getItem('searchHistory');
+        const currentHistory = saved ? JSON.parse(saved) : [];
+        const updated = [q, ...currentHistory.filter((item: string) => item !== q)].slice(0, 5);
 
-            // 3. 로컬 스토리지 저장
-            localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
-            setHistory(updatedHistory);
+        localStorage.setItem('searchHistory', JSON.stringify(updated));
+        setHistory(updated);
 
-            // 4. [중요] 다른 컴포넌트에 알림 전송
-            window.dispatchEvent(new Event("searchHistoryUpdated"));
+        // 다른 컴포넌트에 변경 사항 알림
+        window.dispatchEvent(new Event("searchHistoryUpdated"));
 
-            navigate(`/profilePage?name=${encodeURIComponent(trimmedQuery)}`);
-            setSearchQuery("");
-            setIsHistoryOpen(false);
+        // 3. [추가] 백엔드 API 호출 (캐릭터 정보 업데이트)
+        try {
+            // 전적 검색 페이지로 이동하기 전 DB를 최신화합니다.
+            await axios.post(`/ranking/update/${encodeURIComponent(q)}`);
+            console.log(`${q} 캐릭터 정보 업데이트 성공`);
+        } catch (error) {
+            // API 호출에 실패하더라도 사용자 경험을 위해 페이지 이동은 진행합니다.
+            console.error("캐릭터 정보 업데이트 중 에러 발생:", error);
         }
+
+        // 4. UI 상태 초기화 및 페이지 이동
+        setIsHistoryOpen(false);
+        setSearchQuery("");
+        navigate(`/profilePage?name=${encodeURIComponent(q)}`);
     };
 
     const deleteHistory = (e: React.MouseEvent, term: string) => {

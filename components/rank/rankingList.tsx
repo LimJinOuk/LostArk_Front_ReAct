@@ -11,32 +11,28 @@ interface RankingListProps {
     navigate: any;
 }
 
-const getGradeColor = (level: number) => {
-    if (level >= 1700) return "text-amber-500";
-    if (level >= 1660) return "text-indigo-400";
-    if (level >= 1620) return "text-orange-500";
-    return "text-zinc-400";
-};
+// 고정 폭 레이아웃 정의
+const DESKTOP_GRID = "lg:grid-cols-[40px_170px_110px_90px_65px_65px_80px_1fr]";
+const MOBILE_GRID = "grid-cols-[40px_1fr_110px]";
 
 const RankingList: React.FC<RankingListProps> = ({ rankings, loading, hasMore, rankingType, lastElementRef, navigate }) => {
     return (
-        <main className="flex-1 w-full min-h-screen px-4 lg:px-0">
-            <div className="max-w-[1100px] mx-auto">
-                {/* --- Table Header (열 간격 재설정) --- */}
-                {/* 각 컬럼의 너비를 데이터 중요도와 길이에 따라 분배했습니다. */}
-                <div className="hidden lg:grid grid-cols-[30px_140px_120px_80px_80px_80px_80px_1fr] px-8 py-5 bg-[#111113] border border-white/5 rounded-t-[0.5rem] text-[11px] font-black text-zinc-500 uppercase tracking-widest items-center shadow-2xl">
-                    <div className="text-center">순위</div>
-                    <div className="pl-6">캐릭터</div>
-                    <div className="text-center">레벨 / 무기</div>
-                    <div className="text-center">전투력</div>
-                    <div className="text-center">주요 스탯</div>
-                    <div className="text-center">서버</div>
-                    <div className="text-center">길드</div>
-                    <div className="text-center">아크 패시브</div>
+        <main className="flex-1 w-full min-h-screen lg:px-0 bg-[#080809]">
+            <div className="max-w-[1100px] mx-auto lg:py-8">
+                {/* --- Table Header (데스크톱 전용) --- */}
+                <div className={`hidden lg:grid ${DESKTOP_GRID} px-6 py-4 bg-[#111113] border border-white/5 rounded-t-xl text-[10px] font-bold text-zinc-500 uppercase tracking-tighter items-center shadow-2xl`}>
+                    <div className="text-center">#</div>
+                    <div className="pl-4">Character</div>
+                    <div className="text-center">Level / Wep</div>
+                    <div className="text-center text-rose-500/80">Power</div>
+                    <div className="text-center">Stat</div>
+                    <div className="text-center">Svr</div>
+                    <div className="text-center">Guild</div>
+                    <div className="pl-10 text-indigo-400/80 text-left">Ark Passive Spec</div>
                 </div>
 
                 {/* --- Table Body --- */}
-                <div className="flex flex-col gap-[1px] bg-white/5 border border-white/5 lg:rounded-b-[0.5rem] overflow-hidden shadow-2xl bg-[#0d0d0f]">
+                <div className="flex flex-col bg-[#0d0d0f] border-white/5 lg:border lg:rounded-b-xl overflow-hidden shadow-2xl">
                     <AnimatePresence mode='popLayout'>
                         {rankings.map((ranker) => (
                             <RankerRow key={`${ranker.name}-${ranker.rank}`} ranker={ranker} navigate={navigate} />
@@ -44,17 +40,17 @@ const RankingList: React.FC<RankingListProps> = ({ rankings, loading, hasMore, r
                     </AnimatePresence>
                 </div>
 
-                {/* --- Footer (Loading/End) --- */}
-                <div ref={lastElementRef} className="py-16 flex justify-center">
+                {/* --- Footer --- */}
+                <div ref={lastElementRef} className="py-16 flex justify-center border-t border-white/[0.02] lg:border-none">
                     {loading ? (
                         <div className="flex flex-col items-center gap-3">
                             <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
-                            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Accessing Archive...</span>
+                            <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-[0.2em]">Synchronizing...</span>
                         </div>
                     ) : !hasMore && (
                         <div className="flex flex-col items-center opacity-30">
                             <Shield size={20} className="text-zinc-700" />
-                            <span className="text-[10px] mt-3 font-black text-zinc-600 uppercase">End of Database</span>
+                            <span className="text-[9px] mt-3 font-bold text-zinc-600 uppercase">Archive Complete</span>
                         </div>
                     )}
                 </div>
@@ -67,107 +63,118 @@ const RankerRow = ({ ranker, navigate }: any) => {
     return (
         <motion.div
             layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => navigate(`/profilePage?name=${encodeURIComponent(ranker.name)}`)}
-            className="group grid grid-cols-[50px_1fr_100px] lg:grid-cols-[30px_140px_120px_80px_80px_80px_80px_1fr] items-center bg-[#0d0d0f] hover:bg-white/[0.04] px-4 lg:px-8 py-4 transition-all cursor-pointer relative border-b border-white/[0.02]"
+            className={`group grid ${MOBILE_GRID} ${DESKTOP_GRID} items-center bg-[#0d0d0f] hover:bg-white/[0.03] active:bg-white/[0.05] px-4 lg:px-6 py-3 lg:py-3 transition-all cursor-pointer relative border-b border-white/[0.03] lg:border-white/[0.02]`}
         >
             {/* 0. Rank */}
-            <div className="flex justify-center shrink-0">
-                <span className={`text-xl font-black italic tracking-tighter ${
-                    ranker.rank === 1
-                        ? "text-[#F5EDE1] drop-shadow-[0_0_10px_rgba(245,237,225,0.6)]"
-                        : ranker.rank === 2
-                            ? "text-[#E3D2B4]"
-                            : ranker.rank === 3
-                                ? "text-[#B9A788]"
-                                : "text-zinc-800 group-hover:text-zinc-600"
+            <div className="flex justify-center items-center">
+                <span className={`text-base lg:text-lg font-black italic tracking-tighter ${
+                    ranker.rank <= 3 ? "text-amber-200/90" : "text-zinc-700 group-hover:text-zinc-500"
                 }`}>
                     {ranker.rank}
                 </span>
             </div>
 
-            {/* 1. Name Card */}
-            <div className="flex items-center min-w-0 pl-4">
-                <div className="relative w-[180px] h-12 flex items-center rounded-lg border border-white/5 bg-zinc-900 overflow-hidden shadow-xl group-hover:border-indigo-500/50 transition-all duration-500">
-                    <div className="absolute inset-0 w-full h-full pointer-events-none">
-                        {ranker.iconUrl ? (
-                            <img
-                                src={ranker.iconUrl}
-                                className="w-[400%] h-[400%] max-w-none object-cover -translate-x-1/4 -translate-y-4 opacity-50 group-hover:opacity-80 group-hover:scale-110 transition-all duration-700"
-                                alt="ranker-icon"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-                                <User size={20} className="text-zinc-700" />
-                            </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
+            {/* 1. Name Card & Sub Info (Mobile Mixed) */}
+            <div className="flex items-center min-w-0 pl-1 lg:pl-2">
+                <div className="flex flex-col min-w-0 w-full lg:max-w-[155px]">
+                    {/* 캐릭터 이름 카드 (배경 아이콘 포함) */}
+                    <div className="relative w-full max-w-[180px] lg:w-full h-9 lg:h-10 flex items-center rounded border border-white/5 bg-zinc-900/50 overflow-hidden group-hover:border-indigo-500/30 transition-all duration-500">
+                        {/* Background Icon (이제 모바일에서도 보입니다) */}
+                        <div className="absolute inset-0 pointer-events-none">
+                            {ranker.iconUrl ? (
+                                <img
+                                    src={ranker.iconUrl}
+                                    className="w-full h-full object-cover scale-[1.8] lg:scale-150 -translate-x-6 lg:-translate-x-4 opacity-75 lg:opacity-80 group-hover:opacity-60 transition-all duration-700"
+                                    alt=""
+                                />
+                            ) : (
+                                <User className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/5" />
+                            )}
+                            {/* 그라데이션 마스크: 글자가 있는 왼쪽을 더 어둡게 처리 */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/40 to-transparent" />
+                        </div>
+
+                        <div className="relative z-10 flex flex-col pl-3">
+                            <span className="text-[13px] lg:text-[12px] font-bold text-zinc-100 group-hover:text-white truncate tracking-tight">
+                                {ranker.name}
+                            </span>
+                            <span className="text-[9px] lg:text-[8px] font-bold text-zinc-500 uppercase leading-none lg:mt-0.5">
+                                {ranker.characterClass}
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="relative z-10 flex flex-col pl-4">
-                        <span className="text-[14px] font-black text-white group-hover:text-indigo-300 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] tracking-tight">
-                            {ranker.name}
-                        </span>
-                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest leading-none">
-                            {ranker.characterClass}
+                    {/* Mobile Sub Info (Svr | Guild) */}
+                    <div className="flex lg:hidden items-center gap-2 mt-1 px-1">
+                        <span className="text-[9px] font-medium text-zinc-500">{ranker.server}</span>
+                        <span className="w-[1px] h-2 bg-white/10" />
+                        <span className="text-[9px] font-medium text-zinc-600 truncate max-w-[100px]">
+                            {ranker.guildName || "No Guild"}
                         </span>
                     </div>
-                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
             </div>
 
-            {/* 2. Gear Spec */}
-            <div className="flex items-center justify-center gap-2">
-                <span className="text-[14px] font-bold tabular-nums text-zinc-100">
-                    {ranker.itemLevel.toFixed(2)}
-                </span>
-                <span className="text-[11px] font-black text-[#2efbef] drop-shadow-[0_0_8px_rgba(46,251,239,0.3)] tabular-nums">
-                    <span className="text-[8px] opacity-50 mr-0.5">+</span>{ranker.weaponLevel}
+            {/* 2. Gear & Power (Mobile Vertical Stack) */}
+            <div className="flex flex-col items-end lg:items-center justify-center pr-2 lg:pr-0">
+                <div className="flex items-center gap-1.5 lg:gap-1">
+                    <span className="text-[13px] font-bold tabular-nums text-zinc-200">
+                        {ranker.itemLevel.toFixed(2)}
+                    </span>
+                    <span className="text-[9px] font-black text-[#2efbef] bg-[#2efbef]/10 px-1 rounded-sm tabular-nums">
+                        +{ranker.weaponLevel}
+                    </span>
+                </div>
+                {/* Mobile Only Power Display */}
+                <span className="lg:hidden text-[11px] font-bold text-rose-500/80 tabular-nums mt-0.5">
+                    {ranker.combatPower.toLocaleString()}
                 </span>
             </div>
 
-            {/* 3. Combat Power */}
-            <div className="text-center text-[14px] font-bold text-rose-500/90 tabular-nums tracking-tight">
+            {/* 3. Combat Power (Desktop Only) */}
+            <div className="hidden lg:block text-center text-[13px] font-bold text-rose-500/90 tabular-nums">
                 {ranker.combatPower.toLocaleString()}
             </div>
 
-            {/* 4. Stats: 주요 스탯 표시 */}
-            <div className="text-center text-[11px] font-bold text-zinc-200">
+            {/* 4. Stats (Desktop Only) */}
+            <div className="hidden lg:block text-center text-[11px] font-medium text-zinc-400">
                 {ranker.stats}
             </div>
 
-            {/* 5. Server */}
-            <div className="text-center text-[11px] font-bold text-zinc-200 group-hover:text-zinc-200 transition-colors">
+            {/* 5. Server (Desktop Only) */}
+            <div className="hidden lg:block text-center text-[11px] font-medium text-zinc-400">
                 {ranker.server}
             </div>
 
-            {/* 6. Guild Name */}
-            <div className="text-center text-[11px] font-bold text-zinc-200 truncate px-2">
-                {ranker.guildName || <span className="opacity-20">-</span>}
+            {/* 6. Guild Name (Desktop Only) */}
+            <div className="hidden lg:block text-center text-[11px] font-medium text-zinc-400 truncate px-1">
+                {ranker.guildName || "-"}
             </div>
 
-            {/* 7. Ark Passive */}
-            <div className="flex items-center justify-start pl-2"> {/* items-left는 존재하지 않는 클래스이므로 start로 수정 */}
+            {/* 7. Ark Passive (Desktop Only) */}
+            <div className="hidden lg:flex items-center justify-start pl-10 overflow-hidden">
                 {ranker.arkPassive ? (
-                    <div className="flex items-center gap-2 px-2 py-1">
+                    <div className="flex items-center gap-3 w-full">
                         {ranker.arkpassiveIconUrl && (
-                            <div className="relative w-7 h-7">
-                                <img
-                                    src={ranker.arkpassiveIconUrl}
-                                    className="w-full h-full rounded-full"
-                                    alt="ark"
-                                />
-                            </div>
+                            <img
+                                src={ranker.arkpassiveIconUrl}
+                                className="w-6 h-6 rounded-full border border-white/10 shrink-0 bg-black/50"
+                                alt=""
+                            />
                         )}
-                        <span className="text-[11px] font-extrabold text-zinc-200 tracking-tight uppercase truncate max-w-[70px] pr-1">
+                        <span className="text-[10px] font-extrabold text-zinc-300 tracking-tight uppercase truncate group-hover:text-indigo-300 transition-colors">
                             {ranker.arkPassive}
                         </span>
                     </div>
                 ) : (
-                    <span className="text-xs font-medium text-zinc-400">—</span>
+                    <span className="text-[10px] text-zinc-800 ml-2">—</span>
                 )}
             </div>
-            {/* Hover Accent Bar */}
-            <div className="absolute left-0 top-1/4 bottom-1/4 w-[2px] bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all" />
+
+            {/* Hover/Touch Accent Bar */}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0 group-hover:h-2/3 group-active:h-2/3 w-[2px] bg-indigo-500 transition-all duration-300" />
         </motion.div>
     );
 };
