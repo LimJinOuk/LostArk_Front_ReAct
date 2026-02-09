@@ -106,12 +106,14 @@ export const CombatTab = ({ character }: { character: any }) => {
     const [accHoverData, setAccHoverData] = React.useState<any>(null);
     const [arkCoreHoverIdx, setArkCoreHoverIdx] = React.useState<any>(null);
     const [arkCoreHoverData, setArkCoreHoverData] = React.useState<any>(null);
-    const [jewlryHoverIdx , setJewlryHoverIdx] = React.useState<any>(null);
-    const [jewlryHoverData, setJewlryHoverData] = React.useState<any>(null);
 // ✅ 활성 각인 툴팁 hover
     const [engrHoverIdx, setEngrHoverIdx] = useState<number | null>(null);
     const [engrHoverName, setEngrHoverName] = useState<string | null>(null);
     const [engrHoverDesc, setEngrHoverDesc] = useState<string>("");
+
+    //모바일 모달 호출
+    const [selectedEquip, setSelectedEquip] = useState<any>(null);
+    const [selectedAcc, setSelectedAcc] = useState<any>(null);
 
 
     const engravingDescToHtml = (desc: string) => {
@@ -328,23 +330,25 @@ export const CombatTab = ({ character }: { character: any }) => {
 
     /* ================= 렌더 ================= */
     return (
-        <div className="flex flex-col gap-6 p-4 text-zinc-300 min-h-screen max-w-[1200px] mx-auto">
+        <div className="flex flex-col gap-6 p-0 sm:p-4 text-zinc-300 min-h-screen max-w-[1200px] mx-auto">
 
             {/* 왼쪽 섹션: 장비 & 각인 & 아크패시브 */}
             <div className="flex-1 min-w-0 space-y-6">
-                <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-4 items-stretch bg-[#121213] p-5 rounded-2xl border border-white/5">
-                    {/* 왼쪽: 전투 장비 Section (가로 너비 유지) */}
-                    <div className="w-full lg:w-[38%] flex flex-col shrink-0">
-                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
-                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">전투 장비 & 스톤</h1>
-                        </div>
 
+                {/* 상단 장비 & 액세서리 섹션 */}
+                <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-4 items-stretch bg-[#121213] p-3 sm:p-5 rounded-none sm:rounded-2xl border-y sm:border border-white/5">
+
+                    {/* [왼쪽: 전투 장비 Section] */}
+                    <div className="w-full lg:w-[38%] flex flex-col shrink-0">
+                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
+                            <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
+                                전투 장비 & 스톤 오버워
+                            </h1>
+                        </div>
                         <div className="flex flex-col">
-                            {/* '어빌리티 스톤'을 타입 목록에 추가 */}
                             {getItemsByType(['무기', '투구', '상의', '하의', '장갑', '어깨', '어빌리티 스톤'])
                                 .sort((a, b) => {
-                                    // 정렬 순서: 무기 -> 방어구 -> 어빌리티 스톤(가장 하단)
                                     if (a.Type === '어빌리티 스톤') return 1;
                                     if (b.Type === '어빌리티 스톤') return -1;
                                     return a.Type === '무기' ? -1 : b.Type === '무기' ? 1 : 0;
@@ -360,24 +364,19 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                     const rawGrade = (item.Grade || "").trim();
                                     let currentGrade = "일반";
-                                    // ... (등급 판별 로직 동일)
                                     if (rawGrade.includes('에스더') || item.Name.includes('에스더')) currentGrade = '에스더';
                                     else if (rawGrade.includes('고대')) currentGrade = '고대';
                                     else if (rawGrade.includes('유물')) currentGrade = '유물';
                                     else if (rawGrade.includes('전설')) currentGrade = '전설';
 
                                     const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
-
-                                    // 상급 재련 정보 (방어구/무기용)
                                     let advancedReinforce = "0";
                                     const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
                                     if (advMatch) advancedReinforce = advMatch[1];
 
-                                    // [추가] 어빌리티 스톤 세공 정보 추출 (예: 7 7 4)
                                     let stoneStats = "";
                                     if (isStone) {
                                         const stoneData = Object.values(tooltip?.Element_007?.value?.Element_000?.contentStr || {}) as any[];
-                                        // Lv. 숫자만 추출하여 결합
                                         stoneStats = stoneData
                                             .filter(el => el.contentStr.includes('Lv.'))
                                             .map(el => el.contentStr.match(/Lv\.(\d+)/)?.[1] || '0')
@@ -386,52 +385,36 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                     return (
                                         <div key={item.Name}
-                                             onMouseEnter={() => {
-                                                 setHoveredIndex(i);
-                                                 setHoveredData(tooltip);
-                                             }}
-                                             onMouseLeave={() => {
-                                                 setHoveredIndex(null);
-                                                 setHoveredData(null);
-                                             }}
-                                             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
+                                            // PC: 마우스 호버 시 툴팁 표시
+                                             onMouseEnter={() => { setHoveredIndex(i); setHoveredData(tooltip); }}
+                                             onMouseLeave={() => { setHoveredIndex(null); setHoveredData(null); }}
+                                            // 모바일/클릭: 클릭 시 모달 툴팁 표시
+                                             onClick={() => setSelectedEquip(tooltip)}
+                                             className="relative group flex items-center gap-2 sm:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[60px] cursor-pointer sm:cursor-help"
                                         >
-                                            {/* 아이콘 영역 */}
                                             <div className="relative shrink-0">
                                                 <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
-                                                    <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt={itemName} />
-                                                    {(currentGrade === '고대' || currentGrade === '에스더') && (
-                                                        <div className="absolute inset-0 rounded-lg shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)] pointer-events-none" />
-                                                    )}
+                                                    <img src={item.Icon} className="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-cover bg-black/20" alt={itemName} />
                                                 </div>
-
-                                                {/* 품질 표시 (스톤은 품질 대신 '세공' 텍스트 혹은 숨김) */}
                                                 {quality !== -1 && (
-                                                    <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 text-[#e9d2a6]`}>
+                                                    <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[9px] font-black border ${getQualityColor(quality)} bg-zinc-900 text-[#e9d2a6]`}>
                                                         {quality}
                                                     </div>
                                                 )}
 
-                                                {/* 툴팁 모달 */}
+                                                {/* PC용 호버 툴팁 (숨김 처리 로직은 컴포넌트 내부 isMobile에 의존하거나 CSS로 제어) */}
                                                 {hoveredIndex === i && hoveredData && (
-                                                    <div className="absolute left-full top-0 z-[9999] pointer-events-auto flex items-start" style={{ paddingLeft: '12px', width: 'max-content' }}>
-                                                        <div className="animate-in fade-in slide-in-from-left-1 duration-200">
-                                                            {/* 스톤인지 확인하여 적절한 툴팁 컴포넌트 호출 */}
-                                                            <EquipmentTooltip data={hoveredData} />
-                                                        </div>
+                                                    <div className="absolute left-full top-0 z-[9999] pointer-events-auto hidden sm:flex" style={{ paddingLeft: '12px' }}>
+                                                        <EquipmentTooltip data={hoveredData} />
                                                     </div>
                                                 )}
                                             </div>
-
-                                            {/* 정보 영역 */}
                                             <div className="flex-1 min-w-0">
-                                                <h3 className={`font-bold text-[12px] truncate mb-0.5 ${theme.text}`}>{itemName}</h3>
-                                                <div className="flex items-center gap-2 whitespace-nowrap">
+                                                <h3 className={`font-bold text-[11px] sm:text-[12px] truncate ${theme.text}`}>{itemName}</h3>
+                                                <div className="flex items-center gap-2">
                                                     {isStone ? (
-                                                        // 스톤은 세공 수치를 표시 (파란색 강조)
                                                         <span className="text-blue-400 text-[10px] font-bold">세공 {stoneStats}</span>
                                                     ) : (
-                                                        // 일반 장비는 재련 정보 표시
                                                         <>
                                                             <span className="text-white/50 text-[10px]">재련 {reinforceLevel}</span>
                                                             {advancedReinforce !== "0" && <span className="text-sky-400 text-[10px] font-bold">상재 +{advancedReinforce}</span>}
@@ -443,13 +426,23 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     );
                                 })}
                         </div>
+
+                        {/* 모바일 전용 모달 툴팁 (AnimatePresence로 부드럽게 표시) */}
+                        {selectedEquip && (
+                            <EquipmentTooltip
+                                data={selectedEquip}
+                                onClose={() => setSelectedEquip(null)}
+                            />
+                        )}
                     </div>
-                    {/* 오른쪽: 액세서리 Section (가로 너비 확장 및 내부 비율 조정) */}
-                    {/* [오른쪽: 액세서리 Section] 여유 공간 확보 */}
+
+                    {/* [오른쪽: 액세서리 Section] */}
                     <div className="w-full lg:flex-1 flex flex-col min-w-0">
-                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
-                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">악세사리</h1>
+                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
+                            <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
+                                악세사리
+                            </h1>
                         </div>
 
                         <div className="flex flex-col">
@@ -464,18 +457,15 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     const tooltip = JSON.parse(item.Tooltip);
                                     const quality = tooltip.Element_001?.value?.qualityValue ?? 0;
                                     const itemName = item.Name || "아이템 이름";
-
                                     const rawGrade = (item.Grade || "").trim();
                                     let currentGrade = "일반";
                                     if (rawGrade.includes('고대')) currentGrade = '고대';
                                     else if (rawGrade.includes('유물')) currentGrade = '유물';
                                     else if (rawGrade.includes('전설')) currentGrade = '전설';
-                                    else if (rawGrade.includes('영웅')) currentGrade = '영웅';
 
                                     const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
                                     const passive = cleanText(tooltip.Element_007?.value?.Element_001 || '').match(/\d+/)?.[0] || '0';
-                                    const tierStr = tooltip.Element_001?.value?.leftStr2 || "";
-                                    const tier = tierStr.replace(/[^0-9]/g, "").slice(-1) || "4";
+                                    const tier = (tooltip.Element_001?.value?.leftStr2 || "").replace(/[^0-9]/g, "").slice(-1) || "4";
 
                                     const grindContent = cleanText(tooltip.Element_006?.value?.Element_001 || tooltip.Element_005?.value?.Element_001 || '');
                                     const effects = [...grindContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)].map(m => ({
@@ -485,66 +475,43 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                     const shortNames = {
                                         '추가 피해': '추피', '적에게 주는 피해': '적주피', '치명타 적중률': '치적', '치명타 피해': '치피',
-                                        '공격력': '공격력', '무기 공격력': '무공', '조화 게이지 획득량': '아덴획득', '낙인력': '낙인력',
-                                        '파티원 회복 효과': '파티회복', '파티원 보호막 효과': '파티보호', '아군 공격력 강화 효과': '아공강',
-                                        '아군 피해량 강화 효과': '아피강', '최대 생명력': '최생', '최대 마나': '최마',
-                                        '전투 중 생명력 회복량': '전투회복', '상태이상 공격 지속시간': '상태이상'
+                                        '공격력': '공격력', '무기 공격력': '무공', '조화 게이지 획득량': '아덴', '낙인력': '낙인',
+                                        '파티원 회복 효과': '회복', '파티원 보호막 효과': '보호막', '아군 공격력 강화 효과': '아공강',
+                                        '아군 피해량 강화 효과': '아피강', '최대 생명력': '최생'
                                     };
 
                                     return (
                                         <div key={i}
-                                            // 마우스 이동 시 툴팁 유지를 위해 전체 행에 이벤트 적용
-                                             onMouseEnter={() => {
-                                                 setAccHoverIdx(i);
-                                                 setAccHoverData(tooltip);
-                                             }}
-                                             onMouseLeave={() => {
-                                                 setAccHoverIdx(null);
-                                                 setAccHoverData(null);
-                                             }}
-                                        className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help min-w-0 min-w-0">
-
-                                            {/* 아이콘 및 품질 (툴팁 기준점) */}
+                                             onMouseEnter={() => { setAccHoverIdx(i); setAccHoverData(tooltip); }}
+                                             onMouseLeave={() => { setAccHoverIdx(null); setAccHoverData(null); }}
+                                             className="relative group flex items-center gap-2 sm:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[60px] cursor-help min-w-0"
+                                        >
+                                            {/* 아이콘 영역 */}
                                             <div className="relative shrink-0">
-                                                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
-                                                    <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt="" />
-                                                    {currentGrade === '고대' && (
-                                                        <div className="absolute inset-0 rounded-lg shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)] pointer-events-none" />
-                                                    )}
+                                                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border}`}>
+                                                    <img src={item.Icon} className="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-cover bg-black/20" alt="" />
                                                 </div>
-
-                                                <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 ${theme.text}`}>
+                                                <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[9px] font-black border ${getQualityColor(quality)} bg-zinc-900 ${theme.text}`}>
                                                     {quality}
                                                 </div>
-
-                                                {/* --- 툴팁 모달: 아이콘 바로 오른쪽 밀착 및 유지 --- */}
                                                 {accHoverIdx === i && accHoverData && (
-                                                    <div
-                                                        className="absolute left-full top-0 z-[9999] pointer-events-auto flex items-start"
-                                                        // 아이콘과 모달 사이의 '보이지 않는 다리' 역할 (12px 간격)
-                                                        style={{ paddingLeft: '12px' }}
-                                                    >
-                                                        <div className="animate-in fade-in slide-in-from-left-1 duration-200">
-                                                            <AccessoryTooltip
-                                                                data={accHoverData}
-                                                                className="!static !mt-0 !left-0" // 기존 컴포넌트의 absolute 스타일 강제 무효화
-                                                            />
-                                                        </div>
+                                                    <div className="absolute left-full top-0 z-[9999] pointer-events-auto hidden sm:flex" style={{ paddingLeft: '12px' }}>
+                                                        <AccessoryTooltip data={accHoverData} className="!static !mt-0 !left-0" />
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {/* 이름 및 티어 정보 */}
+                                            {/* 중앙: 정보 영역 */}
                                             <div className="flex-1 min-w-0">
-                                                <h3 className={`font-bold text-[12px] truncate mb-0.5 ${theme.text}`}>{itemName}</h3>
-                                                <div className="flex gap-1.5 text-[9px] whitespace-nowrap">
+                                                <h3 className={`font-bold text-[11px] sm:text-[12px] truncate ${theme.text}`}>{itemName}</h3>
+                                                <div className="flex gap-1.5 text-[10px]">
                                                     <span className="text-orange-400 font-bold">깨달음 +{passive}</span>
-                                                    <span className="text-white/40 font-medium">{tier}티어</span>
+                                                    <span className="text-white/80">{tier}T</span>
                                                 </div>
                                             </div>
 
-                                            {/* 연마 효과 영역 (기존 로직 유지) */}
-                                            <div className="w-[100px] flex flex-col justify-center items-end border-l border-white/5 pl-2 shrink-0">
+                                            {/* 오른쪽: 연마 효과 영역 (공간 최적화) */}
+                                            <div className="w-[85px] sm:w-[100px] flex flex-col justify-center items-end border-l border-white/5 pl-2 shrink-0 overflow-hidden">
                                                 {[0, 1, 2].map((idx) => {
                                                     const rawName = effects[idx]?.name || '';
                                                     const val = effects[idx]?.value || '-';
@@ -587,10 +554,9 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                     };
 
                                                     return (
-                                                        <div key={idx} className="flex justify-between w-full text-[10px] leading-tight gap-1 items-center">
-                                                            {/* [수정] truncate와 shrink를 사용해 수치가 밀리지 않게 함 */}
-                                                            <span className="text-white/40 font-medium truncate shrink">{dispName}</span>
-                                                            <span className={`${getDynamicColor(rawName, val)} font-bold whitespace-nowrap shrink-0`}>{val}</span>
+                                                        <div key={idx} className="flex justify-between w-full text-[10px] sm:text-[10px] leading-tight items-center">
+                                                            <span className="text-white/30 truncate shrink mr-1">{dispName}</span>
+                                                            <span className={`${getDynamicColor(rawName, val)} whitespace-nowrap shrink-0`}>{val}</span>
                                                         </div>
                                                     );
                                                 })}
@@ -599,7 +565,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     );
                                 })}
 
-                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[62px] text-[10px]">
+                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[60px] text-[10px] px-4">
                                 팔찌 효율 계산 행
                             </div>
                         </div>
@@ -607,19 +573,20 @@ export const CombatTab = ({ character }: { character: any }) => {
                 </section>
 
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 items-start px-0">
 
                     {/* [좌측 박스] 아크 그리드 섹션 */}
-                    <section className="bg-[#121213] pt-5 pb-2 px-5 rounded-2xl border border-white/5 shadow-2xl flex flex-col h-fit">
-                        {/* 타이틀 영역 */}
-                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1">
+                    <section className="bg-[#121213] pt-5 pb-2 px-4 sm:px-5 rounded-none sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl flex flex-col h-fit">
+                        {/* 타이틀 영역: px-1로 미세 조정 */}
+                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
                             <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
-                            <h1 className="text-[15px] font-extrabold text-white tracking-tight uppercase">
+                            <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
                                 아크 그리드
                             </h1>
                         </div>
 
-                        {/* 6행 1열 레이아웃 */}
+                        {/* 리스트 영역 */}
                         <div className="flex flex-col gap-0.5 mb-0">
                             {arkGrid?.Slots?.map((slot, i) => {
                                 const nameParts = slot.Name.split(/\s*:\s*/);
@@ -637,7 +604,7 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                 return (
                                     <div key={i}
-                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-all h-[62px] cursor-help px-2 pl-0"
+                                         className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-all h-[62px] cursor-help px-1 sm:px-2"
                                          onMouseEnter={() => {
                                              setArkCoreHoverIdx(i);
                                              const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
@@ -648,24 +615,23 @@ export const CombatTab = ({ character }: { character: any }) => {
                                              setArkCoreHoverData(null);
                                          }}
                                     >
-                                        {/* 아이콘 영역 */}
+                                        {/* 아이콘 영역: 모바일에서 크기 살짝 축소 */}
                                         <div className="relative shrink-0">
-                                            <div className={`w-12 h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
-                                    bg-gradient-to-br ${theme.bg} overflow-hidden
-                                    border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
+                                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
+                                bg-gradient-to-br ${theme.bg} overflow-hidden
+                                border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
                                                 <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
                                                 {slot.Gems?.length > 0 && (
-                                                    <div className={`absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
-                                                        <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
+                                                    <div className={`absolute bottom-0.5 right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
+                                                        <div className="w-0.5 h-0.5 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {/* 툴팁 모달 (박스 밖으로 표시되도록 z-index 확보) */}
+                                            {/* 툴팁 모달: 모바일에서는 숨기거나 클릭 방식으로 유도 (여기서는 PC 기준 유지) */}
                                             {arkCoreHoverIdx === i && arkCoreHoverData && (
-                                                <div className="absolute left-full top-0 z-[100] pl-3 pointer-events-auto"> {/* [수정] pointer-events-auto */}
-                                                    <div className="animate-in fade-in slide-in-from-left-2 duration-200"
-                                                    >
+                                                <div className="absolute left-full top-0 z-[100] pl-3 pointer-events-auto hidden sm:flex">
+                                                    <div className="animate-in fade-in slide-in-from-left-2 duration-200">
                                                         <ArkCoreTooltip
                                                             data={arkCoreHoverData.core}
                                                             Gems={arkCoreHoverData.gems}
@@ -678,19 +644,19 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                         {/* 텍스트 정보 */}
                                         <div className="flex-1 min-w-0">
-                                            <div className={`text-[10.5px] font-bold leading-tight opacity-80 ${theme.text}`}>
+                                            <div className={`text-[9.5px] sm:text-[10.5px] font-bold leading-tight opacity-70 ${theme.text}`}>
                                                 {category}
                                             </div>
-                                            <div className={`text-[13px] font-extrabold mt-0.5 truncate ${theme.text}`}>
+                                            <div className={`text-[12px] sm:text-[13px] font-extrabold mt-0.5 truncate ${theme.text}`}>
                                                 {subName}
                                             </div>
                                         </div>
 
                                         {/* 포인트 정보 */}
-                                        <div className="shrink-0 text-right">
-                                    <span className="text-[14px] font-black text-white/90 tracking-tighter">
-                                        {slot.Point}P
-                                    </span>
+                                        <div className="shrink-0 text-right pr-1">
+                            <span className="text-[13px] sm:text-[14px] font-black text-white/90 tracking-tighter">
+                                {slot.Point}P
+                            </span>
                                         </div>
                                     </div>
                                 );
@@ -699,17 +665,17 @@ export const CombatTab = ({ character }: { character: any }) => {
                     </section>
 
                     {/* [우측 박스] 젬 효과 섹션 */}
-                    <section className="bg-[#121213] p-6 rounded-2xl border border-white/5 shadow-2xl flex flex-col h-full">
+                    <section className="bg-[#121213] p-4 sm:p-6 rounded-none sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl flex flex-col h-full">
                         {/* 타이틀 영역 */}
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
                             <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
-                            <h1 className="text-[15px] font-extrabold text-white tracking-tight uppercase">
+                            <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
                                 젬 효과
                             </h1>
                         </div>
 
                         {/* 젬 효과 리스트 */}
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-3 sm:gap-4">
                             {arkGrid?.Effects?.map((effect, i) => {
                                 const cleanText = effect.Tooltip
                                     .replace(/<[^>]*>?/gm, '')
@@ -721,13 +687,13 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                 return (
                                     <div key={i} className="flex flex-col gap-1 px-1">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-zinc-100 font-bold text-[13px]">{effect.Name}</span>
-                                            <span className="bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400 text-[10px] font-black tracking-widest uppercase">
-                                        Lv.{effect.Level}
-                                    </span>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-zinc-100 font-bold text-[12px] sm:text-[13px] break-keep">{effect.Name}</span>
+                                            <span className="bg-zinc-800/50 px-2 py-0.5 rounded text-zinc-400 text-[9px] font-black tracking-widest uppercase shrink-0">
+                                Lv.{effect.Level}
+                            </span>
                                         </div>
-                                        <div className="text-[12px] text-zinc-400 font-medium leading-relaxed">
+                                        <div className="text-[11px] sm:text-[12px] text-zinc-400 font-medium leading-relaxed break-keep">
                                             {desc} <span className="text-[#ffd200] font-bold ml-1">{val}</span>
                                         </div>
                                     </div>
@@ -740,25 +706,24 @@ export const CombatTab = ({ character }: { character: any }) => {
 
 
                 {/* 1. 가장 큰 부모 div */}
-                <div className="w-full max-w-[1200px] mx-auto bg-[#121213] rounded-2xl border border-white/5 shadow-2xl p-4">
+                <div className="w-full max-w-[1200px] mx-auto bg-[#121213] sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl p-0 sm:p-4">
 
-                    {/* 2. 컨테이너에 onMouseLeave 추가
-        마우스가 이 전체 영역을 벗어나면 상태를 null/빈값으로 초기화합니다.
-    */}
+                    {/* 2. 각인 섹션 컨테이너: 모바일에서 flex-col로 변경 */}
                     <div
-                        className="flex gap-4 h-full w-full"
+                        className="flex flex-col lg:flex-row gap-0 sm:gap-4 h-full w-full"
                         onMouseLeave={() => {
                             setEngrHoverIdx(null);
                             setEngrHoverName(null);
                             setEngrHoverDesc("");
                         }}
                     >
-
-                        {/* [왼쪽 Section] */}
-                        <section className="basis-1/2 flex-1 bg-[#1c1c1e]/50 rounded-xl border border-white/5 p-4 shadow-inner min-w-0">
-                            <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-3 mb-4">
-                                <div className="w-1.5 h-5 bg-blue-600 rounded-full"></div>
-                                <h1 className="text-base font-extrabold text-white tracking-tight uppercase">활성 각인</h1>
+                        {/* [왼쪽 Section]: 활성 각인 리스트 */}
+                        <section className="w-full lg:basis-1/2 flex-1 bg-[#1c1c1e]/50 sm:rounded-xl border-b sm:border border-white/5 p-4 shadow-inner min-w-0">
+                            <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
+                                <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
+                                <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
+                                    활성 각인
+                                </h1>
                             </div>
 
                             <div className="flex flex-col gap-1.5">
@@ -772,36 +737,42 @@ export const CombatTab = ({ character }: { character: any }) => {
                                         <div
                                             key={i}
                                             className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer border
-                                ${engrHoverIdx === i ? 'bg-white/10 border-white/10 shadow-md' : 'bg-transparent border-transparent hover:bg-white/[0.03]'}`}
+                            ${engrHoverIdx === i ? 'bg-white/10 border-white/10 shadow-md' : 'bg-transparent border-transparent hover:bg-white/[0.03]'}`}
+                                            /* 모바일 사용성을 위해 클릭 시에도 상태가 변경되도록 onClick 추가 가능 */
                                             onMouseEnter={() => {
+                                                setEngrHoverIdx(i);
+                                                setEngrHoverName(eng.Name || null);
+                                                setEngrHoverDesc(eng.Description || "");
+                                            }}
+                                            onClick={() => {
                                                 setEngrHoverIdx(i);
                                                 setEngrHoverName(eng.Name || null);
                                                 setEngrHoverDesc(eng.Description || "");
                                             }}
                                         >
                                             <div className="flex items-center min-w-0 gap-3">
-                                                <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-black/60 border border-zinc-700">
+                                                <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full overflow-hidden bg-black/60 border border-zinc-700">
                                                     <img src={iconUrl} alt={eng.Name} className="w-full h-full object-cover" />
                                                 </div>
                                                 <div className="flex items-center gap-1 px-1 py-1 rounded-md shrink-0">
                                                     <Diamond
-                                                        size={14}
-                                                        className="text-[#f16022] fill-[#f16022] drop-shadow-[0_0_3px_rgba(241,96,34,0.5)]"
+                                                        size={12}
+                                                        className="text-[#f16022] fill-[#f16022]"
                                                     />
                                                     <div className="flex items-baseline gap-0.5">
-                                                        <span className="text-zinc-500 text-[10px] font-bold uppercase">X</span>
-                                                        <span className="text-white text-[15px] font-black tabular-nums">{n}</span>
+                                                        <span className="text-zinc-500 text-[9px] font-bold uppercase">X</span>
+                                                        <span className="text-white text-[14px] sm:text-[15px] font-black tabular-nums">{n}</span>
                                                     </div>
                                                 </div>
-                                                <span className="text-[#efeff0] font-bold text-[14px] truncate">{eng.Name}</span>
+                                                <span className="text-[#efeff0] font-bold text-[13px] sm:text-[14px] truncate">{eng.Name}</span>
                                             </div>
 
                                             <div className="flex items-center gap-4 shrink-0">
                                                 {m > 0 && (
                                                     <div className="flex items-center gap-1">
                                                         <img src={stoneIcon} alt="Stone" className="w-3.5 h-4.5 brightness-125" />
-                                                        <span className="text-zinc-400 text-[9px] font-bold uppercase">Lv.</span>
-                                                        <span className="text-[#00ccff] text-[14px] font-black">{m}</span>
+                                                        <span className="text-zinc-400 text-[8px] font-bold uppercase">Lv.</span>
+                                                        <span className="text-[#00ccff] text-[13px] sm:text-[14px] font-black">{m}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -811,56 +782,56 @@ export const CombatTab = ({ character }: { character: any }) => {
                             </div>
                         </section>
 
-                        {/* [오른쪽 Section] - 50:50 비율 유지 */}
-                        <section className="basis-1/2 flex-1 bg-[#1c1c1e]/50 rounded-xl border border-white/5 p-4 min-h-[400px] flex flex-col min-w-0">
+                        {/* [오른쪽 Section]: 상세 설명 (모바일에서는 리스트 아래에 표시) */}
+                        <section className={`w-full lg:basis-1/2 flex-1 bg-[#1c1c1e]/50 sm:rounded-xl border-b sm:border border-white/5 p-4 min-h-[120px] lg:min-h-[400px] flex flex-col min-w-0 ${!engrHoverName && 'hidden lg:flex'}`}>
                             {engrHoverName ? (
                                 <div className="animate-in fade-in zoom-in-95 duration-200">
                                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
-                                        <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/10 bg-black/60 shadow-2xl shrink-0">
+                                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border border-white/10 bg-black/60 shadow-2xl shrink-0">
                                             <img src={getEngravingIconUrl(engrHoverName)} alt="" className="w-full h-full object-cover" />
                                         </div>
                                         <div>
-                                            <div className="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-0.5">각인 효과</div>
-                                            <h2 className="text-lg font-black text-white tracking-tight leading-tight">{engrHoverName}</h2>
+                                            <div className="text-blue-400 text-[9px] font-black uppercase tracking-widest mb-0.5">각인 효과</div>
+                                            <h2 className="text-base sm:text-lg font-black text-white tracking-tight leading-tight">{engrHoverName}</h2>
                                         </div>
                                     </div>
 
                                     <div
-                                        className="text-[14px] leading-snug text-zinc-300 bg-black/30 p-4 rounded-xl border border-white/5 shadow-inner"
+                                        className="text-[13px] sm:text-[14px] leading-snug text-zinc-300 bg-black/30 p-4 rounded-xl border border-white/5 shadow-inner"
                                         dangerouslySetInnerHTML={{ __html: engravingDescToHtml(engrHoverDesc) }}
                                     />
                                 </div>
                             ) : (
-                                <div className="my-auto flex flex-col items-center justify-center space-y-2 opacity-20 transition-opacity duration-300">
+                                <div className="my-auto flex flex-col items-center justify-center space-y-2 opacity-20">
                                     <div className="w-10 h-10 rounded-full border border-dashed border-white flex items-center justify-center text-lg font-bold text-white">?</div>
-                                    <p className="text-xs font-medium text-white tracking-tight">각인을 선택하여 상세 내용을 확인하세요</p>
+                                    <p className="text-xs font-medium text-white tracking-tight text-center">각인을 선택하여 상세 내용을 확인하세요</p>
                                 </div>
                             )}
                         </section>
                     </div>
                 </div>
 
-                {/* [우측] 장착 카드 섹션 (가로 정렬) */}
-                <section className="flex-1 space-y-4">
-                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                {/* [우측] 장착 카드 섹션 */}
+                <section className="flex-1 space-y-4 px-0 sm:px-0">
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2 px-4 sm:px-0">
                         <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
-                            <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
+                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_8px_rgba(30,58,138,0.5)]"></div>
+                            <h1 className="text-sm sm:text-base font-extrabold text-white tracking-tight uppercase">
                                 카드
                             </h1>
-
                         </div>
+
                         {cards?.Effects?.[0] && (
                             <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-500 font-medium">
+                <span className="text-[10px] sm:text-xs text-zinc-500 font-medium">
                     {cards.Effects[0].Items[cards.Effects[0].Items.length - 1].Name.split(' 6세트')[0]}
                 </span>
                             </div>
                         )}
                     </div>
 
-                    {/* 카드 6종 그리드 */}
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {/* 카드 6종 그리드: 모바일 좌우 여백 확보 */}
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2 px-4 sm:px-0">
                         {cards?.Cards.map((card, idx) => {
                             const isSelected = selectedCard === card.Name;
                             return (
@@ -879,50 +850,54 @@ export const CombatTab = ({ character }: { character: any }) => {
                                             className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}
                                             alt=""
                                         />
-                                        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
+                                        {/* 각성 단계 점: 모바일 대응 크기 축소 */}
+                                        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5 sm:gap-1">
                                             {[...Array(5)].map((_, i) => (
-                                                <div key={i} className={`w-1.5 h-1.5 rounded-full border-[1px] border-black/40 ${
+                                                <div key={i} className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full border-[0.5px] border-black/40 ${
                                                     i < card.AwakeCount ? 'bg-yellow-400 shadow-[0_0_4px_#fbbf24]' : 'bg-zinc-800'
                                                 }`} />
                                             ))}
                                         </div>
                                     </div>
-                                    <div className={`p-1.5 text-center transition-colors ${isSelected ? 'bg-orange-600 text-white' : 'bg-[#1c1c1c] text-zinc-400'}`}>
-                                        <p className="text-[11px] font-bold truncate">{card.Name}</p>
+                                    <div className={`p-1 sm:p-1.5 text-center transition-colors ${isSelected ? 'bg-orange-600 text-white' : 'bg-[#1c1c1c] text-zinc-400'}`}>
+                                        <p className="text-[9px] sm:text-[11px] font-bold truncate">{card.Name}</p>
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
 
-                    {/* 카드 세트 효과 요약 배너 (항상 표시되도록 수정) */}
-                    <div className="min-h-[100px]">
-                        <div className={`p-4 bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded border transition-all duration-300 ${selectedCard ? 'border-orange-500/40 bg-orange-500/5' : 'border-white/5'}`}>
-                            <h3 className="text-[12px] text-orange-400 font-black mb-3 flex items-center gap-2">
-                                <span className={`w-1.5 h-3.5 rounded-sm transition-colors ${selectedCard ? 'bg-orange-500' : 'bg-zinc-600'}`}></span>
-                                {cards?.Effects[0]?.Items[0].Name.split(' 2세트')[0]} 세트 효과 요약
+                    {/* 카드 세트 효과 요약 배너: 모바일에서 화면 끝까지 밀착(rounded-none) */}
+                    <div className="min-h-[100px] mt-2 sm:mt-4">
+                        <div className={`p-4 sm:p-5 bg-gradient-to-br from-zinc-800/40 to-zinc-950/60 sm:rounded-xl border-y sm:border transition-all duration-300 ${selectedCard ? 'border-orange-500/40 bg-orange-500/5' : 'border-white/5'}`}>
+                            <h3 className="text-[11px] sm:text-[12px] text-orange-400 font-black mb-3 flex items-center gap-2">
+                                <span className={`w-1 h-3 sm:w-1.5 sm:h-3.5 rounded-sm transition-colors ${selectedCard ? 'bg-orange-500' : 'bg-zinc-600'}`}></span>
+                                {cards?.Effects[0]?.Items[0].Name.split(' 2세트')[0]} 세트 효과
                             </h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                            {/* 효과 리스트: 모바일에서도 가독성 있게 텍스트 크기 및 간격 조정 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 sm:gap-y-2">
                                 {cards?.Effects[0]?.Items.map((item: any, i: number) => (
-                                    <div key={i} className="flex flex-col py-1.5 border-b border-white/5 last:border-0">
-                                        <span className="text-[11px] text-orange-300/80 font-bold mb-0.5">{item.Name}</span>
-                                        <span className="text-[11.5px] text-zinc-200 leading-relaxed font-medium">{item.Description}</span>
+                                    <div key={i} className="flex flex-col py-2 border-b border-white/5 last:border-0 md:last:border-b">
+                        <span className="text-[10px] sm:text-[11px] text-orange-300/80 font-bold mb-0.5">
+                            {item.Name}
+                        </span>
+                                        <span className="text-[11px] sm:text-[11.5px] text-zinc-300 leading-relaxed font-medium break-keep">
+                            {item.Description}
+                        </span>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </div>
                 </section>
-                {/* ================= 아바타 섹션 수정 끝 ================= */}
             </div>
 
 
             {/* 오른쪽 섹션: 장비 & 각인 & 아크패시브 */}
-            <div className="flex-1 min-w-0 flex flex-col space-y-10">
+            <div className="flex-1 min-w-0 flex flex-col space-y-4 sm:space-y-10 px-0 sm:px-0">
                 {/* ================= 아바타 섹션 수정 시작 ================= */}
-                <section className="bg-[#121213] rounded-xl border border-white/5 p-6 space-y-6 shadow-2xl">
-                    {/* 데이터 처리 및 본체 전용 합산 로직 */}
+                <section className="bg-[#121213] sm:rounded-xl border-y sm:border border-white/5 p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-2xl">
                     {(() => {
                         const avatarTypes = ['무기 아바타', '머리 아바타', '상의 아바타', '하의 아바타', '얼굴1 아바타', '얼굴2 아바타', '악기 아바타', '이동 효과'];
 
@@ -946,20 +921,23 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                         return (
                             <>
-                                {/* 헤더 부분 */}
-                                <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-                                    <div className="flex items-center gap-4">
+                                {/* 헤더 부분: 모바일 대응 레이아웃 */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-800 pb-4 gap-3">
+                                    <div className="flex items-center gap-3 sm:gap-4">
                                         <div className="w-1.5 h-5 bg-blue-950 rounded-full"></div>
-                                        <h1 className="text-base font-extrabold text-white tracking-tight uppercase leading-none">아바타</h1>
-                                        <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 shadow-inner">
-                                            <button onClick={() => setAvatarViewMode('skin')} className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${avatarViewMode === 'skin' ? 'bg-sky-500 text-white' : 'text-zinc-500'}`}>덧입기</button>
-                                            <button onClick={() => setAvatarViewMode('inner')} className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${avatarViewMode === 'inner' ? 'bg-amber-500 text-white' : 'text-zinc-500'}`}>본체</button>
+                                        <h1 className="text-sm sm:text-base font-extrabold text-white tracking-tight uppercase leading-none">
+                                            아바타
+                                        </h1>
+
+                                        <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 shadow-inner scale-90 sm:scale-100 origin-left">
+                                            <button onClick={() => setAvatarViewMode('skin')} className={`px-2.5 py-1 text-[10px] sm:text-[11px] font-bold rounded-md transition-all ${avatarViewMode === 'skin' ? 'bg-sky-500 text-white' : 'text-zinc-500'}`}>덧입기</button>
+                                            <button onClick={() => setAvatarViewMode('inner')} className={`px-2.5 py-1 text-[10px] sm:text-[11px] font-bold rounded-md transition-all ${avatarViewMode === 'inner' ? 'bg-amber-500 text-white' : 'text-zinc-500'}`}>본체</button>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2.5 px-3 py-1.5">
+                                    <div className="flex items-center gap-2 sm:gap-2.5 px-1 sm:px-3">
                                         <div className="w-1 h-3 bg-emerald-500 rounded-full shadow-[0_0_5px_#10b981]"></div>
-                                        <span className="text-[12px] text-zinc-400 font-bold leading-none">힘민지 총합</span>
-                                        <span className="text-[14px] text-white font-black tracking-tight tabular-nums leading-none">{totalInnerStat.toFixed(2)}%</span>
+                                        <span className="text-[11px] sm:text-[12px] text-zinc-500 font-bold leading-none">힘민지 총합</span>
+                                        <span className="text-[13px] sm:text-[14px] text-white font-black tracking-tight tabular-nums leading-none">{totalInnerStat.toFixed(2)}%</span>
                                     </div>
                                 </div>
 
@@ -979,65 +957,55 @@ export const CombatTab = ({ character }: { character: any }) => {
                                         } catch (e) {}
 
                                         return (
-                                            <div key={type} className="flex items-center justify-between px-4 py-1 rounded-sm group transition-all duration-200 hover:bg-white/[0.02] border-b border-white/[0.01] last:border-0">
-                                                {/* 왼쪽 세트: 아이콘 + 텍스트 정보 */}
-                                                <div className="flex items-center min-w-0 gap-4 flex-1">
-                                                    {/* 아이콘: items-center의 기준점이 됨 */}
-                                                    <div className={`w-10 h-10 shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center ${
+                                            <div key={type} className="flex flex-nowrap items-center justify-between px-1 sm:px-4 py-2 sm:py-1 group hover:bg-white/[0.02] border-b border-white/[0.03] last:border-0 min-w-0">
+                                                {/* 왼쪽 세트: 아이콘 + 이름 정보 */}
+                                                <div className="flex items-center min-w-0 gap-3 sm:gap-4 flex-1">
+                                                    <div className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center ${
                                                         isLegendary
-                                                            ? 'border-orange-500/40 bg-gradient-to-br from-[#3e270a] to-zinc-900'
-                                                            : 'border-purple-500/40 bg-gradient-to-br from-[#2a133d] to-zinc-900'
+                                                            ? 'border-orange-500/40 bg-gradient-to-br from-[#3e270a] to-zinc-900 shadow-[inset_0_0_8px_rgba(249,146,0,0.2)]'
+                                                            : 'border-purple-500/40 bg-gradient-to-br from-[#2a133d] to-zinc-900 shadow-[inset_0_0_8px_rgba(206,67,251,0.2)]'
                                                     }`}>
-                                                        <img src={active.Icon} className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" alt="" />
+                                                        <img src={active.Icon} className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-110" alt="" />
                                                     </div>
 
-                                                    {/* 이름 및 타입: flex-col로 쌓되, 수직 중앙 정렬 유지 */}
-                                                    <div className="flex flex-col justify-center min-w-0">
-                                                        <div className="flex items-center gap-2 mb-0.5">
-                                                            <span className="text-[10px] text-zinc-500 font-black uppercase tracking-wider leading-none">{type}</span>
-                                                            <span className={`text-[10px] font-black leading-none ${isLegendary ? 'text-orange-400' : 'text-purple-400'}`}>
-                                                {active.Grade}
-                                            </span>
+                                                    <div className="flex flex-col justify-center min-w-0 overflow-hidden">
+                                                        <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5">
+                                                            <span className="text-[9px] sm:text-[10px] text-zinc-500 font-black uppercase tracking-wider leading-none truncate">{type}</span>
+                                                            <span className={`text-[9px] sm:text-[10px] font-black leading-none ${isLegendary ? 'text-orange-400' : 'text-purple-400'}`}>
+                                                    {active.Grade}
+                                                </span>
                                                         </div>
-                                                        <div className="flex items-baseline gap-3">
-                                                            <p className="text-[14px] font-bold text-[#efeff0] truncate leading-tight">
+                                                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                                                            <p className="text-[13px] sm:text-[14px] font-bold text-[#efeff0] truncate leading-tight">
                                                                 {active.Name}
                                                             </p>
-                                                            <span className="text-[11px] text-emerald-400 font-bold whitespace-nowrap leading-none">
-                                                {statMatch ? statMatch[0] : ''}
-                                            </span>
+                                                            <span className="text-[10px] sm:text-[11px] text-emerald-400 font-bold whitespace-nowrap leading-none">
+                                                    {statMatch ? statMatch[0] : ''}
+                                                </span>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                {/* 오른쪽 세트: 염색 정보 (전체 행의 수직 중앙에 위치) */}
-                                                {/* 오른쪽 세트: 염색 정보 (전체 행의 수직 중앙에 위치) */}
+                                                {/* 오른쪽 세트: 염색 정보 */}
                                                 {tintInfo.length > 0 && (
-                                                    <div className="flex items-center gap-2 ml-4 shrink-0 self-center mt-2   mb-0"> {/* 1. mt 늘리고 mb 제거 */}
+                                                    <div className="flex items-center gap-1.5 sm:gap-2 ml-2 sm:ml-4 shrink-0 self-center">
                                                         {tintInfo.map((tint, idx) => (
-                                                            <div key={idx} className="flex flex-col items-center justify-center min-w-[42px]">
-                                                                {/* 색상 박스 */}
+                                                            <div key={idx} className="flex flex-col items-center justify-center min-w-[36px] sm:min-w-[42px]">
                                                                 <div
-                                                                    className="w-5 h-5 rounded-sm border border-white/20 shadow-sm shrink-0 mb-1"
+                                                                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-sm border border-white/20 shadow-sm shrink-0 mb-1"
                                                                     style={{ backgroundColor: tint.baseColor }}
                                                                 />
-
-                                                                {/* 텍스트 영역: 고정 높이를 주어 수평을 강제 고정 */}
                                                                 <div className="flex flex-col items-center">
-                                                                    {/* Hex 코드 */}
-                                                                    <span className="text-[12px] text-zinc-500 font-mono uppercase tracking-tighter leading-none">
-                        {tint.baseColor.replace('#', '')}
-                    </span>
-
-                                                                    {/* 광택 정보: 값이 없어도 높이(h-[14px])를 유지하여 수평을 맞춤 */}
-                                                                    <div className="h-[14px] flex items-center justify-center"> {/* 2. 수평 맞추기용 고정 높이 섹션 */}
+                                                        <span className="text-[9px] sm:text-[11px] text-zinc-500 font-mono uppercase tracking-tighter leading-none">
+                                                            {tint.baseColor.replace('#', '')}
+                                                        </span>
+                                                                    <div className="h-[12px] sm:h-[14px] flex items-center justify-center">
                                                                         {tint.glossValue && tint.glossValue !== "0%" ? (
-                                                                            <span className="text-[10px] text-sky-400/50 font-bold leading-none">
-                                {tint.glossValue}
-                            </span>
+                                                                            <span className="text-[8px] sm:text-[10px] text-sky-400/70 font-bold leading-none">
+                                                                    {tint.glossValue}
+                                                                </span>
                                                                         ) : (
-                                                                            // 기본값(0% 등)이 없을 때도 공간을 차지하게 함
-                                                                            <span className="invisible text-[10px]">0%</span>
+                                                                            <span className="invisible text-[8px] sm:text-[10px]">0%</span>
                                                                         )}
                                                                     </div>
                                                                 </div>

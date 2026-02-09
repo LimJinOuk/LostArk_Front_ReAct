@@ -80,7 +80,7 @@ export const CharacterCard: React.FC<{
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="min-h-[300px] lg:min-h-[600px] px-4 lg:px-0"
+                        className="min-h-[300px] lg:min-h-[600px] px-0 lg:px-0"
                     >
                         {renderContent()}
                     </motion.div>
