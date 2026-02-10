@@ -66,80 +66,105 @@ const GoldCalculator = () => { // 컴포넌트명을 역할에 맞게 변경 (Ra
     );
 
     return (
-        // RaidPage 내부 탭으로 들어갈 것이므로 min-h-screen과 배경색 제거
-        <div className="w-full max-w-xl mx-auto py-2 md:py-6">
-
-            {/* 타이틀 섹션: 모바일에서 크기 축소 */}
-            <div className="text-center mb-6 md:mb-8 space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-1">
-                    <Gavel size={12} className="text-indigo-500" />
-                    <span className="text-[10px] md:text-[12px] font-black text-indigo-500 uppercase tracking-tighter">Auction System</span>
-                </div>
-                <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter">경매 계산기</h1>
-                <p className="text-xs md:text-sm text-zinc-500 font-medium">레이드 전리품 분배를 위한 최적의 입찰가 가이드</p>
+        <div className="w-full max-w-5xl mx-auto py-4 md:py-10 px-4">
+            {/* 헤더 섹션: 조금 더 슬림하게 조정 */}
+            <div className="flex flex-col mb-8 space-y-1">
+                <h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter flex items-center gap-3">
+                    <span className="w-1.5 h-8 bg-indigo-500 rounded-full" />
+                    경매 계산기
+                </h1>
+                <p className="text-[11px] md:text-sm text-zinc-500 font-medium ml-4">레이드 전리품 분배를 위한 최적의 입찰가 가이드</p>
             </div>
 
-            {/* 메인 계산기 박스: 모바일 패딩 조정 */}
-            <div className="bg-zinc-900/30 backdrop-blur-xl p-5 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-white/10 shadow-2xl">
-                <div className="space-y-6 md:space-y-8">
+            {/* 메인 컨테이너: 좌우 분할 레이아웃 */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
 
-                    {/* Input Section */}
-                    <div className="bg-zinc-900/80 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/5 shadow-inner">
-                        <p className="text-[10px] md:text-[11px] font-black text-indigo-500/90 uppercase mb-2 tracking-widest">
-                            현재 아이템 시세
-                        </p>
-                        <div className="relative">
-                            <input
-                                type="number"
-                                inputMode="numeric" // 모바일 숫자 키패드 호출
-                                className="bg-transparent w-full text-3xl md:text-4xl font-black text-white outline-none placeholder:text-zinc-800"
-                                placeholder="0"
-                                value={priceInput}
-                                onChange={(e) => setPriceInput(e.target.value)}
-                            />
-                            <span className="absolute right-0 bottom-1 md:bottom-2 text-sm md:text-xl font-bold text-zinc-600">Gold</span>
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-white/5">
-                            <p className="text-[10px] md:text-xs text-zinc-500 font-semibold flex justify-between">
-                                <span>수수료 5% 제외 (실수령액)</span>
-                                <span className="text-zinc-300">{(price * 0.95).toLocaleString()} G</span>
+                {/* [좌측 카드] - 시세 입력 (40% 비중) */}
+                <div className="md:col-span-5 lg:col-span-4 flex">
+                    <div className="w-full bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 backdrop-blur-2xl p-6 md:p-8 rounded-[2rem] border border-white/10 shadow-2xl flex flex-col justify-between relative overflow-hidden group">
+                        {/* 은은한 배경 효과 */}
+                        <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-colors duration-500" />
+
+                        <div className="relative z-10">
+                            <p className="text-[10px] md:text-[11px] font-black text-indigo-400 uppercase mb-4 tracking-[0.2em]">
+                                Current Market Price
                             </p>
+                            <div className="space-y-1">
+                                <div className="relative">
+                                    <input
+                                        type="text" // number에서 text로 변경
+                                        inputMode="numeric"
+                                        pattern="[0-9]*" // 숫자만 허용하는 패턴
+                                        className="bg-transparent w-full text-3xl md:text-4xl font-black text-white outline-none placeholder:text-zinc-800 transition-all focus:scale-[1.02] origin-left"
+                                        placeholder="0"
+                                        value={priceInput}
+                                        onChange={(e) => {
+                                            // 숫자만 입력받도록 필터링 로직 추가
+                                            const value = e.target.value.replace(/[^0-9]/g, '');
+                                            setPriceInput(value);
+                                        }}
+                                    />
+                                    <span className="absolute right-0 bottom-1.5 text-lg font-bold text-zinc-600">G</span>
+                                </div>
+                                <div className="h-1 w-20 bg-indigo-500 rounded-full" />
+                            </div>
+                        </div>
+
+                        <div className="mt-12 pt-6 border-t border-white/5 relative z-10">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-[11px] text-zinc-500 font-bold uppercase tracking-tight">Net Income</span>
+                                <span className="text-sm text-indigo-300 font-black">{(price * 0.95).toLocaleString()} G</span>
+                            </div>
+                            <p className="text-[10px] text-zinc-600">거래소 수수료 5% 제외 실수령액</p>
                         </div>
                     </div>
-
-                    {/* 본인 사용 섹션 */}
-                    <section className="space-y-3">
-                        <p className="text-[10px] md:text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] pl-1">
-                            본인 사용 (손익분기점)
-                        </p>
-                        <div className="grid grid-cols-3 gap-2 md:gap-3">
-                            <BidButton label="4인" value={bid4} id="b4" colorClass="emerald" />
-                            <BidButton label="8인" value={bid8} id="b8" colorClass="sky" />
-                            <BidButton label="16인" value={bid16} id="b16" colorClass="purple" />
-                        </div>
-                    </section>
-
-                    {/* 판매 목적 섹션 */}
-                    <section className="space-y-3">
-                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-1 md:gap-0 pl-1">
-                            <p className="text-[10px] md:text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em]">
-                                판매 목적 (수익 확보)
-                            </p>
-                            <span className="w-fit text-[9px] md:text-[10px] px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded-full font-bold">
-                                목표이익: {formatGold(targetProfit)}
-                            </span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 md:gap-3">
-                            <BidButton label="4인" value={sellBid4} id="sb4" colorClass="emerald" />
-                            <BidButton label="8인" value={sellBid8} id="sb8" colorClass="sky" />
-                            <BidButton label="16인" value={sellBid16} id="sb16" colorClass="purple" />
-                        </div>
-                    </section>
                 </div>
 
-                <p className="text-center mt-8 md:mt-10 text-[9px] md:text-[10px] text-zinc-700 font-medium">
-                    금액을 클릭하면 자동으로 클립보드에 복사됩니다.
-                </p>
+                {/* [우측 카드] - 결과 출력 (60% 비중) */}
+                <div className="md:col-span-7 lg:col-span-8">
+                    <div className="h-full bg-zinc-900/30 backdrop-blur-md p-6 md:p-8 rounded-[2rem] border border-white/5 flex flex-col gap-8">
+
+                        {/* 본인 사용 섹션 */}
+                        <section className="space-y-4">
+                            <div className="flex items-center gap-2 px-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <p className="text-[11px] md:text-[12px] font-black text-zinc-400 uppercase tracking-widest">
+                                    본인 사용 <span className="text-zinc-600 ml-2 font-medium">(손익분기점)</span>
+                                </p>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                                <BidButton label="4인" value={bid4} id="b4" colorClass="emerald" />
+                                <BidButton label="8인" value={bid8} id="b8" colorClass="sky" />
+                                <BidButton label="16인" value={bid16} id="b16" colorClass="purple" />
+                            </div>
+                        </section>
+
+                        {/* 판매 목적 섹션 */}
+                        <section className="space-y-4">
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-2 px-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                    <p className="text-[11px] md:text-[12px] font-black text-zinc-400 uppercase tracking-widest">
+                                        판매 목적 <span className="text-zinc-600 ml-2 font-medium">(수익 확보)</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                                <BidButton label="4인" value={sellBid4} id="sb4" colorClass="emerald" />
+                                <BidButton label="8인" value={sellBid8} id="sb8" colorClass="sky" />
+                                <BidButton label="16인" value={sellBid16} id="sb16" colorClass="purple" />
+                            </div>
+                        </section>
+
+                        <div className="mt-auto pt-4 flex items-center justify-center gap-2 opacity-30">
+                            <div className="w-8 h-[1px] bg-zinc-700" />
+                            <p className="text-[9px] md:text-[10px] text-zinc-500 font-medium">
+                                금액 클릭 시 복사
+                            </p>
+                            <div className="w-8 h-[1px] bg-zinc-700" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

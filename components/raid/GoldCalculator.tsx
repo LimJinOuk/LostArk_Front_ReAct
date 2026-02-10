@@ -170,7 +170,7 @@ const GoldCalculator = () => {
     return (
         <div className="max-w-6xl mx-auto px-4 py-2 md:px-8 md:py-4 space-y-2 bg-slate-50 dark:bg-zinc-950 min-h-screen pb-24 md:pb-4 transition-colors duration-300">
             {/* [상단] 헤더 - 모바일에서 패딩 및 폰트 미세 조정 */}
-            <header className="mb-4 relative overflow-hidden bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-10 border border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]">
+            <header className="mb-4 relative overflow-hidden bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-8 border border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]">
                 <div className="absolute top-0 left-0 w-full h-full -z-0">
                     <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-[100px]" />
                 </div>
@@ -182,7 +182,7 @@ const GoldCalculator = () => {
                             <p className="text-[11px] md:text-[12px] font-bold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase">Weekly Estimated Gold</p>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter drop-shadow-sm">
+                            <h1 className="text-3xl md:text-[40px] font-black text-slate-900 dark:text-white tracking-tighter drop-shadow-sm">
                                 {calculateTotalGold().toLocaleString()}
                             </h1>
                             <span className="text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-tr from-slate-400 to-slate-500 dark:from-zinc-500 dark:to-zinc-400">G</span>
