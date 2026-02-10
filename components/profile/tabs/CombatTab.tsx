@@ -259,62 +259,62 @@ export const CombatTab = ({ character }: { character: any }) => {
         return 'text-[#FF4040] border-[#FF4040]';
     };
     const gradeStyles: any = {
-            '일반': {
-                bg: 'from-zinc-800 to-zinc-950',
-                border: 'border-white/10',
-                text: 'text-zinc-400',
-                glow: '',
-                accent: 'bg-zinc-500'
-            },
-            '고급': {
-                bg: 'from-[#1a2e1a] to-[#0a0f0a]',
-                border: 'border-[#48c948]/30 shadow-[0_0_10px_rgba(72,201,72,0.05)]',
-                text: 'text-[#4edb4e] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
-                glow: 'shadow-[#48c948]/5',
-                accent: 'bg-[#48c948]'
-            },
-            '희귀': {
-                bg: 'from-[#1a2a3e] to-[#0a0d12]',
-                border: 'border-[#00b0fa]/30 shadow-[0_0_10px_rgba(0,176,250,0.1)]',
-                text: 'text-[#33c2ff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
-                glow: 'shadow-[#00b0fa]/10',
-                accent: 'bg-[#00b0fa]'
-            },
-            '영웅': {
-                bg: 'from-[#2e1a3e] to-[#120a1a]',
-                border: 'border-[#ce43fb]/30 shadow-[0_0_10px_rgba(206,67,251,0.1)]',
-                text: 'text-[#d966ff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
-                glow: 'shadow-[#ce43fb]/10',
-                accent: 'bg-[#ce43fb]'
-            },
-            '전설': {
-                bg: 'from-[#41321a] to-[#1a120a]',
-                border: 'border-[#f99200]/40 shadow-[0_0_10px_rgba(249,146,0,0.15)]',
-                text: 'text-[#ffaa33] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
-                glow: 'shadow-[#f99200]/15',
-                accent: 'bg-[#f99200]'
-            },
-            '유물': {
-                bg: 'from-[#351a0a] to-[#0a0a0a]',
-                border: 'border-[#fa5d00]/50 shadow-[0_0_10px_rgba(250,93,0,0.2)]',
-                text: 'text-[#ff7526] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
-                glow: 'shadow-[#fa5d00]/25 drop-shadow-[0_0_15px_rgba(250,93,0,0.35)]',
-                accent: 'bg-[#fa5d00]'
-            },
-            '고대': {
-                bg: 'from-[#3d3325] to-[#0f0f10]',
-                border: 'border-[#e9d2a6]/40',
-                text: 'text-[#e9d2a6]',
-                glow: 'shadow-[#e9d2a6]/25 drop-shadow-[0_0_15px_rgba(233,210,166,0.3)]',
-                accent: 'bg-[#e9d2a6]'
-            },
-            '에스더': {
-                bg: 'from-[#0d2e2e] to-[#050505]',
-                border: 'border-[#2edbd3]/60 shadow-[0_0_12px_rgba(46,219,211,0.2)]',
-                text: 'text-[#45f3ec] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
-                glow: 'shadow-[#2edbd3]/30 drop-shadow-[0_0_18px_rgba(46,219,211,0.4)]',
-                accent: 'bg-[#2edbd3]'
-            }
+        '일반': {
+            bg: 'from-zinc-800 to-zinc-950',
+            border: 'border-white/10',
+            text: 'text-zinc-400',
+            glow: '',
+            accent: 'bg-zinc-500'
+        },
+        '고급': {
+            bg: 'from-[#1a2e1a] to-[#0a0f0a]',
+            border: 'border-[#48c948]/30 shadow-[0_0_10px_rgba(72,201,72,0.05)]',
+            text: 'text-[#4edb4e] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+            glow: 'shadow-[#48c948]/5',
+            accent: 'bg-[#48c948]'
+        },
+        '희귀': {
+            bg: 'from-[#1a2a3e] to-[#0a0d12]',
+            border: 'border-[#00b0fa]/30 shadow-[0_0_10px_rgba(0,176,250,0.1)]',
+            text: 'text-[#33c2ff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+            glow: 'shadow-[#00b0fa]/10',
+            accent: 'bg-[#00b0fa]'
+        },
+        '영웅': {
+            bg: 'from-[#2e1a3e] to-[#120a1a]',
+            border: 'border-[#ce43fb]/30 shadow-[0_0_10px_rgba(206,67,251,0.1)]',
+            text: 'text-[#d966ff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+            glow: 'shadow-[#ce43fb]/10',
+            accent: 'bg-[#ce43fb]'
+        },
+        '전설': {
+            bg: 'from-[#41321a] to-[#1a120a]',
+            border: 'border-[#f99200]/40 shadow-[0_0_10px_rgba(249,146,0,0.15)]',
+            text: 'text-[#ffaa33] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+            glow: 'shadow-[#f99200]/15',
+            accent: 'bg-[#f99200]'
+        },
+        '유물': {
+            bg: 'from-[#351a0a] to-[#0a0a0a]',
+            border: 'border-[#fa5d00]/50 shadow-[0_0_10px_rgba(250,93,0,0.2)]',
+            text: 'text-[#ff7526] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+            glow: 'shadow-[#fa5d00]/25 drop-shadow-[0_0_15px_rgba(250,93,0,0.35)]',
+            accent: 'bg-[#fa5d00]'
+        },
+        '고대': {
+            bg: 'from-[#3d3325] to-[#0f0f10]',
+            border: 'border-[#e9d2a6]/40',
+            text: 'text-[#e9d2a6]',
+            glow: 'shadow-[#e9d2a6]/25 drop-shadow-[0_0_15px_rgba(233,210,166,0.3)]',
+            accent: 'bg-[#e9d2a6]'
+        },
+        '에스더': {
+            bg: 'from-[#0d2e2e] to-[#050505]',
+            border: 'border-[#2edbd3]/60 shadow-[0_0_12px_rgba(46,219,211,0.2)]',
+            text: 'text-[#45f3ec] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]',
+            glow: 'shadow-[#2edbd3]/30 drop-shadow-[0_0_18px_rgba(46,219,211,0.4)]',
+            accent: 'bg-[#2edbd3]'
+        }
     };
 
     /* ================= 로딩 ================= */
@@ -343,7 +343,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
                             <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
                             <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
-                                전투 장비 & 스톤 오버워
+                                전투 장비 & 스톤
                             </h1>
                         </div>
                         <div className="flex flex-col">
@@ -437,6 +437,8 @@ export const CombatTab = ({ character }: { character: any }) => {
                     </div>
 
                     {/* [오른쪽: 액세서리 Section] */}
+
+                    {/* [오른쪽: 액세서리 Section] */}
                     <div className="w-full lg:flex-1 flex flex-col min-w-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
                             <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
@@ -450,14 +452,17 @@ export const CombatTab = ({ character }: { character: any }) => {
                                 .filter(item => {
                                     try {
                                         const tooltip = JSON.parse(item.Tooltip);
+                                        if (item.Name?.includes('팔찌')) return true;
                                         return (tooltip.Element_001?.value?.qualityValue ?? 0) !== -1;
                                     } catch(e) { return false; }
                                 })
                                 .map((item, i) => {
                                     const tooltip = JSON.parse(item.Tooltip);
+                                    const isBracelet = item.Name?.includes('팔찌');
                                     const quality = tooltip.Element_001?.value?.qualityValue ?? 0;
                                     const itemName = item.Name || "아이템 이름";
                                     const rawGrade = (item.Grade || "").trim();
+
                                     let currentGrade = "일반";
                                     if (rawGrade.includes('고대')) currentGrade = '고대';
                                     else if (rawGrade.includes('유물')) currentGrade = '유물';
@@ -467,19 +472,32 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     const passive = cleanText(tooltip.Element_007?.value?.Element_001 || '').match(/\d+/)?.[0] || '0';
                                     const tier = (tooltip.Element_001?.value?.leftStr2 || "").replace(/[^0-9]/g, "").slice(-1) || "4";
 
-                                    const grindContent = cleanText(tooltip.Element_006?.value?.Element_001 || tooltip.Element_005?.value?.Element_001 || '');
-                                    const effects = [...grindContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)].map(m => ({
+                                    // 효과 파싱 로직
+                                    const rawContent = cleanText(
+                                        isBracelet
+                                            ? tooltip.Element_005?.value?.Element_001
+                                            : (tooltip.Element_006?.value?.Element_001 || tooltip.Element_005?.value?.Element_001 || '')
+                                    );
+
+                                    // 정규식 추출
+                                    const allEffects = [...rawContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)].map(m => ({
                                         name: m[1].trim(),
                                         value: m[2]
                                     }));
 
-                                    const shortNames = {
-                                        '추가 피해': '추피', '적에게 주는 피해': '적주피', '치명타 적중률': '치적', '치명타 피해': '치피',
-                                        '공격력': '공격력', '무기 공격력': '무공', '조화 게이지 획득량': '아덴', '낙인력': '낙인',
-                                        '파티원 회복 효과': '회복', '파티원 보호막 효과': '보호막', '아군 공격력 강화 효과': '아공강',
-                                        '아군 피해량 강화 효과': '아피강', '최대 생명력': '최생'
-                                    };
+                                    // 팔찌일 경우 특화와 치명만 필터링, 일반 악세는 기존대로
+                                    const displayEffects = isBracelet
+                                        ? allEffects.filter(e => e.name === '특화' || e.name === '치명')
+                                        : allEffects;
 
+                                    const shortNames = {
+                                        "추가 피해": "추피", "적에게 주는 피해": "적주피", "치명타 적중률": "치적",
+                                        "치명타 피해": "치피", "공격력": "공격력", "무기 공격력": "무공",
+                                        "낙인력": "낙인력", "파티원 회복 효과": "파티회복",
+                                        "파티원 보호막 효과": "파티보호", "아군 공격력 강화 효과": "아공강",
+                                        "아군 피해량 강화 효과": "아피강", "최대 생명력": "최생", "최대 마나": "최마",
+                                        "전투 중 생명력 회복량": "전투회복", "상태이상 공격 지속시간": "상태이상", "세레나데, 신앙, 조화 게이지 획득량":"서포터 아덴 획득량"
+                                    };
                                     return (
                                         <div key={i}
                                              onMouseEnter={() => { setAccHoverIdx(i); setAccHoverData(tooltip); }}
@@ -491,9 +509,11 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                 <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border}`}>
                                                     <img src={item.Icon} className="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-cover bg-black/20" alt="" />
                                                 </div>
-                                                <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[9px] font-black border ${getQualityColor(quality)} bg-zinc-900 ${theme.text}`}>
-                                                    {quality}
-                                                </div>
+                                                {!isBracelet && (
+                                                    <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[9px] font-black border ${getQualityColor(quality)} bg-zinc-900 ${theme.text}`}>
+                                                        {quality}
+                                                    </div>
+                                                )}
                                                 {accHoverIdx === i && accHoverData && (
                                                     <div className="absolute left-full top-0 z-[9999] pointer-events-auto hidden sm:flex" style={{ paddingLeft: '12px' }}>
                                                         <AccessoryTooltip data={accHoverData} className="!static !mt-0 !left-0" />
@@ -510,15 +530,17 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                 </div>
                                             </div>
 
-                                            {/* 오른쪽: 연마 효과 영역 (공간 최적화) */}
+                                            {/* 오른쪽: 특화/치명만 노출 (빨간색) */}
                                             <div className="w-[85px] sm:w-[100px] flex flex-col justify-center items-end border-l border-white/5 pl-2 shrink-0 overflow-hidden">
-                                                {[0, 1, 2].map((idx) => {
-                                                    const rawName = effects[idx]?.name || '';
-                                                    const val = effects[idx]?.value || '-';
+                                                {(isBracelet ? [0, 1] : [0, 1, 2]).map((idx) => {
+                                                    const targetEffect = displayEffects[idx];
+                                                    const rawName = targetEffect?.name || '';
+                                                    const val = targetEffect?.value || '-';
                                                     const dispName = shortNames[rawName] || rawName || '-';
 
                                                     const getDynamicColor = (name, valueStr) => {
                                                         if (valueStr === '-' || !valueStr) return 'text-white/20';
+                                                        if (isBracelet && (name === '특화' || name === '치명')) return 'text-red-500 font-black';
                                                         const num = parseFloat(valueStr.replace(/[^0-9.]/g, ''));
                                                         const isPercent = valueStr.includes('%');
                                                         const thresholds = {
@@ -554,8 +576,8 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                     };
 
                                                     return (
-                                                        <div key={idx} className="flex justify-between w-full text-[10px] sm:text-[10px] leading-tight items-center">
-                                                            <span className="text-white/30 truncate shrink mr-1">{dispName}</span>
+                                                        <div key={idx} className="flex justify-between w-full text-[11px] font-semi-bold leading-tight items-center">
+                                                            <span className="text-white/40 truncate shrink mr-1">{dispName}</span>
                                                             <span className={`${getDynamicColor(rawName, val)} whitespace-nowrap shrink-0`}>{val}</span>
                                                         </div>
                                                     );
@@ -565,11 +587,12 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     );
                                 })}
 
-                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[60px] text-[10px] px-4">
+                            <div className="flex items-center gap-4 p-2.5 rounded-xl border border-white/5 h-[60px] text-[10px] px-4 text-white/50">
                                 팔찌 효율 계산 행
                             </div>
                         </div>
                     </div>
+
                 </section>
 
 
@@ -654,7 +677,7 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                         {/* 포인트 정보 */}
                                         <div className="shrink-0 text-right pr-1">
-                            <span className="text-[13px] sm:text-[14px] font-black text-white/90 tracking-tighter">
+                            <span className={`text-[13px] sm:text-[14px] font-extrabold mt-0.5 truncate ${theme.text}`}>
                                 {slot.Point}P
                             </span>
                                         </div>
