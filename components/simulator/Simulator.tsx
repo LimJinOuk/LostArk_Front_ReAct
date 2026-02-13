@@ -17,6 +17,7 @@ type CharacterInfoCompat = CharacterInfo & { CharacterName?: string };
 interface SimulatorProps {
     character?: CharacterInfoCompat | null;
     activeTab: SimTab;
+    onEquipmentUpdate: (partName: string, data: any) => void;
 }
 
 interface EquipmentItemProps {
@@ -31,6 +32,7 @@ interface EquipmentItemProps {
     REINFORCE_OPTIONS: Array<{ label: string; value: number; tier: number }>;
     setHoveredIndex: (idx: number | null) => void;
     setHoveredData: (data: any) => void;
+    onUpdate: (partName: string, data: any) => void;
 }
 
 interface ArkEffect {
@@ -248,6 +250,7 @@ function inferGemKindFromEquippedGem(gem: any): GemKind | null {
 /* =======================
    ✅ EquipmentItem (기존 유지)
    ======================= */
+// EquipmentItemProps 인터페이스에 onUpdate 추가 필요
 const EquipmentItem = ({
                            item,
                            i,
@@ -260,29 +263,46 @@ const EquipmentItem = ({
                            REINFORCE_OPTIONS,
                            setHoveredIndex,
                            setHoveredData,
-                       }: EquipmentItemProps) => {
+                           onUpdate, // ✅ 추가: 부모에게 상태를 전달할 콜백
+                       }: any) => {
     const [localQuality, setLocalQuality] = useState(quality);
     const [localAdv, setLocalAdv] = useState(advancedReinforce);
-
     const [selectedOption, setSelectedOption] = useState(() => {
         const level = reinforceLevel.replace("+", "");
         return (
-            REINFORCE_OPTIONS.find((opt) => String(opt.value) === level) ||
+            REINFORCE_OPTIONS.find((opt: any) => String(opt.value) === level) ||
             REINFORCE_OPTIONS[0]
         );
     });
 
+    // ✅ 추가: 값이 변경될 때마다 부모(Simulator)로 데이터 전달
+    useEffect(() => {
+        onUpdate(itemName, {
+            quality: Number(localQuality),
+            level: selectedOption.value,
+            tier: selectedOption.tier,
+            advancedReinforce: Number(localAdv)
+        });
+    }, [localQuality, localAdv, selectedOption, itemName, onUpdate]);
+
     useEffect(() => {
         const level = reinforceLevel.replace("+", "");
-        const found = REINFORCE_OPTIONS.find((opt) => String(opt.value) === level);
+        const found = REINFORCE_OPTIONS.find((opt: any) => String(opt.value) === level);
 
         if (found) {
-            setLocalQuality(quality);
-            setLocalAdv(advancedReinforce);
-            setSelectedOption(found);
+            // 현재 로컬 상태와 부모의 원본 props가 다를 때만 업데이트 (덮어쓰기 방지)
+            // 만약 사용자가 수정한 상태라면 이 조건문은 실행되지 않습니다.
+            setLocalQuality((prev: any) => (prev !== quality ? quality : prev));
+            setLocalAdv((prev: any) => (prev !== advancedReinforce ? advancedReinforce : prev));
+
+            setSelectedOption((prev: any) => {
+                if (prev.value === found.value && prev.tier === found.tier) return prev;
+                return found;
+            });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reinforceLevel, quality, advancedReinforce]);
+// REINFORCE_OPTIONS는 배열이므로 의존성에 넣으면 매번 실행될 수 있어 제외하거나 useMemo 처리가 필요합니다.
 
     const handleKeyDown = (e: any) => {
         if (e.key === "Enter") e.currentTarget.blur();
@@ -290,62 +310,39 @@ const EquipmentItem = ({
 
     return (
         <div
-            onMouseEnter={() => {
-                setHoveredIndex(i);
-                setHoveredData(tooltip);
-            }}
-            onMouseLeave={() => {
-                setHoveredIndex(null);
-                setHoveredData(null);
-            }}
+            onMouseEnter={() => { setHoveredIndex(i); setHoveredData(tooltip); }}
+            onMouseLeave={() => { setHoveredIndex(null); setHoveredData(null); }}
             className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
         >
             <div className="relative shrink-0">
-                <div
-                    className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${
-                        theme.glow || ""
-                    }`}
-                >
-                    <img
-                        src={item.Icon}
-                        className="w-10 h-10 rounded-md object-cover bg-black/20"
-                        alt={itemName}
-                    />
+                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ""}`}>
+                    <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt={itemName} />
                 </div>
                 <input
                     type="number"
                     min="0"
                     max="100"
-                    value={localQuality as any}
+                    value={localQuality}
                     onChange={(e) => setLocalQuality(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className={`absolute -bottom-1 -right-1 w-7 px-0.5 rounded-md text-[10px] font-black border border-zinc-700 bg-zinc-900 text-center focus:outline-none focus:ring-1 focus:ring-yellow-500
-                    ${getQualityColor(Number(localQuality))} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors`}
+                    className={`absolute -bottom-1 -right-1 w-7 px-0.5 rounded-md text-[10px] font-black border border-zinc-700 bg-zinc-900 text-center focus:outline-none focus:ring-1 focus:ring-yellow-500 ${getQualityColor(Number(localQuality))} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors`}
                 />
             </div>
 
             <div className="flex-1 min-w-0">
-                <h3 className={`font-bold text-[12px] truncate mb-1 ${theme.text}`}>
-                    {itemName}
-                </h3>
+                <h3 className={`font-bold text-[12px] truncate mb-1 ${theme.text}`}>{itemName}</h3>
                 <div className="flex items-center gap-2">
                     <select
                         className="bg-zinc-800 text-white/70 text-[10px] px-2 py-0.5 rounded border border-zinc-700 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer scrollbar-hide"
                         value={`${selectedOption.tier}-${selectedOption.value}`}
                         onChange={(e) => {
                             const [tier, val] = e.target.value.split("-");
-                            const found = REINFORCE_OPTIONS.find(
-                                (opt) => opt.tier === Number(tier) && opt.value === Number(val)
-                            );
+                            const found = REINFORCE_OPTIONS.find((opt: any) => opt.tier === Number(tier) && opt.value === Number(val));
                             if (found) setSelectedOption(found);
                         }}
                     >
-                        {REINFORCE_OPTIONS.map((opt) => (
-                            <option
-                                key={`${opt.tier}-${opt.value}`}
-                                value={`${opt.tier}-${opt.value}`}
-                                className="bg-zinc-900 text-white"
-                            >
+                        {REINFORCE_OPTIONS.map((opt: any) => (
+                            <option key={`${opt.tier}-${opt.value}`} value={`${opt.tier}-${opt.value}`} className="bg-zinc-900 text-white">
                                 {opt.label}
                             </option>
                         ))}
@@ -357,7 +354,7 @@ const EquipmentItem = ({
                             type="number"
                             min="0"
                             max="20"
-                            value={localAdv as any}
+                            value={localAdv}
                             onChange={(e) => setLocalAdv(e.target.value)}
                             onKeyDown={handleKeyDown}
                             className="w-5 bg-transparent text-sky-400 text-[10px] font-bold focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
@@ -616,7 +613,7 @@ const NoCharacterView = ({
 };
 
 /* ---------------------- 메인 컴포넌트 ---------------------- */
-export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, activeTab,}) => {
+export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, activeTab, onEquipmentUpdate}) => {
     const location = useLocation();
 
     /** ✅ 우선순위: props > location.state.character > null */
@@ -1161,6 +1158,8 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                             {/* 왼쪽: 장비 섹션 */}
                             <section className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-4 items-stretch bg-[#121213] p-5 rounded-2xl border border-white/5">
                                 {/* 왼쪽: 전투 장비 Section */}
+
+
                                 <div className="w-full lg:w-[40%] flex flex-col shrink-0">
                                     <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
                                         <div className="w-1.5 h-5 bg-blue-950 rounded-full" />
@@ -1234,6 +1233,7 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                                                         REINFORCE_OPTIONS={REINFORCE_OPTIONS}
                                                         setHoveredIndex={setHoveredIndex}
                                                         setHoveredData={setHoveredData}
+                                                        onUpdate={onEquipmentUpdate}
                                                     />
                                                 );
                                             })}
@@ -1481,6 +1481,9 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                                             })}
                                     </div>
                                 </div>
+
+
+
                             </section>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
