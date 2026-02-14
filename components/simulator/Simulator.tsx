@@ -1532,14 +1532,14 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                                                     // 1. 전체 열에 클릭 이벤트 등록 및 커서 변경
                                                     onClick={handleRowClick}
                                                     className={`relative group flex items-center gap-3 rounded-xl transition-all h-[62px] px-2 pl-0 cursor-pointer
-                ${arkCoreHoverIdx === i ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'}`}
+                                                    ${arkCoreHoverIdx === i ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'}`}
                                                 >
                                                     {/* 아이콘 영역: 이제 부모가 클릭을 담당하므로 onClick 제거 */}
                                                     <div className="relative shrink-0">
                                                         <div className={`w-12 h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
-                    bg-gradient-to-br ${theme.bg} overflow-hidden
-                    border ${arkCoreHoverIdx === i ? 'border-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'border-[#e9d2a6]/10'} 
-                    shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] active:scale-95`}
+                                                            bg-gradient-to-br ${theme.bg} overflow-hidden
+                                                            border ${arkCoreHoverIdx === i ? 'border-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'border-[#e9d2a6]/10'} 
+                                                            shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] active:scale-95`}
                                                         >
                                                             <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
                                                             {slot.Gems?.length > 0 && (
@@ -1585,14 +1585,14 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                                                             <div className="relative flex items-center">
                                                                 <select
                                                                     className="bg-white/5 border border-white/10 rounded-md
-                            text-[13px] font-black text-white/90
-                            outline-none cursor-pointer appearance-none text-center
-                            w-12 h-7
-                            hover:bg-white/10 hover:border-[#FFD200]/50
-                            focus:border-[#FFD200] focus:ring-1 focus:ring-[#FFD200]/30
-                            transition-all duration-200
-                            group-hover/point:text-[#FFD200]
-                            [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                                                                    text-[13px] font-black text-white/90
+                                                                    outline-none cursor-pointer appearance-none text-center
+                                                                    w-12 h-7
+                                                                    hover:bg-white/10 hover:border-[#FFD200]/50
+                                                                    focus:border-[#FFD200] focus:ring-1 focus:ring-[#FFD200]/30
+                                                                    transition-all duration-200
+                                                                    group-hover/point:text-[#FFD200]
+                                                                    [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                                                                     value={slot.Point}
                                                                     onChange={(e) => {
                                                                         const newPoint = parseInt(e.target.value);
