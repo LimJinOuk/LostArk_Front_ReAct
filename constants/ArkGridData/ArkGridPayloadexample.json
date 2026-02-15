@@ -1,0 +1,51 @@
+[
+  {
+    "category": "질서",
+    "type": "해",
+    "title": "블레이드 버스트",
+    "grade": "유물",
+    "points": 20
+  },
+  {
+    "category": "질서",
+    "type": "달",
+    "title": "데스 블리츠",
+    "grade": "유물",
+    "points": 20
+  },
+  {
+    "category": "질서",
+    "type": "별",
+    "title": "얼음과 불의 검",
+    "grade": "유물",
+    "points": 20
+  },
+  {
+    "category": "혼돈",
+    "type": "해",
+    "title": "현란한 공격",
+    "grade": "고대",
+    "points": 20
+  },
+  {
+    "category": "혼돈",
+    "type": "해",
+    "title": "현란한 공격",
+    "grade": "고대",
+    "points": 20
+  },
+  {
+    "category": "혼돈",
+    "type": "달",
+    "title": "치명적인 흔적",
+    "grade": "전설",
+    "points": 20
+  },
+  {
+    "category": "혼돈",
+    "type": "별",
+    "title": "공격",
+    "grade": "영웅",
+    "points": 20
+  }
+]
