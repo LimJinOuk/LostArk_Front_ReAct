@@ -10,6 +10,8 @@ import JewelryTooltip from "@/components/profile/Tooltip/JewelryTooltip.tsx";
 import { CharacterInfo } from "@/types.ts";
 import { SimTab } from "./SimulatorNav";
 import ArkCoreTooltip from "@/components/profile/Tooltip/ArkCoreTooltip.tsx";
+import {AccessoryItem} from "@/components/simulator/container/AccessoryItem.tsx";
+import {EquipmentItem} from "@/components/simulator/container/EquipmentItem.tsx";
 
 type CharacterInfoCompat = CharacterInfo & { CharacterName?: string };
 
@@ -248,124 +250,6 @@ function inferGemKindFromEquippedGem(gem: any): GemKind | null {
 
     return null;
 }
-
-/* =======================
-   ✅ EquipmentItem (기존 유지)
-   ======================= */
-// EquipmentItemProps 인터페이스에 onUpdate 추가 필요
-const EquipmentItem = ({
-                           item,
-                           i,
-                           theme,
-                           tooltip,
-                           quality,
-                           reinforceLevel,
-                           advancedReinforce,
-                           itemName,
-                           REINFORCE_OPTIONS,
-                           setHoveredIndex,
-                           setHoveredData,
-                           onUpdate, // ✅ 추가: 부모에게 상태를 전달할 콜백
-                       }: any) => {
-    const [localQuality, setLocalQuality] = useState(quality);
-    const [localAdv, setLocalAdv] = useState(advancedReinforce);
-    const [selectedOption, setSelectedOption] = useState(() => {
-        const level = reinforceLevel.replace("+", "");
-        return (
-            REINFORCE_OPTIONS.find((opt: any) => String(opt.value) === level) ||
-            REINFORCE_OPTIONS[0]
-        );
-    });
-
-    // ✅ 추가: 값이 변경될 때마다 부모(Simulator)로 데이터 전달
-    useEffect(() => {
-        if (!onUpdate) return;
-
-        onUpdate(itemName, {
-            quality: Number(localQuality),
-            level: Number(selectedOption.value),
-            tier: Number(selectedOption.tier),
-            advancedReinforce: Number(localAdv)
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [localQuality, localAdv, selectedOption.value, selectedOption.tier, itemName]);
-    // ↑ onUpdate를 의존성에서 빼거나 useCallback으로 감싸져 있어야 무한루프를 안 돕니다.
-
-    // ✅ 2. 외부 props(검색 결과)가 변경될 때만 로컬 상태를 동기화
-    // 사용자가 입력 중일 때는 영향을 주지 않도록 로직을 분리합니다.
-    useEffect(() => {
-        const level = reinforceLevel.replace("+", "");
-        const found = REINFORCE_OPTIONS.find((opt: any) => String(opt.value) === level);
-
-        if (found) {
-            setLocalQuality(quality);
-            setLocalAdv(advancedReinforce);
-            setSelectedOption(found);
-        }
-    }, [quality, reinforceLevel, advancedReinforce]);
-
-    const handleKeyDown = (e: any) => {
-        if (e.key === "Enter") e.currentTarget.blur();
-    };
-
-    return (
-        <div
-            onMouseEnter={() => { setHoveredIndex(i); setHoveredData(tooltip); }}
-            onMouseLeave={() => { setHoveredIndex(null); setHoveredData(null); }}
-            className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
-        >
-            <div className="relative shrink-0">
-                <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ""}`}>
-                    <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt={itemName} />
-                </div>
-                <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={localQuality}
-                    onChange={(e) => setLocalQuality(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className={`absolute -bottom-1 -right-1 w-7 px-0.5 rounded-md text-[10px] font-black border border-zinc-700 bg-zinc-900 text-center focus:outline-none focus:ring-1 focus:ring-yellow-500 ${getQualityColor(Number(localQuality))} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors`}
-                />
-            </div>
-
-            <div className="flex-1 min-w-0">
-                <h3 className={`font-bold text-[12px] truncate mb-1 ${theme.text}`}>{itemName}</h3>
-                <div className="flex items-center gap-2">
-                    <select
-                        className="bg-zinc-800 text-white/70 text-[10px] px-2 py-0.5 rounded border border-zinc-700 focus:outline-none focus:border-blue-500 appearance-none cursor-pointer scrollbar-hide"
-                        value={`${selectedOption.tier}-${selectedOption.value}`}
-                        onChange={(e) => {
-                            const [tier, val] = e.target.value.split("-");
-                            const found = REINFORCE_OPTIONS.find((opt: any) => opt.tier === Number(tier) && opt.value === Number(val));
-                            if (found) setSelectedOption(found);
-                        }}
-                    >
-                        {REINFORCE_OPTIONS.map((opt: any) => (
-                            <option key={`${opt.tier}-${opt.value}`} value={`${opt.tier}-${opt.value}`} className="bg-zinc-900 text-white">
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
-
-                    <div className="flex items-center gap-1 bg-zinc-800 px-2 py-0.5 rounded border border-sky-700 focus-within:border-sky-500 transition-colors">
-                        <span className="text-sky-400 text-[10px] font-bold">상재</span>
-                        <input
-                            type="number"
-                            min="0"
-                            max="20"
-                            value={localAdv}
-                            onChange={(e) => setLocalAdv(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            className="w-5 bg-transparent text-sky-400 text-[10px] font-bold focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 
 /* =======================
    ✅ GemSlot (드롭다운 + 아이콘 변경 + 툴팁 유지)
@@ -658,9 +542,6 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     const [hoveredData, setHoveredData] = useState<any>(null);
 
-    const [accHoverIdx, setAccHoverIdx] = useState<number | null>(null);
-    const [accHoverData, setAccHoverData] = useState<any>(null);
-
     const [jewlryHoverIdx, setJewlryHoverIdx] = useState<any>(null);
     const [jewlryHoverData, setJewlryHoverData] = useState<any>(null);
 
@@ -915,20 +796,6 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
             .finally(() => setLoading(false));
     }, [characterName]);
 
-    // 3. 데이터 가공
-    const leftEquipList = useMemo(() => {
-        const weapon = equipments.filter((i) => i.Type === "무기");
-        const armors = equipments.filter((i) =>
-            ["투구", "상의", "하의", "장갑", "어깨"].includes(i.Type)
-        );
-        return [...weapon.slice(0, 1), ...armors];
-    }, [equipments]);
-
-    const accessories = useMemo(() => {
-        return equipments.filter((i) =>
-            ["목걸이", "귀걸이", "반지", "팔찌"].includes(i.Type)
-        );
-    }, [equipments]);
 
     const normalizeEngravingName = (name: string) => {
         return (name || "")
@@ -942,445 +809,6 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
         const key = normalizeEngravingName(name);
         return (engravingIconMap as Record<string, string>)[key] || "";
     };
-
-    /** 🔹 악세사리 부위별/연마단계별 최대 스탯 */
-    const MAX_STATS: Record<string, number[]> = {
-        "반지":   [11091, 11349, 11865, 12897],
-        "귀걸이": [11944, 12222, 12778, 13889],
-        "목걸이": [15357, 15714, 16428, 17857]
-    };
-
-    /** 🔹 효과 이름 축약 맵 */
-    /** 🔹 악세사리 부위별 효과 이름 축약 맵 */
-    const SHORT_NAMES: Record<string, Record<string, string>> = {
-        // 모든 악세사리 공통 옵션
-        common: {
-            "무기공격력_FIXED": "무공(고정)",
-            "공격력_FIXED": "공격력(고정)",
-            "최대 생명력": "최생",
-            "최대 마나": "최마",
-            "상태이상 공격 지속시간": "상태이상",
-            "전투 중 생명력 회복량": "전투회복"
-        },
-
-        // 목걸이 전용
-        necklace: {
-            "추가 피해": "추피",
-            "적에게 주는 피해": "적주피",
-            "낙인력": "낙인력",
-            "세레나데, 신앙, 조화 게이지 획득량": "서포터 아덴 획득"
-        },
-
-        // 귀걸이 전용
-        earring: {
-            "무기공격력_PCT": "무공(%)",
-            "공격력_PCT": "공격력(%)",
-            "파티원 회복 효과": "파티회복",
-            "파티원 보호막 효과": "파티보호"
-        },
-
-        // 반지 전용
-        ring: {
-            "치명타 적중률": "치적",
-            "치명타 피해": "치피",
-            "아군 공격력 강화 효과": "아공강",
-            "아군 피해량 강화 효과": "아피강"
-        }
-    };
-
-    /** 🔹 효과 수치별 등급 판정 기준 */
-    type Thresholds = { 상: number; 중: number; 하: number };
-
-    const ACC_THRESHOLDS: Record<string, Record<string, Thresholds>> = {
-        // 1. 모든 악세사리 공통 옵션
-        common: {
-            "무기공격력_FIXED": { 상: 960, 중: 480, 하: 195 },
-            "공격력_FIXED": { 상: 390, 중: 195, 하: 80 },
-            "최대 생명력": { 상: 6500, 중: 3250, 하: 1300 },
-            "최대 마나": { 상: 30, 중: 15, 하: 6 },
-            "상태이상 공격 지속시간": { 상: 1.0, 중: 0.5, 하: 0.2 },
-            "전투 중 생명력 회복량": { 상: 50, 중: 25, 하: 10 },
-        },
-
-        // 2. 목걸이 전용 옵션
-        necklace: {
-            "추가 피해": { 상: 2.6, 중: 1.6, 하: 0.7 },
-            "적에게 주는 피해": { 상: 2.0, 중: 1.2, 하: 0.55 },
-            "낙인력": { 상: 8.0, 중: 4.8, 하: 2.15 },
-            "세레나데, 신앙, 조화 게이지 획득량": { 상: 6.0, 중: 3.6, 하: 1.6 },
-        },
-
-        // 3. 귀걸이 전용 옵션
-        earring: {
-            "무기공격력_PCT": { 상: 3.0, 중: 1.8, 하: 0.8 },
-            "공격력_PCT": { 상: 1.55, 중: 0.95, 하: 0.4 },
-            "파티원 회복 효과": { 상: 3.5, 중: 2.1, 하: 0.95 },
-            "파티원 보호막 효과": { 상: 3.5, 중: 2.1, 하: 0.95 },
-        },
-
-        // 4. 반지 전용 옵션
-        ring: {
-            "치명타 적중률": { 상: 1.55, 중: 0.95, 하: 0.4 },
-            "치명타 피해": { 상: 4.0, 중: 2.4, 하: 1.1 },
-            "아군 공격력 강화 효과": { 상: 5.0, 중: 3.0, 하: 1.35 },
-            "아군 피해량 강화 효과": { 상: 7.5, 중: 4.5, 하: 2.0 },
-        },
-    };
-
-    const BRACELET_OPTIONS = {
-        "추피(악마/대악마)": ["2.5%", "3%", "3.5%"],
-        "치피(치명타 적중시 피증 1.5%)": ["6.8%", "8.4%", "10%"],
-        "무공(생명)": ["6900", "7800", "8700"],
-        "무공(스탯)": ["7200", "8100", "9000"],
-        "적주피(재사용 대기시간 2% 증가)": ["4.5%", "5%", "5.5%"],
-        "치적(치명타 적중시 피증 1.5%)": ["3.4%", "4.2%", "5%"],
-        "치피": ["6.8%", "8.4%", "10%"],
-        "무공": ["7200%", "8100%", "9000%"],
-        "적중 시 무공(공이속 1%)": ["1160", "1320", "1480"],
-        "비방향성 공격": ["2.5%", "3%", "3.5%"],
-        "백어택 스킬": ["2.5%", "3%", "3.5%"],
-        "헤드어택 스킬": ["2.5%", "3%", "3.5%"],
-        "적주피": ["2%", "2.5%", "3%"],
-        "추피": ["3%", "3.5%", "4%"],
-        "치적": ["3.4%", "3.5%", "4%"],
-        "힘민지": ["10000", "13000", "16000"],
-        "공이속": ["4%", "5%", "6%"]
-    };
-    /** 🎨 [유틸리티] 등급별 색상 클래스 */
-    const getGradeColor = (grade: string) => {
-        const colors: Record<string, string> = {
-            "상": "text-yellow-400 font-black",
-            "중": "text-purple-400 font-bold",
-            "하": "text-blue-400 font-medium"
-        };
-        return colors[grade] || "text-zinc-500 font-bold";
-    };
-    const handleGradeChange = (
-        e: React.ChangeEvent<HTMLSelectElement>,
-        rawName: string,
-        isPercent: boolean,
-        inputRef: HTMLInputElement | null
-    ) => {
-        const grade = e.target.value as '상' | '중' | '하';
-        if (!grade || !rawName || !inputRef) return;
-
-        // 1. 적절한 데이터 키 매핑 (resolveTargetKey 로직 통합)
-        let targetKey = rawName;
-        if (rawName === "공격력") targetKey = isPercent ? "공격력_PCT" : "공격력_FIXED";
-        if (rawName === "무기 공격력") targetKey = isPercent ? "무기공격력_PCT" : "무기공격력_FIXED";
-
-        // 2. 모든 카테고리에서 해당 옵션의 임계값(상,중,하 객체) 찾기
-        const criteria = getCriteria(targetKey);
-        const newValue = criteria ? criteria[grade] : undefined;
-
-        if (newValue !== undefined) {
-            // 3. 값 입력 (고정값은 소수점 제외, 퍼센트는 2자리 유지)
-            const displayValue = isPercent ? `+${newValue.toFixed(2)}%` : `+${newValue}`;
-            inputRef.value = displayValue;
-
-            // 4. 색상 및 스타일 실시간 업데이트
-            const colorClass = getDynamicStatColor(rawName, displayValue);
-            inputRef.className = `w-14 bg-transparent text-right text-[10px] font-bold outline-none border-b border-transparent focus:border-white/20 transition-all ${colorClass}`;
-
-            console.log(`${targetKey} 등급 변경: ${grade} (${displayValue})`);
-        }
-    };
-
-    /** 🔍 모든 카테고리(common, necklace 등)를 뒤져서 특정 옵션의 기준치를 반환 */
-    const getCriteria = (targetKey: string): Thresholds | null => {
-        for (const category in ACC_THRESHOLDS) {
-            if (ACC_THRESHOLDS[category][targetKey]) {
-                return ACC_THRESHOLDS[category][targetKey];
-            }
-        }
-        return null;
-    };
-
-    /** 🏷️ UI용 이름을 데이터용 키로 변환 */
-    const resolveTargetKey = (name: string, isPercent: boolean): string => {
-        if (name === "공격력") return isPercent ? "공격력_PCT" : "공격력_FIXED";
-        if (name === "무기 공격력") return isPercent ? "무기공격력_PCT" : "무기공격력_FIXED";
-        return name;
-    };
-
-    /** 🔹 수치에 따른 동적 색상 반환 함수 */
-    const getDynamicStatColor = (name: string, valueStr: string) => {
-        if (valueStr === "-" || !valueStr) return "text-white/20";
-
-        const num = parseFloat(String(valueStr).replace(/[^0-9.]/g, ""));
-        const isPercent = String(valueStr).includes("%");
-        const targetKey = resolveTargetKey(name, isPercent);
-
-        // 부위별 카테고리 내부에서 실제 수치 기준(상, 중, 하)을 가져옴
-        const criteria = getCriteria(targetKey);
-
-        if (!criteria) return "text-zinc-500";
-
-        // 수치 비교 (상/중/하)
-        if (num >= criteria.상) return "text-yellow-400 font-black";
-        if (num >= criteria.중) return "text-purple-400 font-bold";
-        return "text-blue-400 font-medium";
-    };
-
-    const getAccessoryStats = (tooltip: any) => {
-        // Object.values의 결과를 any[]로 단언하여 속성 접근 허용
-        const elements = Object.values(tooltip) as any[];
-
-        // 1. 기본 효과 찾기
-        const baseElement = elements.find(el =>
-            el?.type === 'ItemPartBox' && el?.value?.Element_000?.includes('기본 효과')
-        );
-        const baseText = baseElement?.value?.Element_001 || "";
-
-        const statMatch = baseText.match(/(?:힘|민첩|지능)\s*\+(\d+)/);
-        const currentStat = statMatch ? parseInt(statMatch[1]) : 0;
-
-        // 2. 연마 효과 찾기
-        const polishElement = elements.find(el =>
-            el?.type === 'ItemPartBox' && el?.value?.Element_000?.includes('연마 효과')
-        );
-        const polishHtml = polishElement?.value?.Element_001 || "";
-        const polishLevel = (polishHtml.match(/img src/g) || []).length;
-
-        // 3. 연마 옵션 파싱
-        const grindContent = cleanText(polishHtml);
-        const effects = [...grindContent.matchAll(/([가-힣\s,]+?)\s*\+([\d.]+%?)/g)].map(m => ({
-            name: m[1].trim(),
-            value: m[2],
-        }));
-        // 등급 선택 시 실행될 함수 예시
-
-        return { currentStat, polishLevel, effects };
-    };
-
-
-    const AccessoryItem = ({
-                               item,
-                               accessoryStates,
-                               onAccessoryUpdate,
-                               getAccessoryStats,
-                               theme,
-                               partName,
-                               isBracelet,
-                               normalEffects,
-                               currentStat,
-                               polishLevel,
-                               quality,
-                               getQualityColor,
-                               BRACELET_OPTIONS,
-                               SHORT_NAMES,
-                               ACC_THRESHOLDS,
-                               getGradeColor,
-                               cleanText,
-                               MAX_STATS,
-                               setHoveredIndex,
-                               setHoveredData,
-                               i,
-                               tooltip
-                           }: any) => {
-        const itemName = item.Name || "아이템 이름";
-
-        // --- [데이터 파싱 유틸리티 함수들] ---
-        const getInitialSelectValue = (effect: any) => {
-            if (!effect) return "";
-            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
-            const availableOptions = { ...SHORT_NAMES.common, ...SHORT_NAMES[accType] };
-            const isPct = String(effect.value).includes("%");
-            const cleanName = effect.name.replace(/\s/g, "");
-            let searchKey = cleanName;
-            if (searchKey === "공격력") searchKey = isPct ? "공격력_PCT" : "공격력_FIXED";
-            if (searchKey === "무기공격력") searchKey = isPct ? "무기공격력_PCT" : "무기공격력_FIXED";
-            if (!availableOptions[searchKey]) {
-                searchKey = Object.keys(availableOptions).find(k => k.replace(/\s/g, "").includes(cleanName)) || "";
-            }
-            return availableOptions[searchKey] ? searchKey : "";
-        };
-
-        const getInitialGrade = (effect: any, matchedKey: string) => {
-            if (!effect || !matchedKey) return "";
-            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
-            const num = parseFloat(String(effect.value).replace(/[^0-9.]/g, ""));
-            const criteria = ACC_THRESHOLDS[accType]?.[matchedKey] || ACC_THRESHOLDS.common[matchedKey];
-            if (!criteria) return "하";
-            if (num >= (criteria.상 || 999)) return "상";
-            if (num >= (criteria.중 || 999)) return "중";
-            return "하";
-        };
-
-        // 로컬 상태 초기화
-        const [localState, setLocalState] = useState<any>(() => {
-            const initialMainStatPct = ((currentStat / (MAX_STATS[partName]?.[polishLevel] || 1)) * 100).toFixed(1);
-            let data: any = { mainStatPct: initialMainStatPct };
-
-            if (isBracelet) {
-                const rawContent = cleanText(tooltip.Element_005?.value?.Element_001 || "");
-                const braceletStats = [...rawContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)]
-                    .map(m => ({ name: m[1].trim(), value: m[2] }))
-                    .filter(e => ["특화", "치명", "신속", "힘", "민첩", "지능", "체력"].includes(e.name));
-
-                [0, 1, 2, 3].forEach((idx) => {
-                    data[`baseName_${idx}`] = braceletStats[idx]?.name || "선택";
-                    data[`baseValue_${idx}`] = braceletStats[idx]?.value || "0";
-                });
-                [0, 1, 2].forEach(idx => data[`brac_option_${idx}`] = { name: "", grade: "중" });
-            } else {
-                normalEffects.forEach((eff: any, idx: number) => {
-                    const name = getInitialSelectValue(eff);
-                    const grade = getInitialGrade(eff, name);
-                    data[`acc_effect_${idx}`] = { name, grade };
-                });
-            }
-            return data;
-        });
-
-        // 마운트 시 부모에게 보고
-        useEffect(() => {
-            onAccessoryUpdate(itemName, localState);
-        }, []);
-
-        const updateState = (newData: any) => {
-            const updated = { ...localState, ...newData };
-            setLocalState(updated); // 로컬 UI 즉시 갱신
-            onAccessoryUpdate(itemName, updated); // 부모 상태 갱신
-        };
-
-        const refreshAccValueDisplay = (thresholdKey: string, selectedGrade: string) => {
-            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
-            const criteria = ACC_THRESHOLDS[accType]?.[thresholdKey] || ACC_THRESHOLDS.common[thresholdKey];
-            if (criteria && selectedGrade) {
-                const val = criteria[selectedGrade as '상' | '중' | '하'];
-                const isPercent = thresholdKey.includes("_PCT") ||
-                    !["무기공격력_FIXED", "공격력_FIXED", "최대 생명력", "최대 마나", "전투 중 생명력 회복량"].includes(thresholdKey);
-                return isPercent ? `${val.toFixed(2)}%` : val.toLocaleString();
-            }
-            return "-";
-        };
-
-        return (
-            <div
-                onMouseEnter={() => { if(setHoveredIndex) setHoveredIndex(i); if(setHoveredData) setHoveredData(tooltip); }}
-                onMouseLeave={() => { if(setHoveredIndex) setHoveredIndex(null); if(setHoveredData) setHoveredData(null); }}
-                className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] min-w-0 cursor-default"
-            >
-                {/* 아이콘 영역 */}
-                <div className="relative shrink-0 pointer-events-none">
-                    <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border}`}>
-                        <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt="" />
-                    </div>
-                </div>
-
-                {/* 메인 정보 (힘민지/팔찌) */}
-                <div className="flex-1 min-w-0">
-                    <h3 className={`font-bold text-[11px] tracking-tight ${theme.text} mb-0.5`}>{partName}</h3>
-                    {!isBracelet ? (
-                        <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                                <span className="text-[10px] text-[#FFD200] font-bold">힘민지</span>
-                                <div className="flex items-center bg-black/30 rounded px-1 border border-white/5">
-                                    <input
-                                        type="text"
-                                        className="bg-transparent text-[11px] text-white font-bold w-10 outline-none text-right"
-                                        value={localState.mainStatPct || ""}
-                                        onChange={(e) => updateState({ mainStatPct: e.target.value })}
-                                    />
-                                    <span className="text-[9px] text-white/40 ml-0.5">%</span>
-                                </div>
-                            </div>
-                            <div className="w-[80px] h-1 bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-[#FFD200]/70 transition-all" style={{ width: `${localState.mainStatPct}%` }} />
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 gap-x-1.5 gap-y-0.5" onClick={(e) => e.stopPropagation()}>
-                            {[0, 1, 2, 3].map((idx) => (
-                                <div key={idx} className="flex items-center h-3 gap-0.5">
-                                    <select
-                                        className="bg-zinc-800 text-[9px] text-zinc-300 outline-none rounded cursor-pointer border border-white/5"
-                                        value={localState[`baseName_${idx}`] || "선택"}
-                                        onChange={(e) => updateState({ [`baseName_${idx}`]: e.target.value })}
-                                    >
-                                        {["선택", "특화", "치명", "신속", "힘", "민첩", "지능", "체력"].map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                    <input
-                                        type="text"
-                                        className="bg-transparent text-[9px] text-white w-6 outline-none text-right border-b border-white/10"
-                                        value={localState[`baseValue_${idx}`] || "0"}
-                                        onChange={(e) => updateState({ [`baseValue_${idx}`]: e.target.value })}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* 효과 영역 */}
-                <div className="w-[190px] flex flex-col gap-0.5 border-l border-white/10 pl-2 relative z-10" onClick={(e) => e.stopPropagation()}>
-                    {isBracelet ? (
-                        [0, 1, 2].map((idx) => {
-                            const opt = localState[`brac_option_${idx}`] || { name: "", grade: "중" };
-                            const effectData = BRACELET_OPTIONS[opt.name];
-                            const displayVal = effectData ? effectData[opt.grade === "상" ? 2 : opt.grade === "중" ? 1 : 0] : "-";
-                            return (
-                                <div key={idx} className="flex items-center justify-between h-3.5 group/row">
-                                    <select
-                                        className="bg-zinc-100 text-[9px] text-black font-extrabold rounded w-[85px] cursor-pointer"
-                                        value={opt.name}
-                                        onChange={(e) => updateState({ [`brac_option_${idx}`]: { ...opt, name: e.target.value } })}
-                                    >
-                                        <option value="">부여 효과</option>
-                                        {Object.keys(BRACELET_OPTIONS).map(o => <option key={o} value={o}>{o}</option>)}
-                                    </select>
-                                    <div className="flex items-center gap-1">
-                                        <select
-                                            className="bg-white text-[9px] font-bold rounded cursor-pointer border border-zinc-300"
-                                            value={opt.grade}
-                                            onChange={(e) => updateState({ [`brac_option_${idx}`]: { ...opt, grade: e.target.value } })}
-                                        >
-                                            <option value="상">상</option><option value="중">중</option><option value="하">하</option>
-                                        </select>
-                                        <span className={`w-12 text-right text-[9px] font-bold ${getGradeColor(opt.grade)}`}>{displayVal}</span>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        [0, 1, 2].map((idx) => {
-                            const eff = localState[`acc_effect_${idx}`] || { name: "", grade: "" };
-                            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
-                            const options = { ...SHORT_NAMES.common, ...SHORT_NAMES[accType] };
-                            return (
-                                <div key={idx} className="flex items-center justify-between h-3.5 group/row">
-                                    <select
-                                        className="bg-zinc-100 text-[9px] text-black font-extrabold rounded w-24 cursor-pointer"
-                                        value={eff.name}
-                                        onChange={(e) => updateState({ [`acc_effect_${idx}`]: { ...eff, name: e.target.value } })}
-                                    >
-                                        <option value="">효과 선택</option>
-                                        {Object.keys(options).map(k => <option key={k} value={k}>{k.replace("_FIXED","").replace("_PCT","")}</option>)}
-                                    </select>
-                                    <div className="flex items-center gap-1">
-                                        <select
-                                            className="bg-white text-[9px] font-bold rounded cursor-pointer border border-zinc-300"
-                                            value={eff.grade}
-                                            onChange={(e) => updateState({ [`acc_effect_${idx}`]: { ...eff, grade: e.target.value } })}
-                                        >
-                                            <option value="">등급</option><option value="상">상</option><option value="중">중</option><option value="하">하</option>
-                                        </select>
-                                        <span className={`w-10 text-right text-[9px] font-bold ${getGradeColor(eff.grade)}`}>
-                                        {refreshAccValueDisplay(eff.name, eff.grade)}
-                                    </span>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
-            </div>
-        );
-    };
-
-
-
 
 
     // 4. 탭별 렌더링 함수 (CharacterCard 방식)
@@ -1405,99 +833,76 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
 
                                     <div className="flex flex-col">
                                         {getItemsByType(["무기", "투구", "상의", "하의", "장갑", "어깨"])
-                                            .sort((a, b) =>
-                                                a.Type === "무기" ? 1 : b.Type === "무기" ? -1 : 0
-                                            )
+                                            .sort((a, b) => a.Type === "무기" ? 1 : b.Type === "무기" ? -1 : 0)
                                             .map((item, i) => {
-                                                let tooltip;
                                                 try {
-                                                    tooltip = JSON.parse(item.Tooltip);
-                                                } catch (e) {
-                                                    return null;
-                                                }
+                                                    const tooltip = JSON.parse(item.Tooltip);
+                                                    const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
+                                                    const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || "";
 
-                                                const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
-                                                const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || "";
+                                                    // 부위명 단순화
+                                                    const TYPE_MAP: Record<string, string> = {
+                                                        "무기": "무기", "투구": "머리장식", "상의": "상의", "하의": "하의", "장갑": "장갑", "어깨": "견갑"
+                                                    };
+                                                    const partName = TYPE_MAP[item.Type] || "장비";
 
-                                                // 1. 부위명 단순화 로직 (매핑 객체 활용)
-                                                const TYPE_MAP: { [key: string]: string } = {
-                                                    "무기": "무기",
-                                                    "투구": "머리장식",
-                                                    "상의": "상의",
-                                                    "하의": "하의",
-                                                    "장갑": "장갑",
-                                                    "어깨": "견갑"
-                                                };
+                                                    // 테마 결정
+                                                    const rawGrade = (item.Grade || "").trim();
+                                                    const currentGrade = rawGrade.includes("에스더") ? "에스더" :
+                                                        rawGrade.includes("고대") ? "고대" :
+                                                            rawGrade.includes("유물") ? "유물" : "일반";
+                                                    const theme = gradeStyles[currentGrade] || gradeStyles["일반"];
 
-                                                // item.Type 기반으로 찾되 없으면 이름에서 추출
-                                                const partName = TYPE_MAP[item.Type] ||
-                                                    ["무기", "투구", "상의", "하의", "장갑", "어깨"].find(p => item.Name.includes(p)) ||
-                                                    "장비";
+                                                    // 상급 재련 단계
+                                                    const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
+                                                    const advancedReinforce = advMatch ? advMatch[1] : "0";
 
-                                                const rawGrade = (item.Grade || "").trim();
-                                                let currentGrade = "일반";
-                                                if (rawGrade.includes("에스더")) currentGrade = "에스더";
-                                                else if (rawGrade.includes("고대")) currentGrade = "고대";
-                                                else if (rawGrade.includes("유물")) currentGrade = "유물";
-                                                else if (rawGrade.includes("전설")) currentGrade = "전설";
-                                                const theme = gradeStyles[currentGrade] || gradeStyles["일반"];
+                                                    // 재련 옵션 생성
+                                                    const REINFORCE_OPTIONS = [
+                                                        ...Array.from({ length: 20 }, (_, i) => ({ label: `4티어 +${25 - i}`, value: 25 - i, tier: 4 })),
+                                                        ...Array.from({ length: 17 }, (_, i) => ({ label: `일리아칸 +${25 - i}`, value: 25 - i, tier: 3 })),
+                                                    ].filter(opt => opt.value >= 9);
 
-                                                const advMatch = cleanText(tooltip?.Element_005?.value || "").match(
-                                                    /\[상급\s*재련\]\s*(\d+)단계/
-                                                );
-                                                const advancedReinforce = advMatch ? advMatch[1] : "0";
-
-                                                const REINFORCE_OPTIONS = [
-                                                    ...Array.from({ length: 20 }, (_, i) => ({ label: `4티어 +${25 - i}`, value: 25 - i, tier: 4 })),
-                                                    ...Array.from({ length: 17 }, (_, i) => ({ label: `일리아칸 +${25 - i}`, value: 25 - i, tier: 3 })),
-                                                    ...Array.from({ length: 17 }, (_, i) => ({ label: `아브 +${25 - i}`, value: 25 - i, tier: 2 })),
-                                                ].filter((opt) => opt.value >= 9 || (opt.tier === 4 && opt.value >= 6));
-
-                                                return (
-                                                    <EquipmentItem
-                                                        key={item.Name}
-                                                        item={item}
-                                                        i={i}
-                                                        theme={theme}
-                                                        tooltip={tooltip}
-                                                        quality={quality}
-                                                        reinforceLevel={reinforceLevel}
-                                                        advancedReinforce={advancedReinforce}
-                                                        /* 2. itemName 대신 단순화된 partName 전달 */
-                                                        itemName={partName}
-                                                        REINFORCE_OPTIONS={REINFORCE_OPTIONS}
-                                                        setHoveredIndex={setHoveredIndex}
-                                                        setHoveredData={setHoveredData}
-                                                        onUpdate={onEquipmentUpdate}
-                                                    />
-                                                );
+                                                    return (
+                                                        <EquipmentItem
+                                                            key={item.Name}
+                                                            item={item}
+                                                            i={i}
+                                                            theme={theme}
+                                                            tooltip={tooltip}
+                                                            quality={quality}
+                                                            reinforceLevel={reinforceLevel}
+                                                            advancedReinforce={advancedReinforce}
+                                                            itemName={partName}
+                                                            REINFORCE_OPTIONS={REINFORCE_OPTIONS}
+                                                            setHoveredIndex={setHoveredIndex}
+                                                            setHoveredData={setHoveredData}
+                                                            onUpdate={onEquipmentUpdate} // 부모의 핸들러 전달
+                                                        />
+                                                    );
+                                                } catch (e) { return null; }
                                             })}
                                     </div>
                                 </div>
 
 
-                                {/* [오른쪽: 액세서리 Section] */}
-
-
-
-                                {/* [오른쪽: 액세서리 Section] */}
+                                {/* [오른쪽: 악세사리 Section] */}
                                 <div className="w-full lg:flex-1 flex flex-col min-w-0">
                                     <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
                                         <div className="w-1.5 h-5 bg-blue-950 rounded-full" />
                                         <h1 className="text-base font-extrabold text-white tracking-tight uppercase">악세사리</h1>
                                     </div>
-
                                     <div className="flex flex-col">
                                         {getItemsByType(["목걸이", "귀걸이", "반지", "팔찌"])
                                             .filter((item) => {
                                                 try {
                                                     const tooltip = JSON.parse(item.Tooltip);
+                                                    // 팔찌거나 품질 정보가 있는 아이템만 표시
                                                     return item.Name?.includes('팔찌') || tooltip.Element_001?.value?.qualityValue !== undefined;
                                                 } catch { return false; }
                                             })
                                             .map((item, i) => {
                                                 const tooltip = JSON.parse(item.Tooltip);
-                                                const { currentStat, polishLevel, effects: normalEffects } = getAccessoryStats(tooltip);
                                                 const partName = ["목걸이", "귀걸이", "반지", "팔찌"].find(p => (item.Name || "").includes(p)) || "장신구";
                                                 const theme = gradeStyles[(item.Grade || "").trim()] || gradeStyles["일반"];
 
@@ -1505,33 +910,21 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                                                     <AccessoryItem
                                                         key={`${item.Name}-${i}`}
                                                         item={item}
-                                                        i={i} // 인덱스 전달
+                                                        i={i}
                                                         accessoryStates={accessoryStates}
                                                         onAccessoryUpdate={onAccessoryUpdate}
-                                                        getAccessoryStats={getAccessoryStats}
                                                         theme={theme}
                                                         partName={partName}
                                                         isBracelet={item.Name?.includes('팔찌')}
-                                                        normalEffects={normalEffects}
-                                                        currentStat={currentStat}
-                                                        polishLevel={polishLevel}
-                                                        quality={tooltip.Element_001?.value?.qualityValue ?? 0}
-                                                        getQualityColor={getQualityColor}
-                                                        BRACELET_OPTIONS={BRACELET_OPTIONS}
-                                                        SHORT_NAMES={SHORT_NAMES}
-                                                        ACC_THRESHOLDS={ACC_THRESHOLDS}
-                                                        getGradeColor={getGradeColor}
                                                         cleanText={cleanText}
-                                                        MAX_STATS={MAX_STATS}
-                                                        setHoveredIndex={setHoveredIndex} // 누락되었던 부모 함수 전달
-                                                        setHoveredData={setHoveredData}   // 누락되었던 부모 함수 전달
-                                                        tooltip={tooltip}                 // 누락되었던 툴팁 데이터 전달
+                                                        setHoveredIndex={setHoveredIndex}
+                                                        setHoveredData={setHoveredData}
+                                                        tooltip={tooltip}
                                                     />
                                                 );
                                             })}
                                     </div>
                                 </div>
-
 
                             </section>
 
