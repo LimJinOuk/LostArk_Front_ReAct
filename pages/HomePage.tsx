@@ -259,83 +259,67 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* 메인 콘텐츠 그리드 */}
-            <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch max-w-[1000px]">
-                {/* 좌측: 아이템 목록 */}
-                <div className="bg-zinc-900/50 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col overflow-hidden shadow-2xl backdrop-blur-sm h-[400px] lg:h-[500px]">
-                    <div className="flex border-b border-white/5 bg-white/5 p-2 gap-1.5 lg:gap-2 shrink-0">
-                        <button onClick={() => { setActiveTab('material'); setListSearchTerm(""); }} className={`flex-1 flex items-center justify-center gap-1.5 lg:gap-2 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold text-[13px] lg:text-base ${activeTab === 'material' ? 'bg-indigo-600 text-white shadow-lg' : 'text-zinc-500 hover:bg-white/5'}`}>
-                            <Box size={14} /> 융화 재료
+            <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 items-stretch max-w-[1000px]">
+                {/* 좌측: 아이템 목록 (모바일 컴팩트 레이아웃) */}
+                <div className="bg-zinc-900/50 border border-white/5 rounded-[1.5rem] lg:rounded-[2.5rem] flex flex-col overflow-hidden shadow-2xl backdrop-blur-sm h-[380px] lg:h-[500px]">
+                    {/* 탭/검색 영역 (기존 유지하되 패딩 축소) */}
+                    <div className="flex border-b border-white/5 bg-white/5 p-1.5 lg:p-2 gap-1 shrink-0">
+                        <button onClick={() => { setActiveTab('material'); setListSearchTerm(""); }} className={`flex-1 flex items-center justify-center gap-1.5 py-2 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold text-[12px] lg:text-base ${activeTab === 'material' ? 'bg-indigo-600 text-white shadow-lg' : 'text-zinc-500 hover:bg-white/5'}`}>
+                            <Box size={13} /> 융화 재료
                         </button>
-                        <button onClick={() => { setActiveTab('engraving'); setListSearchTerm(""); }} className={`flex-1 flex items-center justify-center gap-1.5 lg:gap-2 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold text-[13px] lg:text-base ${activeTab === 'engraving' ? 'bg-indigo-600 text-white shadow-lg' : 'text-zinc-500 hover:bg-white/5'}`}>
-                            <Book size={14} /> 각인서
+                        <button onClick={() => { setActiveTab('engraving'); setListSearchTerm(""); }} className={`flex-1 flex items-center justify-center gap-1.5 py-2 lg:py-3 rounded-xl lg:rounded-2xl transition-all font-bold text-[12px] lg:text-base ${activeTab === 'engraving' ? 'bg-indigo-600 text-white shadow-lg' : 'text-zinc-500 hover:bg-white/5'}`}>
+                            <Book size={13} /> 각인서
                         </button>
-                        <button onClick={fetchAndSaveData} className={`px-3 lg:px-4 ${isRefreshing ? 'animate-spin' : ''} text-zinc-500`}><RotateCcw size={16} /></button>
+                        <button onClick={fetchAndSaveData} className={`px-2 lg:px-4 ${isRefreshing ? 'animate-spin' : ''} text-zinc-500`}><RotateCcw size={14} /></button>
                     </div>
 
-                    <div className="px-4 py-3 bg-white/[0.02] border-b border-white/5 shrink-0">
+                    <div className="px-3 py-2 bg-white/[0.02] border-b border-white/5">
                         <div className="relative">
-                            <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                            <input type="text" value={listSearchTerm} onChange={(e) => setListSearchTerm(e.target.value)} placeholder="아이템 검색..." className="w-full bg-zinc-800/50 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500" />
+                            <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                            <input type="text" value={listSearchTerm} onChange={(e) => setListSearchTerm(e.target.value)} placeholder="검색..." className="w-full bg-zinc-800/50 border border-white/10 rounded-lg py-1.5 pl-9 pr-3 text-[12px] text-white focus:outline-none" />
                         </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto divide-y divide-white/5 custom-scrollbar">
-                        {filteredData.length > 0 ? (
-                            filteredData.map((item) => (
-                                <div key={item.Id} onClick={() => { setSelectedItem(item); if(window.innerWidth < 1024) scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className={`flex items-center justify-between px-5 py-3 lg:px-6 lg:py-4 cursor-pointer transition-all ${selectedItem?.Id === item.Id ? 'bg-indigo-500/10 border-l-4 border-indigo-500' : 'hover:bg-white/[0.02] border-l-4 border-transparent'}`}>
-                                    <div className="flex items-center gap-3 lg:gap-4">
-                                        <img src={item.Icon} className="w-9 h-9 lg:w-12 lg:h-12 bg-zinc-800 rounded-xl p-1" alt="" />
-                                        <div className="min-w-0">
-                                            <p className={`font-bold text-[13px] lg:text-base truncate ${item.Grade === '전설' ? 'text-orange-400' : 'text-zinc-200'}`}>
-                                                {item.Name.replace(" 각인서", "").replace("유물 ", "").replace(" 융화 재료", "")}
-                                            </p>
-                                            <p className="text-[12px] text-zinc-500 font-bold uppercase">{item.Grade}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="text-sm lg:text-lg font-black text-amber-400">{item.CurrentMinPrice.toLocaleString()}G</p>
+                        {filteredData.map((item) => (
+                            <div key={item.Id} onClick={() => { setSelectedItem(item); if(window.innerWidth < 1024) scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex items-center justify-between px-4 py-2.5 lg:px-6 lg:py-4 cursor-pointer transition-all ${selectedItem?.Id === item.Id ? 'bg-indigo-500/10 border-l-4 border-indigo-500' : 'hover:bg-white/[0.02] border-l-4 border-transparent'}`}>
+                                <div className="flex items-center gap-3">
+                                    <img src={item.Icon} className="w-8 h-8 lg:w-12 lg:h-12 bg-zinc-800 rounded-lg p-1" alt="" />
+                                    <div className="min-w-0">
+                                        <p className={`font-bold text-[12px] lg:text-base truncate ${item.Grade === '전설' ? 'text-orange-400' : 'text-zinc-200'}`}>
+                                            {item.Name.replace(" 각인서", "").replace("유물 ", "").replace(" 융화 재료", "")}
+                                        </p>
                                     </div>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="p-10 text-center text-zinc-600 font-bold text-sm">데이터가 없습니다.</div>
-                        )}
+                                <p className="text-[13px] lg:text-lg font-black text-amber-400 shrink-0">{item.CurrentMinPrice.toLocaleString()}G</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                {/* 우측: 시세 상세 섹션 */}
-                <div ref={scrollRef} className="scroll-mt-20 bg-zinc-900/50 border border-white/5 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col p-6 lg:p-10 shadow-2xl backdrop-blur-sm min-h-[4 00px] lg:h-[500px]">
+                {/* 우측: 시세 상세 (그래프 보정값 유지형) */}
+                <div ref={scrollRef} className="scroll-mt-20 bg-zinc-900/50 border border-white/5 rounded-[1.5rem] lg:rounded-[2.5rem] flex flex-col p-5 lg:p-10 shadow-2xl backdrop-blur-sm h-[320px] lg:h-[500px]">
                     {selectedItem ? (
                         <div className="flex flex-col h-full">
-                            <div className="flex justify-between items-start mb-6 gap-2">
+                            {/* 상단 헤더 컴팩트화 */}
+                            <div className="flex justify-between items-start mb-4 lg:mb-6">
                                 <div className="min-w-0">
-                                    <h2 className="text-lg lg:text-2xl font-black text-white tracking-tighter truncate">{selectedItem.Name}</h2>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                                        <span className="text-indigo-500 text-[9px] lg:text-[10px] font-black uppercase">Live Price</span>
+                                    <h2 className="text-base lg:text-2xl font-black text-white truncate pr-2">{selectedItem.Name}</h2>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                                        <span className="text-indigo-500 text-[8px] lg:text-[10px] font-black uppercase">Live Price</span>
                                     </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <p className="text-zinc-500 text-[9px] lg:text-[10px] font-bold mb-0.5 lg:mb-1">현재 최저가</p>
-                                    <div className="flex flex-col items-end gap-1">
-                                        <p className="text-xl lg:text-3xl font-black text-amber-400 leading-none">
-                                            {selectedItem.CurrentMinPrice.toLocaleString()}G
-                                        </p>
-                                        {selectedItem.YDayAvgPrice > 0 && (
-                                            <div className={`text-[10px] lg:text-[11px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${
-                                                isUp ? 'bg-rose-500/10 text-rose-500' :
-                                                    isDown ? 'bg-blue-500/10 text-blue-500' :
-                                                        'bg-zinc-500/10 text-zinc-500'
-                                            }`}>
-                                                <span>{isUp ? '▲' : isDown ? '▼' : ''}</span>
-                                                <span>{Math.abs(Number(priceDiffPercent))}%</span>
-                                            </div>
-                                        )}
+                                    <p className="text-xl lg:text-3xl font-black text-amber-400 leading-none">{selectedItem.CurrentMinPrice.toLocaleString()}G</p>
+                                    <div className={`inline-flex mt-1 text-[9px] lg:text-[11px] font-black px-1.5 py-0.5 rounded-md ${isUp ? 'bg-rose-500/10 text-rose-500' : isDown ? 'bg-blue-500/10 text-blue-500' : 'bg-zinc-500/10 text-zinc-500'}`}>
+                                        {isUp ? '▲' : isDown ? '▼' : ''} {Math.abs(Number(priceDiffPercent))}%
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex-1 min-h-0 bg-black/20 rounded-2xl lg:rounded-[2rem] p-3 lg:p-6 border border-white/5 relative">
+                            {/* 그래프: 보정 로직 유지 + 모바일 높이 최적화 */}
+                            <div className="flex-1 min-h-0 bg-black/20 rounded-xl lg:rounded-[2rem] lg:p-6 border border-white/5 relative">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         data={[
@@ -343,25 +327,20 @@ const HomePage: React.FC = () => {
                                             { name: '최근 거래', price: selectedItem.RecentPrice },
                                             { name: '현재 최저', price: selectedItem.CurrentMinPrice }
                                         ]}
-                                        margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
-                                        barCategoryGap="25%"
+                                        margin={{ top: 20, right: 5, left: 5, bottom: 0 }}
+                                        barCategoryGap={window.innerWidth < 1024 ? "75%" : "25%"}
                                     >
                                         <CartesianGrid vertical={false} stroke="#ffffff08" strokeDasharray="0" />
                                         <XAxis
                                             dataKey="name"
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: '#71717a', fontSize: 10, fontWeight: 'bold' }}
+                                            tick={{ fill: '#71717a', fontSize: 9, fontWeight: 'bold' }}
                                             interval={0}
                                         />
+                                        {/* 보정값 핵심 로직 유지: 최소값 0.95배 ~ 최대값 1.05배 */}
                                         <YAxis hide domain={[(dataMin: number) => dataMin * 0.95, (dataMax: number) => dataMax * 1.05]} />
-                                        <Tooltip
-                                            cursor={{ fill: 'white', opacity: 0.05 }}
-                                            contentStyle={{ backgroundColor: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '11px' }}
-                                            itemStyle={{ color: '#fbbf24', fontWeight: 'bold' }}
-                                            formatter={(value: number) => [`${value.toLocaleString()} G`, '가격']}
-                                        />
-                                        <Bar dataKey="price" radius={[8, 8, 0, 0]}>
+                                        <Bar dataKey="price" radius={[6, 6, 0, 0]}>
                                             <Cell fill="#3f3f46" />
                                             <Cell fill="#818cf8" />
                                             <Cell fill="#fbbf24" />
@@ -370,23 +349,22 @@ const HomePage: React.FC = () => {
                                 </ResponsiveContainer>
                             </div>
 
-                            <div className="mt-5 lg:mt-6 grid grid-cols-3 gap-2 lg:gap-4 border-t border-white/5 pt-5 lg:pt-6">
-                                <div className="text-center">
-                                    <p className="text-[9px] lg:text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-tighter">전날 평균</p>
-                                    <p className="text-[12px] lg:text-sm font-bold text-zinc-300">{selectedItem.YDayAvgPrice.toLocaleString()}G</p>
-                                </div>
-                                <div className="text-center border-x border-white/5">
-                                    <p className="text-[9px] lg:text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-tighter">최근 거래</p>
-                                    <p className="text-[12px] lg:text-sm font-bold text-indigo-400">{selectedItem.RecentPrice.toLocaleString()}G</p>
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-[9px] lg:text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-tighter">현재 최저</p>
-                                    <p className="text-[12px] lg:text-sm font-bold text-amber-400">{selectedItem.CurrentMinPrice.toLocaleString()}G</p>
-                                </div>
+                            {/* 하단 지표 정보 그리드 */}
+                            <div className="mt-4 lg:mt-6 grid grid-cols-3 gap-1 lg:gap-4 border-t border-white/5 pt-4 lg:pt-6">
+                                {[
+                                    { label: '전날 평균', val: selectedItem.YDayAvgPrice, color: 'text-zinc-300' },
+                                    { label: '최근 거래', val: selectedItem.RecentPrice, color: 'text-indigo-400' },
+                                    { label: '현재 최저', val: selectedItem.CurrentMinPrice, color: 'text-amber-400' }
+                                ].map((info, idx) => (
+                                    <div key={idx} className={`text-center ${idx === 1 ? 'border-x border-white/5' : ''}`}>
+                                        <p className="text-[8px] lg:text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-tighter">{info.label}</p>
+                                        <p className={`text-[11px] lg:text-sm font-bold ${info.color}`}>{info.val.toLocaleString()}G</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-zinc-600 font-bold border-2 border-dashed border-white/5 rounded-[2rem]">
+                        <div className="h-full flex items-center justify-center text-zinc-600 font-bold border-2 border-dashed border-white/5 rounded-[1.5rem] text-sm">
                             아이템을 선택하세요.
                         </div>
                     )}

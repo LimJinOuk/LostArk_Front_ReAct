@@ -6,6 +6,7 @@ import ArkCoreTooltip from '@/components/profile/Tooltip/ArkCoreTooltip.tsx';
 import JewelryTooltip from '@/components/profile/Tooltip/JewelryTooltip.tsx';
 import engravingIconMap from "./engravingsIdTable.json";
 import mokoko from "../../../assets/모코코.png";
+import {AnimatePresence} from "framer-motion";
 
 /* ================= 인터페이스 ================= */
 // --장비 인터페이스
@@ -114,6 +115,7 @@ export const CombatTab = ({ character }: { character: any }) => {
     //모바일 모달 호출
     const [selectedEquip, setSelectedEquip] = useState<any>(null);
     const [selectedAcc, setSelectedAcc] = useState<any>(null);
+    const [selectedArkGrid, setSelectedArkGrid] = useState<any>(null);
 
 
     const engravingDescToHtml = (desc: string) => {
@@ -428,16 +430,15 @@ export const CombatTab = ({ character }: { character: any }) => {
                         </div>
 
                         {/* 모바일 전용 모달 툴팁 (AnimatePresence로 부드럽게 표시) */}
+                        <AnimatePresence>
                         {selectedEquip && (
                             <EquipmentTooltip
                                 data={selectedEquip}
                                 onClose={() => setSelectedEquip(null)}
                             />
                         )}
+                        </AnimatePresence>
                     </div>
-
-                    {/* [오른쪽: 액세서리 Section] */}
-
                     {/* [오른쪽: 액세서리 Section] */}
                     <div className="w-full lg:flex-1 flex flex-col min-w-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
@@ -502,6 +503,10 @@ export const CombatTab = ({ character }: { character: any }) => {
                                         <div key={i}
                                              onMouseEnter={() => { setAccHoverIdx(i); setAccHoverData(tooltip); }}
                                              onMouseLeave={() => { setAccHoverIdx(null); setAccHoverData(null); }}
+                                            // ✅ 모바일 클릭용 추가
+                                             onClick={() => setSelectedAcc(tooltip)}
+
+                                            // cursor-help를 sm:cursor-help로 바꾸고 모바일은 기본 포인터 권장
                                              className="relative group flex items-center gap-2 sm:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[60px] cursor-help min-w-0"
                                         >
                                             {/* 아이콘 영역 */}
@@ -576,7 +581,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                     };
 
                                                     return (
-                                                        <div key={idx} className="flex justify-between w-full text-[12px] font-semi-bold leading-tight items-center">
+                                                        <div key={idx} className="flex justify-between w-full text-[11px] font-semi-bold leading-tight items-center">
                                                             <span className="text-white/40 truncate shrink mr-1">{dispName}</span>
                                                             <span className={`${getDynamicColor(rawName, val)} whitespace-nowrap shrink-0`}>{val}</span>
                                                         </div>
@@ -592,7 +597,14 @@ export const CombatTab = ({ character }: { character: any }) => {
                             </div>
                         </div>
                     </div>
-
+                    <AnimatePresence>
+                        {selectedAcc && (
+                            <AccessoryTooltip
+                                data={selectedAcc}
+                                onClose={() => setSelectedAcc(null)}
+                            />
+                        )}
+                    </AnimatePresence>
                 </section>
 
 
@@ -600,8 +612,8 @@ export const CombatTab = ({ character }: { character: any }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 items-start px-0">
 
                     {/* [좌측 박스] 아크 그리드 섹션 */}
-                    <section className="bg-[#121213] pt-5 pb-2 px-4 sm:px-5 rounded-none sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl flex flex-col h-fit">
-                        {/* 타이틀 영역: px-1로 미세 조정 */}
+                    <section className="bg-[#121213] pt-5 pb-2 px-4 sm:px-5 rounded-none sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl flex flex-col h-fit relative">
+                        {/* 타이틀 영역 */}
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
                             <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
                             <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
@@ -625,33 +637,47 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                 const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
 
+                                // 툴팁 데이터 파싱 (재사용을 위해 변수화)
+                                const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
+
                                 return (
                                     <div key={i}
                                          className="relative group flex items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-all h-[62px] cursor-help px-1 sm:px-2"
                                          onMouseEnter={() => {
+                                             // PC 환경에서만 작동하도록 조건 추가 가능 (isMobile 상태가 있다면)
                                              setArkCoreHoverIdx(i);
-                                             const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
                                              setArkCoreHoverData({ core: parsedTooltip, gems: slot.Gems });
                                          }}
                                          onMouseLeave={() => {
                                              setArkCoreHoverIdx(null);
                                              setArkCoreHoverData(null);
                                          }}
+                                         onClick={() => {
+                                             // 모바일 클릭 시: 중앙 모달 상태에 데이터 전달
+                                             // (부모에서 정의된 setSelectedArkGrid를 사용한다고 가정)
+                                             if (window.innerWidth < 640) {
+                                                 setSelectedArkGrid({
+                                                     core: parsedTooltip,
+                                                     gems: slot.Gems,
+                                                     point: slot.Point
+                                                 });
+                                             }
+                                         }}
                                     >
-                                        {/* 아이콘 영역: 모바일에서 크기 살짝 축소 */}
+                                        {/* 아이콘 영역 */}
                                         <div className="relative shrink-0">
                                             <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
-                                bg-gradient-to-br ${theme.bg} overflow-hidden
-                                border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
+                            bg-gradient-to-br ${theme.bg} overflow-hidden
+                            border border-[#e9d2a6]/10 shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]`}>
                                                 <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
                                                 {slot.Gems?.length > 0 && (
                                                     <div className={`absolute bottom-0.5 right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
-                                                        <div className="w-0.5 h-0.5 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
+                                                        <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
                                                     </div>
                                                 )}
                                             </div>
 
-                                            {/* 툴팁 모달: 모바일에서는 숨기거나 클릭 방식으로 유도 (여기서는 PC 기준 유지) */}
+                                            {/* PC용 툴팁: sm 이상에서만 노출 */}
                                             {arkCoreHoverIdx === i && arkCoreHoverData && (
                                                 <div className="absolute left-full top-0 z-[100] pl-3 pointer-events-auto hidden sm:flex">
                                                     <div className="animate-in fade-in slide-in-from-left-2 duration-200">
@@ -677,14 +703,26 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                         {/* 포인트 정보 */}
                                         <div className="shrink-0 text-right pr-1">
-                            <span className={`text-[13px] sm:text-[14px] font-extrabold mt-0.5 truncate ${theme.text}`}>
-                                {slot.Point}P
-                            </span>
+                        <span className={`text-[13px] sm:text-[14px] font-extrabold mt-0.5 truncate ${theme.text}`}>
+                            {slot.Point}P
+                        </span>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
+
+                        {/* 모바일용 중앙 모달: Section 최하단에 배치 */}
+                        <AnimatePresence>
+                            {selectedArkGrid && (
+                                <ArkCoreTooltip
+                                    data={selectedArkGrid.core}
+                                    Gems={selectedArkGrid.gems}
+                                    currentPoint={selectedArkGrid.point}
+                                    onClose={() => setSelectedArkGrid(null)} // 닫기 함수 연결
+                                />
+                            )}
+                        </AnimatePresence>
                     </section>
 
                     {/* [우측 박스] 젬 효과 섹션 */}

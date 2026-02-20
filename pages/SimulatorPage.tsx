@@ -172,20 +172,15 @@ export const SimulatorPage: React.FC = () => {
         try {
             // 장비 정보와 악세사리 정보를 각각의 엔드포인트로 전송
             await Promise.all([
-                fetch(`/simulatorEquipments`, {
+                fetch(`${BACKEND_API_URL}/simulatorEquipments`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        calculatedWeapon: weaponInfo // 최신 계산 결과
-                    }),
+                    body: JSON.stringify(weaponInfo),
                 }),
-                fetch(`/simulatorAccessories`, {
+                fetch(`${BACKEND_API_URL}/simulatorAccessories`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        characterName: nameParam,
-                        accessories: accessoryStates
-                    }),
+                    body: JSON.stringify(accessoryStates),
                 })
             ]);
             console.log("시뮬레이션 요청 완료");
@@ -304,8 +299,8 @@ export const SimulatorPage: React.FC = () => {
                         character={character}
                         activeTab={tab}
                         onEquipmentUpdate={handleEquipmentUpdate}
-                        onAccessoryUpdate={handleAccessoryUpdate} // ✅ 핸들러 연결
-                        accessoryStates={accessoryStates} // ✅ 현재 상태 전달
+                        onAccessoryUpdate={handleAccessoryUpdate} // ✅ 핸들러 전달 확인
+                        accessoryStates={accessoryStates}         // ✅ 현재 상태 전달 확인
                     />
                 </div>
             </main>
