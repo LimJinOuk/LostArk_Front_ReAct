@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Loader2, Copy, Check, Clock, ShieldAlert, Zap, Target } from 'lucide-react';
+import { Loader2, Copy, Check, Clock, ShieldAlert, Zap, Target, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JewelryTooltip from '@/components/profile/Tooltip/JewelryTooltip';
 
@@ -20,13 +20,8 @@ const TRANSFORMATION_KEYWORDS: Record<string, string> = {
     '블래스터': '[포격 모드]', '데모닉': '[악마 스킬]', '스카우터': '[싱크 스킬]', '환수사': '[둔갑 스킬]', '가디언나이트': '[화신 스킬]'
 };
 
-/** * [수정] 모바일 최적화 그리드 비율
- * 젬 영역이 우측 끝에 붙도록 1.2fr -> 0.8fr 등으로 미세 조정
- */
 const SKILL_GRID = "grid-cols-[1.2fr_80px_45px_0.8fr] sm:grid-cols-[1.5fr_50px_130px_50px_120px] lg:grid-cols-[1fr_80px_180px_80px_180px]";
 
-/** * 모바일 화면 끝 처리를 위한 위치 계산 함수
- */
 const getModalPosition = (anchorRect: DOMRect) => {
     const top = anchorRect.top + anchorRect.height + window.scrollY;
     let left = anchorRect.left + window.scrollX + anchorRect.width / 2;
@@ -155,6 +150,59 @@ const IconWithModal = ({ children, modalData, active, onToggle, isTripodOrRune =
     );
 };
 
+/* ================= 젬 아이템 컴포넌트 (Portal 적용) ================= */
+const GemItem = ({ gem }: { gem: any }) => {
+    const [isHover, setIsHover] = useState(false);
+    const [rect, setRect] = useState<DOMRect | null>(null);
+
+    // 클릭(터치) 시 툴팁 토글 및 위치 계산
+    const handleInteraction = (e: React.MouseEvent | React.TouchEvent) => {
+        // 모바일 터치 시 hover 효과와 충돌 방지
+        const currentRect = e.currentTarget.getBoundingClientRect();
+        setRect(currentRect);
+        setIsHover(!isHover);
+    };
+
+    return (
+        <div
+            className="relative flex flex-col items-center gap-0.5"
+            onMouseEnter={(e) => {
+                setRect(e.currentTarget.getBoundingClientRect());
+                setIsHover(true);
+            }}
+            onMouseLeave={() => setIsHover(false)}
+            onClick={handleInteraction}
+        >
+            <div className="relative group/gem cursor-help transition-transform hover:scale-110 active:scale-90">
+                <img src={gem.Icon} className="w-7 h-7 sm:w-9 sm:h-9 object-contain drop-shadow-[0_0_5px_rgba(0,0,0,0.8)]" alt="gem" />
+                <div className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 bg-black text-[8px] sm:text-[9px] px-1 rounded border border-white/10 font-black text-zinc-200">
+                    {gem.Level}
+                </div>
+            </div>
+
+            {/* [수정] 부모의 overflow-hidden을 무시하도록 Portal로 렌더링 */}
+            {isHover && gem.originalData && rect && createPortal(
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: rect.top + window.scrollY + rect.height + 8,
+                        // [수정] 아이콘의 오른쪽 끝(rect.right)을 기준으로 왼쪽으로 펼쳐지게 계산
+                        // 화면 왼쪽 끝을 벗어나지 않도록 Math.max로 안전장치 추가
+                        left: Math.max(16, rect.right + window.scrollX - 220),
+                        zIndex: 10000,
+                        pointerEvents: 'auto' // 모바일 터치 해제를 위해 auto 설정
+                    }}
+                    onClick={() => setIsHover(false)} // 툴팁 클릭 시 닫기
+                >
+                    <div className="animate-in fade-in zoom-in-95 duration-150 origin-top-right scale-[0.85] sm:scale-100">
+                        <JewelryTooltip gemData={gem.originalData} />
+                    </div>
+                </div>,
+                document.body
+            )}
+        </div>
+    );
+};
 /* ================= 스킬 로우 컴포넌트 ================= */
 const SkillRow = ({ skill, matchedGems, isTrans }: { skill: any, matchedGems: any[], isTrans?: boolean }) => {
     const [hoverKey, setHoverKey] = useState<string | null>(null);
@@ -262,7 +310,9 @@ const SkillRow = ({ skill, matchedGems, isTrans }: { skill: any, matchedGems: an
                 ) : <span className="text-zinc-800 text-xs">—</span>}
             </div>
 
-            <div className="flex justify-end gap-1 sm:gap-1.5">{matchedGems.map((gem, i) => <GemItem key={i} gem={gem} />)}</div>
+            <div className="flex justify-end gap-1 sm:gap-1.5">
+                {matchedGems.map((gem, i) => <GemItem key={i} gem={gem} />)}
+            </div>
         </motion.div>
     );
 };
@@ -321,9 +371,7 @@ export const SkillTab = ({ character }: { character: any }) => {
     );
 
     return (
-        // [수정] px-0으로 모바일 좌우 여백 제거
         <section className="mt-4 pb-20 px-0 sm:px-2">
-            {/* 상단 배지는 가독성을 위해 최소한의 좌우 여백(px-4) 유지 */}
             <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 mb-4 px-4 sm:px-3">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                     <Badge icon={<Zap size={10} />} color="purple" label="카운터" count={summary.counter} />
@@ -340,10 +388,8 @@ export const SkillTab = ({ character }: { character: any }) => {
                 </button>
             </div>
 
-            {/* [수정] 모바일에서 테두리와 둥근 모서리 제거 (border-y, sm:rounded-2xl) */}
             <div className="bg-[#0d0d0f] sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl overflow-hidden relative">
                 <div className="overflow-x-auto scrollbar-hide">
-                    {/* min-w-full로 모바일 너비 최적화 */}
                     <div className="min-w-full sm:min-w-[600px] flex flex-col">
                         <div className={`grid ${SKILL_GRID} gap-1 sm:gap-4 px-4 sm:px-6 py-4 bg-[#111113] border-b border-white/5 text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase items-center`}>
                             <div>스킬</div><div className="hidden sm:block text-center">레벨</div><div className="text-center">트라이포드</div><div className="text-center">룬</div><div className="text-right">젬</div>
@@ -363,32 +409,9 @@ export const SkillTab = ({ character }: { character: any }) => {
     );
 };
 
-/* 재사용 배지 컴포넌트 */
 const Badge = ({ icon, color, label, count }: any) => (
     <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg bg-${color}-500/10 border border-${color}-500/20`}>
         <span className={`text-${color}-400`}>{icon}</span>
         <span className={`text-[10px] sm:text-[11px] font-black text-${color}-200 whitespace-nowrap`}>{label} {count}</span>
     </div>
 );
-
-const GemItem = ({ gem }: { gem: any }) => {
-    const [isHover, setIsHover] = useState(false);
-    return (
-        <div className="relative flex flex-col items-center gap-0.5"
-             onMouseEnter={() => setIsHover(true)}
-             onMouseLeave={() => setIsHover(false)}
-             onClick={() => setIsHover(!isHover)}>
-            <div className="relative group/gem cursor-help transition-transform hover:scale-110 active:scale-90">
-                <img src={gem.Icon} className="w-7 h-7 sm:w-9 sm:h-9 object-contain drop-shadow-[0_0_5px_rgba(0,0,0,0.8)]" alt="gem" />
-                <div className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 bg-black text-[8px] sm:text-[9px] px-1 rounded border border-white/10 font-black text-zinc-200">{gem.Level}</div>
-            </div>
-            {isHover && gem.originalData && (
-                <div className="absolute right-0 top-8 z-[999] pointer-events-none">
-                    <div className="animate-in fade-in zoom-in-95 duration-150 origin-top-right scale-90 sm:scale-100">
-                        <JewelryTooltip gemData={gem.originalData} />
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};

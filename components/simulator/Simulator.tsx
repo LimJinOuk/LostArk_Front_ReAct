@@ -18,6 +18,8 @@ interface SimulatorProps {
     character?: CharacterInfoCompat | null;
     activeTab: SimTab;
     onEquipmentUpdate: (partName: string, data: any) => void;
+    onAccessoryUpdate: (partName: string, data: any) => void; // ✅ 추가
+    accessoryStates: Record<string, any>; // ✅ 추가
 }
 
 interface EquipmentItemProps {
@@ -364,6 +366,7 @@ const EquipmentItem = ({
     );
 };
 
+
 /* =======================
    ✅ GemSlot (드롭다운 + 아이콘 변경 + 툴팁 유지)
    ======================= */
@@ -611,7 +614,10 @@ const NoCharacterView = ({
 };
 
 /* ---------------------- 메인 컴포넌트 ---------------------- */
-export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, activeTab, onEquipmentUpdate}) => {
+export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, activeTab, onEquipmentUpdate,
+    onAccessoryUpdate, // 👈 여기서 꺼내줘야 내부에서 쓸 수 있습니다.
+    accessoryStates    // 👈 여기서 꺼내줘야 내부에서 쓸 수 있습니다.
+    }) => {
     const location = useLocation();
 
     /** ✅ 우선순위: props > location.state.character > null */
@@ -1146,6 +1152,237 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
 
         return { currentStat, polishLevel, effects };
     };
+
+
+    const AccessoryItem = ({
+                               item,
+                               accessoryStates,
+                               onAccessoryUpdate,
+                               getAccessoryStats,
+                               theme,
+                               partName,
+                               isBracelet,
+                               normalEffects,
+                               currentStat,
+                               polishLevel,
+                               quality,
+                               getQualityColor,
+                               BRACELET_OPTIONS,
+                               SHORT_NAMES,
+                               ACC_THRESHOLDS,
+                               getGradeColor,
+                               cleanText,
+                               MAX_STATS,
+                               setHoveredIndex,
+                               setHoveredData,
+                               i,
+                               tooltip
+                           }: any) => {
+        const itemName = item.Name || "아이템 이름";
+
+        // --- [데이터 파싱 유틸리티 함수들] ---
+        const getInitialSelectValue = (effect: any) => {
+            if (!effect) return "";
+            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
+            const availableOptions = { ...SHORT_NAMES.common, ...SHORT_NAMES[accType] };
+            const isPct = String(effect.value).includes("%");
+            const cleanName = effect.name.replace(/\s/g, "");
+            let searchKey = cleanName;
+            if (searchKey === "공격력") searchKey = isPct ? "공격력_PCT" : "공격력_FIXED";
+            if (searchKey === "무기공격력") searchKey = isPct ? "무기공격력_PCT" : "무기공격력_FIXED";
+            if (!availableOptions[searchKey]) {
+                searchKey = Object.keys(availableOptions).find(k => k.replace(/\s/g, "").includes(cleanName)) || "";
+            }
+            return availableOptions[searchKey] ? searchKey : "";
+        };
+
+        const getInitialGrade = (effect: any, matchedKey: string) => {
+            if (!effect || !matchedKey) return "";
+            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
+            const num = parseFloat(String(effect.value).replace(/[^0-9.]/g, ""));
+            const criteria = ACC_THRESHOLDS[accType]?.[matchedKey] || ACC_THRESHOLDS.common[matchedKey];
+            if (!criteria) return "하";
+            if (num >= (criteria.상 || 999)) return "상";
+            if (num >= (criteria.중 || 999)) return "중";
+            return "하";
+        };
+
+        // 로컬 상태 초기화
+        const [localState, setLocalState] = useState<any>(() => {
+            const initialMainStatPct = ((currentStat / (MAX_STATS[partName]?.[polishLevel] || 1)) * 100).toFixed(1);
+            let data: any = { mainStatPct: initialMainStatPct };
+
+            if (isBracelet) {
+                const rawContent = cleanText(tooltip.Element_005?.value?.Element_001 || "");
+                const braceletStats = [...rawContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)]
+                    .map(m => ({ name: m[1].trim(), value: m[2] }))
+                    .filter(e => ["특화", "치명", "신속", "힘", "민첩", "지능", "체력"].includes(e.name));
+
+                [0, 1, 2, 3].forEach((idx) => {
+                    data[`baseName_${idx}`] = braceletStats[idx]?.name || "선택";
+                    data[`baseValue_${idx}`] = braceletStats[idx]?.value || "0";
+                });
+                [0, 1, 2].forEach(idx => data[`brac_option_${idx}`] = { name: "", grade: "중" });
+            } else {
+                normalEffects.forEach((eff: any, idx: number) => {
+                    const name = getInitialSelectValue(eff);
+                    const grade = getInitialGrade(eff, name);
+                    data[`acc_effect_${idx}`] = { name, grade };
+                });
+            }
+            return data;
+        });
+
+        // 마운트 시 부모에게 보고
+        useEffect(() => {
+            onAccessoryUpdate(itemName, localState);
+        }, []);
+
+        const updateState = (newData: any) => {
+            const updated = { ...localState, ...newData };
+            setLocalState(updated); // 로컬 UI 즉시 갱신
+            onAccessoryUpdate(itemName, updated); // 부모 상태 갱신
+        };
+
+        const refreshAccValueDisplay = (thresholdKey: string, selectedGrade: string) => {
+            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
+            const criteria = ACC_THRESHOLDS[accType]?.[thresholdKey] || ACC_THRESHOLDS.common[thresholdKey];
+            if (criteria && selectedGrade) {
+                const val = criteria[selectedGrade as '상' | '중' | '하'];
+                const isPercent = thresholdKey.includes("_PCT") ||
+                    !["무기공격력_FIXED", "공격력_FIXED", "최대 생명력", "최대 마나", "전투 중 생명력 회복량"].includes(thresholdKey);
+                return isPercent ? `${val.toFixed(2)}%` : val.toLocaleString();
+            }
+            return "-";
+        };
+
+        return (
+            <div
+                onMouseEnter={() => { if(setHoveredIndex) setHoveredIndex(i); if(setHoveredData) setHoveredData(tooltip); }}
+                onMouseLeave={() => { if(setHoveredIndex) setHoveredIndex(null); if(setHoveredData) setHoveredData(null); }}
+                className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] min-w-0 cursor-default"
+            >
+                {/* 아이콘 영역 */}
+                <div className="relative shrink-0 pointer-events-none">
+                    <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border}`}>
+                        <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt="" />
+                    </div>
+                </div>
+
+                {/* 메인 정보 (힘민지/팔찌) */}
+                <div className="flex-1 min-w-0">
+                    <h3 className={`font-bold text-[11px] tracking-tight ${theme.text} mb-0.5`}>{partName}</h3>
+                    {!isBracelet ? (
+                        <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                <span className="text-[10px] text-[#FFD200] font-bold">힘민지</span>
+                                <div className="flex items-center bg-black/30 rounded px-1 border border-white/5">
+                                    <input
+                                        type="text"
+                                        className="bg-transparent text-[11px] text-white font-bold w-10 outline-none text-right"
+                                        value={localState.mainStatPct || ""}
+                                        onChange={(e) => updateState({ mainStatPct: e.target.value })}
+                                    />
+                                    <span className="text-[9px] text-white/40 ml-0.5">%</span>
+                                </div>
+                            </div>
+                            <div className="w-[80px] h-1 bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-full bg-[#FFD200]/70 transition-all" style={{ width: `${localState.mainStatPct}%` }} />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-x-1.5 gap-y-0.5" onClick={(e) => e.stopPropagation()}>
+                            {[0, 1, 2, 3].map((idx) => (
+                                <div key={idx} className="flex items-center h-3 gap-0.5">
+                                    <select
+                                        className="bg-zinc-800 text-[9px] text-zinc-300 outline-none rounded cursor-pointer border border-white/5"
+                                        value={localState[`baseName_${idx}`] || "선택"}
+                                        onChange={(e) => updateState({ [`baseName_${idx}`]: e.target.value })}
+                                    >
+                                        {["선택", "특화", "치명", "신속", "힘", "민첩", "지능", "체력"].map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                    <input
+                                        type="text"
+                                        className="bg-transparent text-[9px] text-white w-6 outline-none text-right border-b border-white/10"
+                                        value={localState[`baseValue_${idx}`] || "0"}
+                                        onChange={(e) => updateState({ [`baseValue_${idx}`]: e.target.value })}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* 효과 영역 */}
+                <div className="w-[190px] flex flex-col gap-0.5 border-l border-white/10 pl-2 relative z-10" onClick={(e) => e.stopPropagation()}>
+                    {isBracelet ? (
+                        [0, 1, 2].map((idx) => {
+                            const opt = localState[`brac_option_${idx}`] || { name: "", grade: "중" };
+                            const effectData = BRACELET_OPTIONS[opt.name];
+                            const displayVal = effectData ? effectData[opt.grade === "상" ? 2 : opt.grade === "중" ? 1 : 0] : "-";
+                            return (
+                                <div key={idx} className="flex items-center justify-between h-3.5 group/row">
+                                    <select
+                                        className="bg-zinc-100 text-[9px] text-black font-extrabold rounded w-[85px] cursor-pointer"
+                                        value={opt.name}
+                                        onChange={(e) => updateState({ [`brac_option_${idx}`]: { ...opt, name: e.target.value } })}
+                                    >
+                                        <option value="">부여 효과</option>
+                                        {Object.keys(BRACELET_OPTIONS).map(o => <option key={o} value={o}>{o}</option>)}
+                                    </select>
+                                    <div className="flex items-center gap-1">
+                                        <select
+                                            className="bg-white text-[9px] font-bold rounded cursor-pointer border border-zinc-300"
+                                            value={opt.grade}
+                                            onChange={(e) => updateState({ [`brac_option_${idx}`]: { ...opt, grade: e.target.value } })}
+                                        >
+                                            <option value="상">상</option><option value="중">중</option><option value="하">하</option>
+                                        </select>
+                                        <span className={`w-12 text-right text-[9px] font-bold ${getGradeColor(opt.grade)}`}>{displayVal}</span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        [0, 1, 2].map((idx) => {
+                            const eff = localState[`acc_effect_${idx}`] || { name: "", grade: "" };
+                            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
+                            const options = { ...SHORT_NAMES.common, ...SHORT_NAMES[accType] };
+                            return (
+                                <div key={idx} className="flex items-center justify-between h-3.5 group/row">
+                                    <select
+                                        className="bg-zinc-100 text-[9px] text-black font-extrabold rounded w-24 cursor-pointer"
+                                        value={eff.name}
+                                        onChange={(e) => updateState({ [`acc_effect_${idx}`]: { ...eff, name: e.target.value } })}
+                                    >
+                                        <option value="">효과 선택</option>
+                                        {Object.keys(options).map(k => <option key={k} value={k}>{k.replace("_FIXED","").replace("_PCT","")}</option>)}
+                                    </select>
+                                    <div className="flex items-center gap-1">
+                                        <select
+                                            className="bg-white text-[9px] font-bold rounded cursor-pointer border border-zinc-300"
+                                            value={eff.grade}
+                                            onChange={(e) => updateState({ [`acc_effect_${idx}`]: { ...eff, grade: e.target.value } })}
+                                        >
+                                            <option value="">등급</option><option value="상">상</option><option value="중">중</option><option value="하">하</option>
+                                        </select>
+                                        <span className={`w-10 text-right text-[9px] font-bold ${getGradeColor(eff.grade)}`}>
+                                        {refreshAccValueDisplay(eff.name, eff.grade)}
+                                    </span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+
+
+
+
     // 4. 탭별 렌더링 함수 (CharacterCard 방식)
     const renderContent = () => {
         switch (activeTab) {
@@ -1243,16 +1480,11 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
 
 
 
-
-
-
                                 {/* [오른쪽: 액세서리 Section] */}
                                 <div className="w-full lg:flex-1 flex flex-col min-w-0">
                                     <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
                                         <div className="w-1.5 h-5 bg-blue-950 rounded-full" />
-                                        <h1 className="text-base font-extrabold text-white tracking-tight uppercase">
-                                            악세사리
-                                        </h1>
+                                        <h1 className="text-base font-extrabold text-white tracking-tight uppercase">악세사리</h1>
                                     </div>
 
                                     <div className="flex flex-col">
@@ -1260,226 +1492,45 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                                             .filter((item) => {
                                                 try {
                                                     const tooltip = JSON.parse(item.Tooltip);
-                                                    if (item.Name?.includes('팔찌')) return true;
-                                                    return tooltip.Element_001?.value?.qualityValue !== undefined;
-                                                } catch (e) { return false; }
+                                                    return item.Name?.includes('팔찌') || tooltip.Element_001?.value?.qualityValue !== undefined;
+                                                } catch { return false; }
                                             })
                                             .map((item, i) => {
                                                 const tooltip = JSON.parse(item.Tooltip);
-                                                const itemName = item.Name || "아이템 이름";
-                                                const isBracelet = itemName.includes('팔찌');
-                                                const quality = tooltip.Element_001?.value?.qualityValue ?? 0;
-
                                                 const { currentStat, polishLevel, effects: normalEffects } = getAccessoryStats(tooltip);
-
-                                                // 팔찌 기본 스탯 추출
-                                                let braceletStats: any[] = [];
-                                                if (isBracelet) {
-                                                    const rawContent = cleanText(tooltip.Element_005?.value?.Element_001 || "");
-                                                    braceletStats = [...rawContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)]
-                                                        .map(m => ({ name: m[1].trim(), value: m[2] }))
-                                                        .filter(e => ["특화", "치명", "신속", "힘", "민첩", "지능", "체력"].includes(e.name));
-                                                }
-
-                                                const partName = ["목걸이", "귀걸이", "반지", "팔찌"].find(p => itemName.includes(p)) || "장신구";
-                                                const rawGrade = (item.Grade || "").trim();
-                                                const gradeKey = ["고대", "유물", "전설", "영웅"].find(g => rawGrade.includes(g)) || "일반";
-                                                const theme = gradeStyles[gradeKey] || gradeStyles["일반"];
+                                                const partName = ["목걸이", "귀걸이", "반지", "팔찌"].find(p => (item.Name || "").includes(p)) || "장신구";
+                                                const theme = gradeStyles[(item.Grade || "").trim()] || gradeStyles["일반"];
 
                                                 return (
-                                                    <div key={i} className="relative group flex flex-nowrap items-center gap-2 lg:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help min-w-0">
-                                                        {/* 아이콘 및 품질 */}
-                                                        <div className="relative shrink-0">
-                                                            <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ""}`}>
-                                                                <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt="" />
-                                                            </div>
-                                                            {!isBracelet && (
-                                                                <div className={`absolute -bottom-1 -right-1 px-1 rounded-md text-[10px] font-black border ${getQualityColor(quality)} bg-zinc-900 ${theme.text}`}>
-                                                                    {quality}
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* [메인 정보 영역] */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <h3 className={`font-bold text-[12px] tracking-tight ${theme.text}`}>
-                                                                {partName}
-                                                            </h3>
-
-                                                            {!isBracelet ? (
-                                                                <div className="flex flex-col gap-1 mt-1 whitespace-nowrap group/row relative">
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <span className="text-[11px] text-[#FFD200] font-bold opacity-90">힘민지</span>
-                                                                        <div className="flex items-center">
-                                                                            <input
-                                                                                type="number"
-                                                                                className="bg-transparent text-[11px] text-white font-bold w-7 outline-none text-right"
-                                                                                defaultValue={((currentStat / (MAX_STATS[partName]?.[polishLevel] || 1)) * 100).toFixed(1)}
-                                                                            />
-                                                                            <span className="text-[9px] text-white/40 ml-0.5">%</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="w-[85px] h-1 bg-white/10 rounded-full overflow-hidden">
-                                                                        <div className="h-full bg-[#FFD200]/70" style={{ width: `${(currentStat / (MAX_STATS[partName]?.[polishLevel] || 1)) * 100}%` }} />
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                                                                    {[0, 1, 2, 3].map((idx) => {
-                                                                        const isDataColumn = idx % 2 === 0;
-                                                                        const dataIdx = idx / 2;
-                                                                        const name = isDataColumn ? (braceletStats[dataIdx]?.name || "선택") : "선택";
-                                                                        const value = isDataColumn ? (braceletStats[dataIdx]?.value || "0") : "0";
-                                                                        return (
-                                                                            <div key={idx} className="flex items-center h-4 gap-0.5">
-                                                                                <select className="bg-white text-[10px] text-black font-bold outline-none h-full cursor-pointer rounded" defaultValue={name}>
-                                                                                    {["선택", "특화", "치명", "신속", "힘", "민첩", "지능", "체력"].map(s => (
-                                                                                        <option key={s} value={s}>{s}</option>
-                                                                                    ))}
-                                                                                </select>
-                                                                                <input type="text" className="bg-white text-[10px] text-black font-bold w-8 outline-none h-full border-b border-white/5 rounded" defaultValue={value} />
-                                                                            </div>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {/* [추가 효과 영역] */}
-                                                        <div className="w-[180px] flex flex-col gap-0.5 border-l border-white/5 pl-2 shrink-0">
-                                                            {isBracelet ? (
-                                                                [0, 1, 2].map((idx) => {
-                                                                    const bracDisplayId = `brac-stat-display-${i}-${idx}`;
-                                                                    const handleBracChange = (rowElem: HTMLElement) => {
-                                                                        const mainSelect = rowElem.querySelector('.main-select') as HTMLSelectElement;
-                                                                        const gradeSelect = rowElem.querySelector('.grade-select') as HTMLSelectElement;
-                                                                        const displaySpan = document.getElementById(bracDisplayId);
-                                                                        if (!mainSelect || !gradeSelect || !displaySpan) return;
-                                                                        const effectData = BRACELET_OPTIONS[mainSelect.value];
-                                                                        const grade = gradeSelect.value;
-                                                                        if (effectData) {
-                                                                            const gradeIdx = grade === "상" ? 2 : grade === "중" ? 1 : 0;
-                                                                            displaySpan.innerText = effectData[gradeIdx];
-                                                                            displaySpan.className = `w-12 text-right text-[10px] ${getGradeColor(grade)}`;
-                                                                        } else {
-                                                                            displaySpan.innerText = "-";
-                                                                            displaySpan.className = "w-12 text-right text-[10px] text-zinc-500 font-medium";
-                                                                        }
-                                                                    };
-                                                                    return (
-                                                                        <div key={idx} className="flex items-center justify-between gap-1 group/row h-3 mb-1">
-                                                                            <select className="main-select bg-zinc-100 text-[10px] text-black font-bold rounded px-0.5 outline-none w-20 truncate h-full py-0" onChange={(e) => handleBracChange(e.target.closest('.group\\/row')!)}>
-                                                                                <option value="">부여 효과</option>
-                                                                                {Object.keys(BRACELET_OPTIONS).map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                                                            </select>
-                                                                            <div className="flex items-center gap-1 h-full">
-                                                                                <select className="grade-select bg-white text-[9px] text-black font-bold rounded border border-zinc-200 outline-none h-full py-0" defaultValue="중" onChange={(e) => handleBracChange(e.target.closest('.group\\/row')!)}>
-                                                                                    <option value="상">상</option><option value="중">중</option><option value="하">하</option>
-                                                                                </select>
-                                                                                <span id={bracDisplayId} className="w-12 text-right text-[10px] font-medium text-zinc-500">-</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })
-                                                            ) : (
-                                                                [0, 1, 2].map((idx) => {
-                                                                    const effect = normalEffects[idx];
-                                                                    const accDisplayId = `acc-eff-display-${i}-${idx}`;
-                                                                    const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
-                                                                    const availableOptions = { ...SHORT_NAMES.common, ...SHORT_NAMES[accType] };
-
-                                                                    // 💡 수정된 역추적 로직: 데이터 이름에서 공백을 제거하고 정확한 Key 매칭
-                                                                    const getInitialSelectValue = () => {
-                                                                        if (!effect) return "";
-                                                                        const isPct = String(effect.value).includes("%");
-                                                                        const cleanName = effect.name.replace(/\s/g, ""); // "무기 공격력" -> "무기공격력"
-
-                                                                        let searchKey = cleanName;
-                                                                        if (searchKey === "공격력") searchKey = isPct ? "공격력_PCT" : "공격력_FIXED";
-                                                                        if (searchKey === "무기공격력") searchKey = isPct ? "무기공격력_PCT" : "무기공격력_FIXED";
-
-                                                                        // "세레나데, 신앙, 조화 게이지 획득량" 같은 긴 이름 처리
-                                                                        if (!availableOptions[searchKey]) {
-                                                                            searchKey = Object.keys(availableOptions).find(k => k.replace(/\s/g, "").includes(cleanName)) || "";
-                                                                        }
-
-                                                                        return availableOptions[searchKey] ? searchKey : "";
-                                                                    };
-
-                                                                    const getInitialGrade = (matchedKey: string) => {
-                                                                        if (!effect || !matchedKey) return "";
-                                                                        const num = parseFloat(effect.value.replace(/[^0-9.]/g, ""));
-                                                                        const criteria = ACC_THRESHOLDS[accType]?.[matchedKey] || ACC_THRESHOLDS.common[matchedKey];
-                                                                        if (!criteria) return "";
-                                                                        if (num >= criteria.상) return "상";
-                                                                        if (num >= criteria.중) return "중";
-                                                                        return "하";
-                                                                    };
-
-                                                                    const initialValue = getInitialSelectValue();
-                                                                    const initialGrade = getInitialGrade(initialValue);
-
-                                                                    const refreshAccValue = (rowElem: HTMLElement) => {
-                                                                        const effectSelect = rowElem.querySelector('.effect-select') as HTMLSelectElement;
-                                                                        const gradeSelect = rowElem.querySelector('.grade-select') as HTMLSelectElement;
-                                                                        const displaySpan = document.getElementById(accDisplayId);
-                                                                        if (!effectSelect || !gradeSelect || !displaySpan) return;
-
-                                                                        const thresholdKey = effectSelect.value;
-                                                                        const selectedGrade = gradeSelect.value as '상' | '중' | '하';
-                                                                        const criteria = ACC_THRESHOLDS[accType]?.[thresholdKey] || ACC_THRESHOLDS.common[thresholdKey];
-                                                                        if (criteria && selectedGrade) {
-                                                                            const val = criteria[selectedGrade];
-                                                                            const isPercent = thresholdKey.includes("_PCT") ||
-                                                                                !["무기공격력_FIXED", "공격력_FIXED", "최대 생명력", "최대 마나", "전투 중 생명력 회복량"].includes(thresholdKey);
-                                                                            displaySpan.innerText = isPercent ? `${val.toFixed(2)}%` : val.toLocaleString();
-                                                                            displaySpan.className = `w-10 text-right text-[10px] ${getGradeColor(selectedGrade)}`;
-                                                                        } else {
-                                                                            displaySpan.innerText = "-";
-                                                                            displaySpan.className = "w-10 text-right text-[10px] text-zinc-500 font-bold";
-                                                                        }
-                                                                    };
-
-                                                                    return (
-                                                                        <div key={idx} className="flex items-center justify-between gap-1 group/row h-3 mb-1">
-                                                                            <select
-                                                                                className="effect-select bg-zinc-100 text-[10px] text-black font-bold rounded px-0.5 outline-none w-24 truncate cursor-pointer h-full py-0"
-                                                                                defaultValue={initialValue}
-                                                                                onChange={(e) => refreshAccValue(e.target.closest('.group\\/row')!)}
-                                                                            >
-                                                                                <option value="">효과 선택</option>
-                                                                                {Object.keys(availableOptions).map((fullName) => (
-                                                                                    <option key={fullName} value={fullName}>
-                                                                                        {fullName.replace("_FIXED", "").replace("_PCT", "")}
-                                                                                    </option>
-                                                                                ))}
-                                                                            </select>
-                                                                            <div className="flex items-center gap-1 h-full">
-                                                                                <select
-                                                                                    className="grade-select bg-white text-[9px] text-black font-bold rounded border border-zinc-200 outline-none h-full py-0"
-                                                                                    defaultValue={initialGrade}
-                                                                                    onChange={(e) => refreshAccValue(e.target.closest('.group\\/row')!)}
-                                                                                >
-                                                                                    <option value="">등급</option>
-                                                                                    <option value="상">상</option>
-                                                                                    <option value="중">중</option>
-                                                                                    <option value="하">하</option>
-                                                                                </select>
-                                                                                <span id={accDisplayId} className={`w-10 text-right text-[10px] leading-none ${getGradeColor(initialGrade)}`}>
-                                                    {effect?.value || "-"}
-                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                    <AccessoryItem
+                                                        key={`${item.Name}-${i}`}
+                                                        item={item}
+                                                        i={i} // 인덱스 전달
+                                                        accessoryStates={accessoryStates}
+                                                        onAccessoryUpdate={onAccessoryUpdate}
+                                                        getAccessoryStats={getAccessoryStats}
+                                                        theme={theme}
+                                                        partName={partName}
+                                                        isBracelet={item.Name?.includes('팔찌')}
+                                                        normalEffects={normalEffects}
+                                                        currentStat={currentStat}
+                                                        polishLevel={polishLevel}
+                                                        quality={tooltip.Element_001?.value?.qualityValue ?? 0}
+                                                        getQualityColor={getQualityColor}
+                                                        BRACELET_OPTIONS={BRACELET_OPTIONS}
+                                                        SHORT_NAMES={SHORT_NAMES}
+                                                        ACC_THRESHOLDS={ACC_THRESHOLDS}
+                                                        getGradeColor={getGradeColor}
+                                                        cleanText={cleanText}
+                                                        MAX_STATS={MAX_STATS}
+                                                        setHoveredIndex={setHoveredIndex} // 누락되었던 부모 함수 전달
+                                                        setHoveredData={setHoveredData}   // 누락되었던 부모 함수 전달
+                                                        tooltip={tooltip}                 // 누락되었던 툴팁 데이터 전달
+                                                    />
                                                 );
                                             })}
                                     </div>
                                 </div>
-
 
 
                             </section>

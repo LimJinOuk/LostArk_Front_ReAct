@@ -110,28 +110,27 @@ const RankingPage: React.FC = () => {
 
     return (
         <div className="w-full min-h-screen bg-[#0a0a0b] text-zinc-300 font-sans tracking-tight">
-            {/* 1. flex-col / lg:flex-row: 모바일은 세로 배치, PC는 가로 배치
-                2. items-stretch / lg:items-start: 모바일은 너비 꽉 채우기, PC는 사이드바 고정(Sticky) 준비
-                3. relative: 사이드바 sticky의 기준점
-            */}
-            <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row items-stretch lg:items-start relative gap-6 lg:gap-0 px-4 lg:px-10 py-6 lg:py-10">
+            {/* 컨테이너 구조 수정 */}
+            <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-6 lg:gap-10 px-4 lg:px-10 py-6 lg:py-10">
 
-                {/* 사이드바 영역: PC에서는 좌측 고정, 모바일에서는 상단 위치 */}
-                <RankingSidebar
-                    rankingType={rankingType}
-                    setRankingType={setRankingType}
-                    selectedClass={selectedClass}
-                    setSelectedClass={setSelectedClass}
-                    selectedArkPassive={selectedArkPassive}
-                    setSelectedArkPassive={setSelectedArkPassive}
-                    arkPassiveList={currentArkPassives}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    classList={CLASS_LIST}
-                />
+                {/* 사이드바 영역: lg 이상에서 sticky 고정 */}
+                <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-24 h-fit z-30">
+                    <RankingSidebar
+                        rankingType={rankingType}
+                        setRankingType={setRankingType}
+                        selectedClass={selectedClass}
+                        setSelectedClass={setSelectedClass}
+                        selectedArkPassive={selectedArkPassive}
+                        setSelectedArkPassive={setSelectedArkPassive}
+                        arkPassiveList={currentArkPassives}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        classList={CLASS_LIST}
+                    />
+                </div>
 
-                {/* 리스트 영역: 사이드바가 움직일 공간(높이)을 제공하며 콘텐츠 표시 */}
-                <div className="flex-1 w-full min-h-[500px] lg:min-h-screen">
+                {/* 리스트 영역: 스크롤 발생 구역 */}
+                <div className="flex-1 min-w-0">
                     <RankingList
                         rankings={rankings.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase()))}
                         loading={loading}

@@ -118,7 +118,7 @@ export const CharacterDetailTab = ({ character }: CharacterDetailTabProps) => {
     );
 
     return (
-        <div className="w-full bg-[#050505] p-3 sm:p-6 space-y-6 sm:space-y-10">
+        <div className="w-full bg-zinc-950 p-3 sm:p-6 space-y-6 sm:space-y-10">
             {Object.entries(groupedByServer).map(([serverName, characters]) => (
                 <div key={serverName} className="space-y-4 sm:space-y-6">
                     {/* 서버 헤더 */}

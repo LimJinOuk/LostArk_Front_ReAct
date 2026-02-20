@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const cleanText = (str: any) => {
     if (!str) return '';
@@ -44,9 +45,19 @@ const MAX_STATS: Record<string, number[]> = {
 interface TooltipProps {
     data: any;
     className?: string;
+    onClose?: () => void;
 }
 
-const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
+const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 640);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     if (!data) return null;
 
     const elements = Object.values(data) as any[];
@@ -57,8 +68,6 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
     const itemGradeFull = titleInfo.leftStr0;
     const itemLevelAndTier = cleanText(titleInfo.leftStr2 || "");
     const itemIcon = titleInfo.slotData?.iconPath;
-
-    const bindingInfo = cleanText(data.Element_002?.value || "");
     const tradeInfo = cleanText(data.Element_003?.value || "").replace('|', '');
 
     const baseEffectObj = elements.find((el: any) => el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000) === '기본 효과');
@@ -107,40 +116,24 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
         return '#919191';
     };
 
-
-    return (
+    const TooltipBody = (
         <div
-            className={`relative w-[300px] flex flex-col border border-white/10 rounded-md shadow-2xl overflow-hidden font-sans transition-all duration-200 ${className}`}
-            style={{ maxHeight: '50vh' }} // 위치 결정권은 부모에게 넘기고 높이만 유지
+            className={`relative flex flex-col border border-white/10 shadow-2xl overflow-hidden font-sans transition-all duration-200 bg-[#0d0d0f]/10 ${isMobile ? 'w-full rounded-t-xl' : 'w-[300px] rounded-md'} ${className}`}
+            style={!isMobile ? { maxHeight: '50vh' } : { maxHeight: '80vh' }}
         >
-            {/* 1. 헤더 섹션 (고정 및 불투명) */}
             <div className={`p-2 shrink-0 bg-[#111111] bg-gradient-to-br ${theme.bg} border-b border-white/10 z-10`}>
                 <div className="flex gap-3 items-center">
                     <div className="relative shrink-0 w-[50px] h-[50px]">
                         <div className={`w-full h-full overflow-hidden rounded-md border-[1.5px] ${theme.border} bg-black bg-gradient-to-br ${theme.bg}`}>
-                            <img
-                                src={itemIcon}
-                                className="w-full h-full object-cover"
-                                alt=""
-                            />
+                            <img src={itemIcon} className="w-full h-full object-cover" alt="" />
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h4 className={`text-[14px] font-bold leading-tight drop-shadow-md truncate ${theme.text}`}>
-                            {itemName}
-                        </h4>
+                        <h4 className={`text-[14px] font-bold leading-tight drop-shadow-md truncate ${theme.text}`}>{itemName}</h4>
                         <div className="mt-1 flex items-center gap-2">
-                            {/* 등급 정보 */}
-                            <span className="text-[12px] font-bold text-white/60">
-                                {cleanText(itemGradeFull)}
-                            </span>
-                            {/* 구분선 (선택 사항) */}
+                            <span className="text-[12px] font-bold text-white/60">{cleanText(itemGradeFull)}</span>
                             <span className="w-[2px] h-2.5 bg-white/30" />
-                            {/* 티어 정보 - 포인트 컬러 적용 */}
-                            <span className="text-[12px] font-bold text-white/60">
-                                {itemLevelAndTier.replace('아이템 ', '')}
-                            </span>
-
+                            <span className="text-[12px] font-bold text-white/60">{itemLevelAndTier.replace('아이템 ', '')}</span>
                             <span className="w-[2px] h-2.5 bg-white/30" />
                             {arcPassiveObj && (
                                 <div className="text-[11.5px] font-bold text-[#ffcf4d]">{cleanText(arcPassiveObj.value.Element_001)}</div>
@@ -150,19 +143,8 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
                 </div>
             </div>
 
-            {/* 2. 본문 섹션 (60% 투명도 및 스크롤) */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#111111]/10 backdrop-blur-md
-                /* Webkit 스크롤바 커스텀 */
-                [&::-webkit-scrollbar]:w-1.5
-                [&::-webkit-scrollbar-track]:bg-white/5
-                [&::-webkit-scrollbar-thumb]:bg-white/20
-                [&::-webkit-scrollbar-thumb]:rounded-full
-                hover:[&::-webkit-scrollbar-thumb]:bg-white/40">
-
-                <div className="p-3 grid grid-cols-2 gap-x-4 max-h-[60vh] overflow-y-auto bg-[#111111]/40">
-
-                    {/* 왼쪽 칼럼
-                    귀속/거래 정보 */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#111111]/10 backdrop-blur-md">
+                <div className="p-3 grid grid-cols-2 gap-x-4 bg-[#111111]/40">
                     <div className="space-y-1 col-span-1 border-r border-white/5 pr-4">
                         {specialEffectObj?.value?.Element_001 && (
                             <div className="pt-1 border-t border-white/5">
@@ -172,60 +154,79 @@ const AccessoryTooltip = ({ data, className = "" }: TooltipProps) => {
                             </div>
                         )}
                         <div className={`pt-4 text-[12px] font-bold ${tradeInfo.includes('불가') ? 'text-red-500' : 'text-cyan-500'}`}>
-                           [{tradeInfo}]
+                            [{tradeInfo}]
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                    {/* 품질 (간격 축소) */}
-                    {quality !== -1 && (
-                        <div className="space-y-0.5 w-28">
-                            <div className="flex justify-between items-end">
-                                <span className="text-white/40 text-[11px]">품질</span>
-                                <span className="text-[12px] font-bold" style={{ color: getQualityColorHex(quality) }}>{quality}</span>
+                        {quality !== -1 && (
+                            <div className="space-y-0.5 w-28">
+                                <div className="flex justify-between items-end">
+                                    <span className="text-white/40 text-[11px]">품질</span>
+                                    <span className="text-[12px] font-bold" style={{ color: getQualityColorHex(quality) }}>{quality}</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-white/40 rounded-full overflow-hidden border border-white/5">
+                                    <div className="h-full transition-all duration-700" style={{ width: `${quality}%`, backgroundColor: getQualityColorHex(quality) }} />
+                                </div>
                             </div>
-                            <div className="h-1.5 w-full bg-white/40 rounded-full overflow-hidden border border-white/5">
-                                <div className="h-full transition-all duration-700" style={{ width: `${quality}%`, backgroundColor: getQualityColorHex(quality) }} />
-                            </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* 효과 정보들 */}
-                    <div className="space-y-4">
-                        {baseEffectObj?.value?.Element_001 && (() => {
-                            const part = ["목걸이", "귀걸이", "반지"].find(p => itemName.includes(p)) || "목걸이";
-                            const rawPolishHtml = data.Element_006?.value?.Element_001 || "";
-                            const polishLevel = (rawPolishHtml.match(/img src/g) || []).length;
-                            const currentStatMatch = baseEffectObj.value.Element_001.match(/\+(\d+)/);
-                            const currentStat = currentStatMatch ? parseInt(currentStatMatch[1]) : 0;
-                            const maxValue = MAX_STATS[part][polishLevel];
-                            const percentage = maxValue ? (currentStat / maxValue) * 100 : 0;
+                        <div className="space-y-4">
+                            {baseEffectObj?.value?.Element_001 && (() => {
+                                const part = ["목걸이", "귀걸이", "반지"].find(p => itemName.includes(p)) || "목걸이";
+                                const rawPolishHtml = data.Element_006?.value?.Element_001 || "";
+                                const polishLevel = (rawPolishHtml.match(/img src/g) || []).length;
+                                const currentStatMatch = baseEffectObj.value.Element_001.match(/\+(\d+)/);
+                                const currentStat = currentStatMatch ? parseInt(currentStatMatch[1]) : 0;
+                                const maxValue = MAX_STATS[part][polishLevel];
+                                const percentage = maxValue ? (currentStat / maxValue) * 100 : 0;
 
-                            return (
-                                <div className="space-y-0.5 w-28"> {/* 간격 축소 */}
-                                    <div className="flex justify-between items-center">
-                                        <div className="text-[#FFD200] text-[11.5px] font-bold py-0.5">
+                                return (
+                                    <div className="space-y-0.5 w-28">
+                                        <div className="flex justify-between items-center text-[#FFD200] text-[11.5px] font-bold py-0.5">
                                             힘민지: {percentage.toFixed(1)}%
                                         </div>
+                                        <div className="h-1.5 w-full bg-white/40 rounded-full overflow-hidden">
+                                            <div className="h-full bg-[#FFD200]/60 transition-all duration-500" style={{ width: `${Math.min(100, percentage)}%` }} />
+                                        </div>
+                                        <div className="text-white/90 text-[12px] leading-relaxed whitespace-pre-line font-medium pt-1">
+                                            {cleanText(baseEffectObj.value.Element_001)}
+                                        </div>
                                     </div>
-                                    <div className="h-1 w-full bg-white/40 rounded-full overflow-hidden">
-                                        <div className="h-full bg-[#FFD200]/60 transition-all duration-500" style={{ width: `${Math.min(100, percentage)}%` }} />
-                                    </div>
-                                    <div className="text-white/90 text-[12px] leading-relaxed whitespace-pre-line font-medium pt-1">
-                                        {cleanText(baseEffectObj.value.Element_001)}
-                                    </div>
-                                </div>
-                            );
-                        })()}
+                                );
+                            })()}
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* 하단 데코 라인 */}
             <div className="h-[1px] shrink-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
-        </div>
     );
+
+    if (isMobile) {
+        return (
+            <div className="fixed inset-0 z-[9999] flex items-end justify-center">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={onClose}
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                />
+                <motion.div
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="relative w-full"
+                >
+                    {TooltipBody}
+                </motion.div>
+            </div>
+        );
+    }
+
+    return TooltipBody;
 };
 
 export default AccessoryTooltip;
