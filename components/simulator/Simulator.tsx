@@ -12,6 +12,7 @@ import { SimTab } from "./SimulatorNav";
 import ArkCoreTooltip from "@/components/profile/Tooltip/ArkCoreTooltip.tsx";
 import {AccessoryItem} from "@/components/simulator/container/AccessoryItem.tsx";
 import {EquipmentItem} from "@/components/simulator/container/EquipmentItem.tsx";
+import ArkGridItem from "@/components/simulator/container/ArkGrid/ArkGridItem.tsx";
 
 type CharacterInfoCompat = CharacterInfo & { CharacterName?: string };
 
@@ -930,138 +931,13 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
-                                {/* [좌측 박스] 아크 그리드 섹션 */}
-                                <section className="bg-[#121213] pt-5 pb-2 px-5 rounded-2xl border border-white/5 shadow-2xl flex flex-col h-fit">
-                                    {/* 타이틀 영역 */}
-                                    <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1">
-                                        <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
-                                        <h1 className="text-[15px] font-extrabold text-white tracking-tight uppercase">
-                                            아크 그리드
-                                        </h1>
-                                    </div>
-
-                                    {/* 6행 1열 레이아웃 */}
-                                    <div className="flex flex-col gap-0.5 mb-0">
-                                        {arkGrid?.Slots?.map((slot, i) => {
-                                            const nameParts = slot.Name.split(/\s*:\s*/);
-                                            const category = nameParts[0];
-                                            const subName = nameParts[1];
-
-                                            const rawGrade = (slot.Grade || "").trim();
-                                            let currentGrade = "일반";
-                                            if (rawGrade.includes('고대')) currentGrade = '고대';
-                                            else if (rawGrade.includes('유물')) currentGrade = '유물';
-                                            else if (rawGrade.includes('전설')) currentGrade = '전설';
-                                            else if (rawGrade.includes('영웅')) currentGrade = '영웅';
-
-                                            const theme = gradeStyles[currentGrade] || gradeStyles['일반'];
-
-                                            // 모달 열기/닫기 핸들러
-                                            const handleRowClick = (e: React.MouseEvent) => {
-                                                // select 박스를 클릭했을 때는 모달이 열리지 않도록 방어 코드 추가 가능
-                                                if ((e.target as HTMLElement).closest('select')) return;
-
-                                                if (arkCoreHoverIdx === i) {
-                                                    setArkCoreHoverIdx(null);
-                                                    setArkCoreHoverData(null);
-                                                } else {
-                                                    setArkCoreHoverIdx(i);
-                                                    const parsedTooltip = typeof slot.Tooltip === 'string' ? JSON.parse(slot.Tooltip) : slot.Tooltip;
-                                                    setArkCoreHoverData({ core: parsedTooltip, gems: slot.Gems });
-                                                }
-                                            };
-                                            return (
-                                                <div
-                                                    key={i}
-                                                    // 1. 전체 열에 클릭 이벤트 등록 및 커서 변경
-                                                    onClick={handleRowClick}
-                                                    className={`relative group flex items-center gap-3 rounded-xl transition-all h-[62px] px-2 pl-0 cursor-pointer
-                                                    ${arkCoreHoverIdx === i ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]'}`}
-                                                >
-                                                    {/* 아이콘 영역: 이제 부모가 클릭을 담당하므로 onClick 제거 */}
-                                                    <div className="relative shrink-0">
-                                                        <div className={`w-12 h-12 rounded-xl p-[2px] transition-all flex items-center justify-center
-                                                            bg-gradient-to-br ${theme.bg} overflow-hidden
-                                                            border ${arkCoreHoverIdx === i ? 'border-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'border-[#e9d2a6]/10'} 
-                                                            shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] active:scale-95`}
-                                                        >
-                                                            <img src={slot.Icon} className="w-full h-full object-contain filter drop-shadow-md" alt="" />
-                                                            {slot.Gems?.length > 0 && (
-                                                                <div className={`absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border border-black/60 flex items-center justify-center shadow-md ${theme.accent}`}>
-                                                                    <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_2px_#fff]"></div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* 2. 모달 위치: 열(Row) 전체를 기준으로 아이콘 옆에 고정 */}
-                                                    {/* 2. 모달 위치: 행(Row) 전체의 오른쪽 끝(left-full)에 고정 */}
-                                                    {arkCoreHoverIdx === i && arkCoreHoverData && (
-                                                        <div
-                                                            className="absolute left-full ml-4 top-0 z-[100] pointer-events-auto"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        >
-                                                            {/* 애니메이션: 오른쪽에서 나타나는 효과 */}
-                                                            <div className="animate-in fade-in slide-in-from-left-4 duration-200">
-                                                                <ArkCoreTooltip
-                                                                    data={arkCoreHoverData.core}
-                                                                    Gems={arkCoreHoverData.gems}
-                                                                    currentPoint={slot.Point}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* 텍스트 정보 */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className={`text-[10.5px] font-bold leading-tight opacity-80 ${theme.text}`}>
-                                                            {category}
-                                                        </div>
-                                                        <div className={`text-[13px] font-extrabold mt-0.5 truncate ${theme.text}`}>
-                                                            {subName}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* 포인트 정보 (Select) */}
-                                                    <div className="shrink-0 text-right group/point relative">
-                                                        {/* select 클릭 시 부모의 rowClick이 발생하지 않도록 stopPropagation 적용 */}
-                                                        <div className="flex items-center group/point" onClick={(e) => e.stopPropagation()}>
-                                                            <div className="relative flex items-center">
-                                                                <select
-                                                                    className="bg-white/5 border border-white/10 rounded-md
-                                                                    text-[13px] font-black text-white/90
-                                                                    outline-none cursor-pointer appearance-none text-center
-                                                                    w-12 h-7
-                                                                    hover:bg-white/10 hover:border-[#FFD200]/50
-                                                                    focus:border-[#FFD200] focus:ring-1 focus:ring-[#FFD200]/30
-                                                                    transition-all duration-200
-                                                                    group-hover/point:text-[#FFD200]
-                                                                    [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                                                                    value={slot.Point}
-                                                                    onChange={(e) => {
-                                                                        const newPoint = parseInt(e.target.value);
-                                                                        const updatedSlots = [...arkGrid.Slots];
-                                                                        updatedSlots[i] = { ...updatedSlots[i], Point: newPoint };
-                                                                        setArkGrid({ ...arkGrid, Slots: updatedSlots });
-                                                                    }}
-                                                                >
-                                                                    {Array.from({ length: 21 }, (_, idx) => 20 - idx).map((num) => (
-                                                                        <option key={num} value={num} className="bg-[#1a1a1b] text-white">
-                                                                            {num}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
-                                                                <div className="absolute right-1.5 pointer-events-none opacity-40 group-hover/point:opacity-100 group-hover/point:text-[#FFD200]">
-                                                                    <svg className="w-2 h-2 fill-current" viewBox="0 0 20 20">
-                                                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                                                    </svg>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                <section>
+                                    <div>
+                                        <ArkGridItem
+                                            arkGrid={arkGrid}
+                                            setArkGrid={setArkGrid}
+                                            characterJob={propCharacter.CharacterClassName}
+                                        />
                                     </div>
                                 </section>
 
