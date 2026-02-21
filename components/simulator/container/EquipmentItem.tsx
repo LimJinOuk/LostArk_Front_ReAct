@@ -87,12 +87,12 @@ export const EquipmentItem = ({
         <div
             onMouseEnter={() => { setHoveredIndex(i); setHoveredData(tooltip); }}
             onMouseLeave={() => { setHoveredIndex(null); setHoveredData(null); }}
-            className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[62px] cursor-help"
+            className="relative group flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-colors h-[68px] cursor-help"
         >
             {/* 아이콘 및 품질 입력 */}
             <div className="relative shrink-0 pointer-events-auto">
                 <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border}`}>
-                    <img src={item.Icon} className="w-10 h-10 rounded-md object-cover bg-black/20" alt={itemName} />
+                    <img src={item.Icon} className="w-11 h-11 rounded-md object-cover" alt={itemName} />
                 </div>
                 <input
                     type="number"
