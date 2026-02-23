@@ -70,7 +70,6 @@ const ACC_THRESHOLDS: Record<string, Record<string, Thresholds>> = {
     ring: { "치명타 적중률": { 상: 1.55, 중: 0.95, 하: 0.4 }, "치명타 피해": { 상: 4.0, 중: 2.4, 하: 1.1 }, "아군 공격력 강화 효과": { 상: 5.0, 중: 3.0, 하: 1.35 }, "아군 피해량 강화 효과": { 상: 7.5, 중: 4.5, 하: 2.0 } },
 };
 
-// 공통 스타일 클래스 정의
 const styles = {
     select: "bg-zinc-900/60 text-zinc-300 text-[10px] font-bold rounded border border-white/5 px-1 py-0.5 outline-none hover:border-white/20 hover:bg-zinc-800 transition-all cursor-pointer appearance-none",
     input: "bg-black/30 text-[11px] text-white font-bold outline-none text-right rounded border border-transparent focus:border-white/20 transition-all",
@@ -85,6 +84,7 @@ export const AccessoryItem = ({
 
     const itemName = item.Name || "아이템 이름";
 
+    // 1. 데이터 파싱 함수
     const getAccessoryStats = (tooltip: any) => {
         const elements = Object.values(tooltip) as any[];
         const baseElement = elements.find(el => el?.type === 'ItemPartBox' && el?.value?.Element_000?.includes('기본 효과'));
@@ -107,6 +107,7 @@ export const AccessoryItem = ({
 
     const { currentStat, polishLevel, effects: normalEffects } = getAccessoryStats(tooltip);
 
+    // 2. 초기 옵션 키 매핑 함수
     const getInitialSelectValue = (effect: any) => {
         if (!effect) return "";
         const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
@@ -133,6 +134,7 @@ export const AccessoryItem = ({
         return "하";
     };
 
+    // 3. 내부 상태 초기화
     const [localState, setLocalState] = useState<any>(() => {
         const initialMainStatPct = ((currentStat / (MAX_STATS[partName]?.[polishLevel] || 1)) * 100).toFixed(1);
         let data: any = { mainStatPct: initialMainStatPct };
@@ -158,6 +160,73 @@ export const AccessoryItem = ({
         return data;
     });
 
+
+    // AccessoryItem.tsx 내부의 getTransformedData 함수
+
+    // AccessoryItem.tsx 내부 수정
+
+    const getTransformedData = (state: any) => {
+        if (isBracelet) {
+            // ✅ BraceletItem 구조 (팔찌)
+            const bracelet: any = {
+                baseStats: {}, // Map<String, String>
+                effects: {}    // Map<String, Effect>
+            };
+
+            // 팔찌 기본 스탯 (특화, 치명 등)
+            [0, 1, 2, 3].forEach(idx => {
+                const name = state[`baseName_${idx}`];
+                const value = state[`baseValue_${idx}`];
+                if (name && name !== "선택") {
+                    bracelet.baseStats[name] = value;
+                }
+            });
+
+            // 팔찌 부여 효과
+            [0, 1, 2].forEach(idx => {
+                const opt = state[`brac_option_${idx}`];
+                if (opt?.name) {
+                    const values = BRACELET_OPTIONS[opt.name];
+                    const actualValue = values ? values[opt.grade === "상" ? 2 : opt.grade === "중" ? 1 : 0] : "0";
+
+                    bracelet.effects[`brac_option_${idx}`] = {
+                        name: opt.name,
+                        value: actualValue,
+                        // DTO에 grade가 없으므로 name과 value만 포함하거나 필요시 DTO에 추가
+                    };
+                }
+            });
+            return bracelet;
+        } else {
+            // ✅ AccessoryItem 구조 (목/귀/반)
+            const accessory: any = {
+                accStats: state.mainStatPct, // String
+                effects: {}                  // Map<String, Effect>
+            };
+
+            const accType = partName === "목걸이" ? 'necklace' : (partName === "귀걸이" ? 'earring' : 'ring');
+            const nameMap = { ...SHORT_NAMES.common, ...SHORT_NAMES[accType] };
+            const thresholdMap = { ...ACC_THRESHOLDS.common, ...ACC_THRESHOLDS[accType] };
+
+            [0, 1, 2].forEach(idx => {
+                const eff = state[`acc_effect_${idx}`];
+                if (eff?.name) {
+                    const shortName = nameMap[eff.name] || eff.name;
+                    const numericValue = thresholdMap[eff.name]?.[eff.grade] || 0;
+
+                    accessory.effects[`acc_effect_${idx}`] = {
+                        name: shortName,
+                        value: numericValue
+                        // DTO 구조에 맞춰 grade는 제외함
+                    };
+                }
+            });
+            return accessory;
+        }
+    };
+
+
+
     const getGradeColor = (grade: string) => {
         const colors: Record<string, string> = {
             "상": "text-yellow-400 font-black drop-shadow-[0_0_3px_rgba(250,204,21,0.4)]",
@@ -167,10 +236,11 @@ export const AccessoryItem = ({
         return colors[grade] || "text-zinc-600";
     };
 
+    // 상태 업데이트 및 전송
     const updateState = (newData: any) => {
         const updated = { ...localState, ...newData };
         setLocalState(updated);
-        onAccessoryUpdate(itemName, updated);
+        onAccessoryUpdate(itemName, getTransformedData(updated)); // 변환된 데이터 전송
     };
 
     const refreshAccValueDisplay = (thresholdKey: string, selectedGrade: string) => {
@@ -186,7 +256,7 @@ export const AccessoryItem = ({
     };
 
     useEffect(() => {
-        onAccessoryUpdate(itemName, localState);
+        onAccessoryUpdate(itemName, getTransformedData(localState)); // 마운트 시 최초 전송
     }, []);
 
     return (
@@ -210,18 +280,15 @@ export const AccessoryItem = ({
                         <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                             <span className="text-[11px] text-white/70 tracking-tight uppercase">힘민지</span>
                             <div className="flex items-baseline gap-0.5">
-                                {/* [수정] 숫자 입력창: 크기 12px */}
                                 <input
                                     type="text"
                                     className={`${styles.input} w-10 px-1 text-[12px] text-yellow-400 bg-white/15 rounded border-none focus:ring-0 bg-white`}
                                     value={localState.mainStatPct || ""}
                                     onChange={(e) => updateState({ mainStatPct: e.target.value })}
                                 />
-                                {/* [수정] % 기호: 크기 11px, 은은한 노란색/투명도 */}
                                 <span className="text-[11px] text-white/70 "> %</span>
                             </div>
                         </div>
-                        {/* 게이지 바 */}
                         <div className="w-[85px] h-1 bg-white/10 rounded-full overflow-hidden border border-white/5">
                             <div
                                 className="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 transition-all duration-700 shadow-[0_0_8px_rgba(234,179,8,0.4)]"
@@ -233,7 +300,6 @@ export const AccessoryItem = ({
                     <div className="grid grid-cols-2 gap-x-2 gap-y-1" onClick={(e) => e.stopPropagation()}>
                         {[0, 1, 2, 3].map((idx) => (
                             <div key={idx} className="flex items-center group/item h-5">
-                                {/* 1. 스탯 이름 선택: 텍스트만 깔끔하게 노출 */}
                                 <select
                                     className={`${styles.select}`}
                                     value={localState[`baseName_${idx}`] || "선택"}
@@ -243,15 +309,12 @@ export const AccessoryItem = ({
                                         <option key={s} value={s} className="bg-zinc-900 text-white">{s.substring(0, 2)}</option>
                                     ))}
                                 </select>
-
-                                {/* 3. 수치 입력: 하단 라인만 살려 심플하게 유지 */}
                                 <input
                                     type="text"
                                     className="bg-black/40 text-[11px] text-white font-bold w-8 px-1 outline-none rounded border border-transparent focus:border-white/20 focus:bg-black/50 text-right transition-all"
                                     value={localState[`baseValue_${idx}`] || "0"}
                                     onChange={(e) => updateState({ [`baseValue_${idx}`]: e.target.value })}
                                 />
-
                             </div>
                         ))}
                     </div>
