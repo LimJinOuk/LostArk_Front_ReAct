@@ -34,9 +34,10 @@ interface ArkGridProps {
     arkGrid: any;
     setArkGrid: React.Dispatch<React.SetStateAction<any>>;
     characterJob: string;
+    onArkGridUpdate?: (slots: any[]) => void;
 }
 
-const ArkGridItem: React.FC<ArkGridProps> = ({ arkGrid, setArkGrid, characterJob }) => {
+const ArkGridItem: React.FC<ArkGridProps> = ({ arkGrid, setArkGrid, characterJob, onArkGridUpdate}) => {
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
     const [coreOptions, setCoreOptions] = useState<Record<string, any[]>>({});
     const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -83,6 +84,62 @@ const ArkGridItem: React.FC<ArkGridProps> = ({ arkGrid, setArkGrid, characterJob
 
         loadCoreData();
     }, [characterJob]);
+
+    // ArkGridItem.tsx 내부
+
+// ... (기존 useEffect 로드 로직 아래에 추가)
+
+    useEffect(() => {
+        if (Object.keys(coreOptions).length > 0 && arkGrid?.Slots) {
+            let isChanged = false;
+
+            const updatedSlots = arkGrid.Slots.map((slot: any) => {
+                const category = slot.Name.split(":")[0]?.trim();
+                const subName = slot.Name.split(":")[1]?.trim() || "";
+                const options = coreOptions[category] || [];
+
+                const selectedData = options.find(opt => opt.title === subName && opt.grade === slot.Grade)
+                    || options.find(opt => opt.title === subName)
+                    || options[0];
+                if (!selectedData) return slot;
+                // 툴팁의 details를 기반으로 포인트별 효과 추출
+                const currentPoint = slot.Point || 0;
+                const activeEffects = Object.entries(selectedData.details || {})
+                    .filter(([p]) => currentPoint >= Number(p))
+                    .map(([_, desc]) => ({
+                        arkGridEffects: desc as string
+                    }));
+                // 이전 데이터와 비교하여 변경 사항 확인
+                const newTooltip = JSON.stringify(selectedData);
+                const hasEffectChanged = JSON.stringify(slot.arkGridEffect) !== JSON.stringify(activeEffects);
+                const hasTooltipChanged = slot.Tooltip !== newTooltip;
+
+                if (hasEffectChanged || hasTooltipChanged) {
+                    isChanged = true;
+                    return {
+                        ...slot,
+                        Tooltip: newTooltip,
+                        arkGridEffect: activeEffects,
+                        Point: currentPoint
+                    };
+                }
+                return slot;
+            });
+            if (isChanged) {
+                // 부모의 setArkGrid 호출
+                setArkGrid((prev: any) => ({ ...prev, Slots: updatedSlots }));
+                // 시뮬레이터 페이지로 즉시 전송
+                onArkGridUpdate?.(updatedSlots);
+            }
+        }
+    }, [coreOptions, arkGrid?.Slots, onArkGridUpdate]);
+
+    // 데이터가 변경될 때마다 부모에게 알림
+    useEffect(() => {
+        if (arkGrid?.Slots && onArkGridUpdate) {
+            onArkGridUpdate(arkGrid.Slots);
+        }
+    }, [arkGrid?.Slots, onArkGridUpdate]);
 
     const handleMouseEnter = (idx: number) => {
         if (leaveTimer.current) clearTimeout(leaveTimer.current);
@@ -145,7 +202,8 @@ const ArkGridItem: React.FC<ArkGridProps> = ({ arkGrid, setArkGrid, characterJob
                                                         ...updatedSlots[i],
                                                         Name: `${category} : ${selected.title}`,
                                                         Grade: selected.grade,
-                                                        Tooltip: JSON.stringify(selected)
+                                                        Tooltip: JSON.stringify(selected),
+                                                        Point: updatedSlots[i].Point || 0
                                                     };
                                                     setArkGrid({ ...arkGrid, Slots: updatedSlots });
                                                 }

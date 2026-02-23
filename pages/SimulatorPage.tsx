@@ -57,6 +57,8 @@ export const SimulatorPage: React.FC = () => {
     const [equipmentStates, setEquipmentStates] = useState<Record<string, any>>({});
     //악세사리 Post 요청
     const [accessoryStates, setAccessoryStates] = useState<Record<string, any>>({});
+    //아크 그리드 Post 요청
+    const [arkGridState, setArkGridState] = useState<any[]>([]);
 
     // 장비 업데이트 핸들러
     const handleEquipmentUpdate = useCallback((partName: string, data: any) => {
@@ -81,6 +83,11 @@ export const SimulatorPage: React.FC = () => {
                 ...data
             }
         }));
+    }, []);
+
+    // 아크 그리드 업데이트 핸들러
+    const handleArkGridUpdate = useCallback((slots: any[]) => {
+        setArkGridState(slots);
     }, []);
 
 
@@ -161,6 +168,59 @@ export const SimulatorPage: React.FC = () => {
         return { weaponAttack, additionalDamage, baseAttack };
     };
 
+    // SimulatorPage.tsx 내부
+
+    // SimulatorPage.tsx 내부의 mapToArkGridDto
+
+// SimulatorPage.tsx 내부의 mapToArkGridDto
+
+    const mapToArkGridDto = (character: any, arkGridState: any[]) => {
+        if (!character || !arkGridState) return null;
+
+        const ariGridItems = arkGridState.map(slot => {
+            // "질서의 해 코어 : 옵션명" 형태에서 분리
+            const nameParts = slot.Name.split(":");
+            const coreName = nameParts[0]?.trim() || "";
+            const gridName = nameParts[1]?.trim() || "";
+
+            let activeEffects: { arkGridEffects: string }[] = [];
+
+            // 1. 슬롯의 Tooltip JSON 파싱
+            if (slot.Tooltip) {
+                try {
+                    const fullData = typeof slot.Tooltip === 'string'
+                        ? JSON.parse(slot.Tooltip)
+                        : slot.Tooltip;
+
+                    const details = fullData.details || {};
+                    const currentPoint = Number(slot.Point) || 0;
+
+                    // 2. 현재 포인트보다 작거나 같은 단계의 효과들만 추출
+                    activeEffects = Object.entries(details)
+                        .filter(([pointKey]) => currentPoint >= Number(pointKey))
+                        .map(([_, description]) => ({
+                            arkGridEffects: description as string
+                        }));
+                } catch (e) {
+                    console.error("DTO 매핑 중 효과 파싱 에러:", e);
+                }
+            }
+
+            return {
+                arkGridCoreName: coreName,
+                arkGridName: gridName,
+                grade: slot.Grade,
+                arkGridPoint: Number(slot.Point) || 0,
+                //arkGridEffect: activeEffects // 추출된 효과 배열 주입
+            };
+        });
+
+        return {
+            className: character.CharacterClassName,
+            ariGridItems: ariGridItems
+        };
+    };
+
     const handleRunSimulation = async () => {
         setTab("result");
         if (!nameParam) return;
@@ -168,7 +228,7 @@ export const SimulatorPage: React.FC = () => {
         simRef.current?.runSimulation();
 
         const weaponInfo = getCalculatedWeaponInfo(equipmentStates);
-
+        const arkGridData = mapToArkGridDto(character, arkGridState);
         // 콘솔에서 수정된 값이 반영되었는지 확인해보세요
         console.log("전송될 무기 정보:", weaponInfo);
         try {
@@ -183,8 +243,17 @@ export const SimulatorPage: React.FC = () => {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(accessoryStates),
+                }),
+                fetch(`${BACKEND_API_URL}/simulatorArkGrid`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        characterName: nameParam,
+                        ...arkGridData
+                    }),
                 })
             ]);
+            console.log("아크 그리드 최적화 데이터 전송 완료:", arkGridData);
             console.log("시뮬레이션 요청 완료");
             console.log(accessoryStates);
             console.log(weaponInfo);
@@ -304,6 +373,7 @@ export const SimulatorPage: React.FC = () => {
                         onEquipmentUpdate={handleEquipmentUpdate}
                         onAccessoryUpdate={handleAccessoryUpdate} // ✅ 핸들러 전달 확인
                         accessoryStates={accessoryStates}         // ✅ 현재 상태 전달 확인
+                        onArkGridUpdate={handleArkGridUpdate} //
                     />
                 </div>
             </main>
