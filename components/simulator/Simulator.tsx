@@ -232,39 +232,52 @@ type ArkPassiveLevelsPayload = {
     points?: any; // 필요하면 같이 전송(선택)
 };
 
-const ARK_TABS: ArkTab[] = ["진화", "깨달음", "도약"];
-
 function parseArkTabFromEffect(effect: any): ArkTab | null {
-    const s = `${effect?.Name ?? ""} ${effect?.Description ?? ""}`;
+    const s = stripHtml(`${effect?.Name ?? ""} ${effect?.Description ?? ""}`);
     if (s.includes("진화")) return "진화";
     if (s.includes("깨달음")) return "깨달음";
     if (s.includes("도약")) return "도약";
     return null;
 }
 
+function stripHtml(s: any): string {
+    return String(s ?? "")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<[^>]*>/g, "")          // 모든 태그 제거 (FONT 포함)
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
 function parseLvFromDesc(desc: string): number {
-    const n = Number(String(desc ?? "").match(/Lv\.(\d+)/)?.[1] ?? 0);
+    const clean = stripHtml(desc);
+    const n = Number(clean.match(/Lv\.(\d+)/)?.[1] ?? 0);
     return Number.isFinite(n) ? n : 0;
 }
 
 function parseNodeNameFromDesc(desc: string, tab: ArkTab): string {
-    // 예: "깨달음 어떤노드 Lv.3" / "도약 XXX Lv.5"
-    let s = String(desc ?? "");
+    let s = stripHtml(desc);
 
     // Lv 제거
     s = s.replace(/Lv\.\d+/g, "").trim();
 
-    // 탭 이름 제거
+    // 탭 제거
     s = s.replace(tab, "").trim();
 
-    // 중복 공백 정리
+    // ✅ "n티어" 제거 (예: "1티어 버스트 강화" -> "버스트 강화")
+    s = s.replace(/^\s*\d+\s*티어\s*/g, "").trim();
+
+    // 공백 정리
     s = s.replace(/\s+/g, " ").trim();
 
     return s;
 }
 
-function buildArkPassivePayload(characterName: string, arkData: any): ArkPassiveLevelsPayload {
-    const nodes: ArkPassiveLevelsPayload["nodes"] = {
+function buildArkPassivePayload(characterName: string, arkData: any) {
+    const nodes: Record<ArkTab, Record<string, number>> = {
         진화: {},
         깨달음: {},
         도약: {},
@@ -276,20 +289,18 @@ function buildArkPassivePayload(characterName: string, arkData: any): ArkPassive
         if (!tab) continue;
 
         const lv = parseLvFromDesc(String(eff?.Description ?? ""));
-        const nodeName = parseNodeNameFromDesc(String(eff?.Description ?? eff?.Name ?? ""), tab);
-
-        if (!nodeName) continue;
-        // 레벨 0은 보통 effects에서 제거되어 있을 텐데, 혹시 남아있어도 제외
         if (lv <= 0) continue;
+
+        const nodeName = parseNodeNameFromDesc(
+            String(eff?.Description ?? eff?.Name ?? ""),
+            tab
+        );
+        if (!nodeName) continue;
 
         nodes[tab][nodeName] = lv;
     }
 
-    return {
-        characterName,
-        nodes,
-        points: arkData?.Points, // 필요없으면 제거해도 됨
-    };
+    return { characterName, nodes, points: arkData?.Points };
 }
 
 function inferGemKindFromEquippedGem(gem: any): GemKind | null {
