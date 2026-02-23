@@ -24,6 +24,10 @@ interface SimulatorProps {
     onAccessoryUpdate: (partName: string, data: any) => void; // ✅ 추가
     accessoryStates: Record<string, any>; // ✅ 추가
     onArkGridUpdate: (slots: any[]) => void;
+    onJewelsUpdate: (data: {
+        totalGemAtkBonus: number;
+        gemSkillDamageMap: Record<string, number>; // 이 줄을 추가
+    }) => void;
 }
 
 interface EquipmentItemProps {
@@ -223,6 +227,17 @@ const T4_ATK_BONUS_BY_LEVEL: Record<number, number> = {
     8: 0.8,
     9: 1.0,
     10: 1.2,
+};
+
+// 보석 종류 및 레벨별 스킬 데미지 증가 수치 (표준 데이터)
+const GEM_DAMAGE_TABLE: Record<string, Record<number, number>> = {
+    //스킬 데미지 증가 %
+    "멸화": { 1: 3, 2: 6, 3: 9, 4: 12, 5: 15, 6: 18, 7: 21, 8: 24, 9: 30, 10: 40 },
+    "겁화": { 1: 8, 2: 12, 3: 16, 4: 20, 5: 24, 6: 28, 7: 32, 8: 36, 9: 40, 10: 44 },
+    "광휘": { 1: 8, 2: 12, 3: 16, 4: 20, 5: 24, 6: 28, 7: 32, 8: 36, 9: 40, 10: 44 }, // 초기값 대응용
+    //스킬 쿨타임 감소 %
+    "홍염": { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10, 6: 12, 7: 14, 8: 16, 9: 18, 10: 20 },
+    "작열": { 1: 6, 2: 8, 3: 10, 4: 12, 5: 14, 6: 16, 7: 18, 8: 20, 9: 22, 10: 24 }
 };
 
 // ===== ArkPassive 전송용 유틸 =====
@@ -593,7 +608,7 @@ export type SimulatorHandle = {
 
 /* ---------------------- 메인 컴포넌트 ---------------------- */
 export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
-    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate}, ref) => {
+    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate, onJewelsUpdate}, ref) => {
     const location = useLocation();
 
     /** ✅ 우선순위: props > location.state.character > null */
@@ -655,6 +670,33 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
     const [engrHoverName, setEngrHoverName] = useState<string | null>(null);
     const [engrHoverDesc, setEngrHoverDesc] = useState<string>("");
 
+    const extractGemEffect = (tooltipStr: string) => {
+        try {
+            const tooltipData = JSON.parse(tooltipStr);
+            const elements = Object.values(tooltipData) as any[];
+            const effectSection = elements.find(el =>
+                el?.type === "ItemPartBox" &&
+                (el?.value?.Element_000?.includes("효과") || el?.value?.Element_000?.includes("보석 효과"))
+            );
+
+            if (!effectSection) return { name: "", type: "" };
+
+            const rawEffect = effectSection?.value?.Element_001 || "";
+            const cleanText = rawEffect.replace(/<[^>]*>?/gm, '').replace(/<BR>/gi, ' ').trim();
+
+            // 스킬명 추출
+            const skillMatch = cleanText.match(/\]\s*(.*?)\s*(피해|재사용)/);
+            const name = skillMatch ? skillMatch[1].trim() : "";
+
+            // 효과 타입 추출 (피해 증가면 'damage', 재사용 감소면 'cdr')
+            const type = cleanText.includes("피해") ? "damage" : "cdr";
+
+            return { name, type };
+        } catch (e) {
+            return { name: "", type: "" };
+        }
+    };
+
     // ✅ 보석 선택 상태 (슬롯 0~10, 총 11개)
     const [gemPicks, setGemPicks] = useState<Record<number, GemPick | null>>(
         () => {
@@ -667,39 +709,62 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
     const setPickAt = (i: number, p: GemPick | null) =>
         setGemPicks((prev) => ({ ...prev, [i]: p }));
 
-// ✅ 총 공격력% 합산 (pick 우선, 없으면 초기 장착 보석에서도 계산)
-// - 대상: 겁화 / 작열 / 광휘
-    const totalGemAtkBonus = useMemo(() => {
+    // ✅ 총 공격력% 합산 (pick 우선, 없으면 초기 장착 보석에서도 계산)
+    // - 대상: 겁화 / 작열 / 광휘
+    const { totalGemAtkBonus, gemSkillDamageMap } = useMemo(() => {
         let sum = 0;
+        const skillMap: Record<string, number> = {};
 
         for (let idx = 0; idx <= 10; idx++) {
             const pick = gemPicks[idx];
+            const equipped = gems?.Gems?.[idx];
 
-            // 1) 사용자가 드롭다운으로 선택한 경우 → 그걸 우선
-            if (pick) {
-                if (pick.kind === "겁화" || pick.kind === "작열" || pick.kind === "광휘") {
-                    sum += T4_ATK_BONUS_BY_LEVEL[pick.level] ?? 0;
-                }
+            // 1. 툴팁 추출 데이터 로그
+            const { name: skillName, type: effectType } = extractGemEffect(equipped?.Tooltip || "");
+
+            // 2. 종류 및 레벨 결정 로그
+            const currentKind = pick ? pick.kind : (equipped ? inferGemKindFromEquippedGem(equipped) : null);
+            const currentLevel = pick ? pick.level : (equipped ? Number(equipped.Level) : 0);
+
+            if (!currentKind || !currentLevel) {
+                console.log(`슬롯 ${idx}: 데이터 없음 (Pass)`);
                 continue;
             }
 
-            // 2) pick이 없으면 → 현재 장착된 보석(gems?.Gems[idx])에서 추론해서 계산
-            const equipped = gems?.Gems?.[idx];
-            if (!equipped) continue;
+            // [기본공 보너스 합산 로그]
+            let addedAtk = 0;
+            if (currentKind === "겁화" || currentKind === "작열" || currentKind === "광휘") {
+                addedAtk = T4_ATK_BONUS_BY_LEVEL[currentLevel] ?? 0;
+                sum += addedAtk;
+            }
 
-            const kind = inferGemKindFromEquippedGem(equipped);
-            const level = Number(equipped?.Level);
+            // [스킬 데미지 증가 맵 추가 판별]
+            const isDamageGem =
+                currentKind === "멸화" ||
+                currentKind === "겁화" ||
+                (currentKind === "광휘" && effectType === "damage");
 
-            if (!Number.isFinite(level) || level <= 0) continue;
-
-            if (kind === "겁화" || kind === "작열" || kind === "광휘") {
-                sum += T4_ATK_BONUS_BY_LEVEL[level] ?? 0;
+            let dmgValue = 0;
+            if (skillName && isDamageGem) {
+                const group = (currentKind === "멸화") ? "멸화" : "겁화";
+                dmgValue = GEM_DAMAGE_TABLE[group]?.[currentLevel] || 0;
+                skillMap[skillName] = Math.max(skillMap[skillName] || 0, dmgValue);
             }
         }
 
-        return sum;
+        return {
+            totalGemAtkBonus: sum,
+            gemSkillDamageMap: skillMap
+        };
     }, [gemPicks, gems]);
 
+    useEffect(() => {
+        // 이제 부모에게 공증 합계와 스킬 데미지 맵을 모두 전달합니다.
+        onJewelsUpdate({
+            totalGemAtkBonus,
+            gemSkillDamageMap
+        });
+    }, [totalGemAtkBonus, gemSkillDamageMap, onJewelsUpdate]);
 
     const formatPct = (n: number) => `${n.toFixed(2)}%`;
 
@@ -1028,7 +1093,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                             arkGrid={arkGrid}
                                             setArkGrid={setArkGrid}
                                             characterJob={propCharacter.CharacterClassName}
-                                            onArkGridUpdate={onArkGridUpdate}
                                         />
                                     </div>
                                 </section>
@@ -1415,6 +1479,9 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                 if (!simArkPassive) return;
                 sendArkPassiveToBackend(simArkPassive);
             },
+            getJewelData: () => ({
+                totalGemAtkBonus
+            })
         }));
 
     if (loading)

@@ -60,6 +60,8 @@ export const SimulatorPage: React.FC = () => {
     //아크 그리드 Post 요청
     const [arkGridState, setArkGridState] = useState<any[]>([]);
 
+    const [jewelsStates, setJewelsStates] = useState({ totalGemAtkBonus: 0, gemSkillDamageMap: {} as Record<string, number> });
+
     // 장비 업데이트 핸들러
     const handleEquipmentUpdate = useCallback((partName: string, data: any) => {
         setEquipmentStates(prev => {
@@ -90,6 +92,19 @@ export const SimulatorPage: React.FC = () => {
         setArkGridState(slots);
     }, []);
 
+    // 2. 보석 업데이트 핸들러 (장비 방식과 동일하게 표준화)
+    const handleJewelsUpdate = useCallback((data: { totalGemAtkBonus: number; gemSkillDamageMap: Record<string, number> }) => {
+        setJewelsStates(prev => {
+            // 값 비교 로직 (최적화)
+            const isSameBonus = prev.totalGemAtkBonus === data.totalGemAtkBonus;
+            const isSameMap = JSON.stringify(prev.gemSkillDamageMap) === JSON.stringify(data.gemSkillDamageMap);
+
+            if (isSameBonus && isSameMap) {
+                return prev;
+            }
+            return data;
+        });
+    }, []);
 
     // ✅ [추가] 백엔드 콘솔 확인용 Bulk 요청 로직
     const sendBulkRequest = useCallback(async () => {
@@ -251,7 +266,12 @@ export const SimulatorPage: React.FC = () => {
                         characterName: nameParam,
                         ...arkGridData
                     }),
-                })
+                }),
+                fetch(`${BACKEND_API_URL}/simulatorJewels`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(jewelsStates),
+                }),
             ]);
             console.log("아크 그리드 최적화 데이터 전송 완료:", arkGridData);
             console.log("시뮬레이션 요청 완료");
@@ -372,6 +392,7 @@ export const SimulatorPage: React.FC = () => {
                         activeTab={tab}
                         onEquipmentUpdate={handleEquipmentUpdate}
                         onAccessoryUpdate={handleAccessoryUpdate} // ✅ 핸들러 전달 확인
+                        onJewelsUpdate={handleJewelsUpdate}
                         accessoryStates={accessoryStates}         // ✅ 현재 상태 전달 확인
                         onArkGridUpdate={handleArkGridUpdate} //
                     />
