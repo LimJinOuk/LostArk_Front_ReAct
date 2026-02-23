@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState , forwardRef, useImperativeHandle} from "react";
 import { useLocation } from "react-router-dom";
 import { Loader2, Search, ShieldAlert, Diamond } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -228,8 +228,9 @@ const T4_ATK_BONUS_BY_LEVEL: Record<number, number> = {
 type ArkTab = "진화" | "깨달음" | "도약";
 type ArkPassiveLevelsPayload = {
     characterName: string;
-    nodes: Record<ArkTab, Record<string, number>>; // 탭별 (노드명 -> 레벨)
-    points?: any; // 필요하면 같이 전송(선택)
+    title?: string; // ✅ 추가
+    nodes: Record<ArkTab, Record<string, number>>;
+    points?: any;
 };
 
 function parseArkTabFromEffect(effect: any): ArkTab | null {
@@ -276,7 +277,7 @@ function parseNodeNameFromDesc(desc: string, tab: ArkTab): string {
     return s;
 }
 
-function buildArkPassivePayload(characterName: string, arkData: any) {
+function buildArkPassivePayload(characterName: string, arkData: any): ArkPassiveLevelsPayload {
     const nodes: Record<ArkTab, Record<string, number>> = {
         진화: {},
         깨달음: {},
@@ -300,7 +301,15 @@ function buildArkPassivePayload(characterName: string, arkData: any) {
         nodes[tab][nodeName] = lv;
     }
 
-    return { characterName, nodes, points: arkData?.Points };
+    // ✅ Title 추출 (없으면 undefined)
+    const title = typeof arkData?.Title === "string" ? arkData.Title : undefined;
+
+    return {
+        characterName,
+        title,                 // ✅ 여기 추가
+        nodes,
+        points: arkData?.Points,
+    };
 }
 
 function inferGemKindFromEquippedGem(gem: any): GemKind | null {
@@ -577,11 +586,13 @@ const NoCharacterView = ({
     );
 };
 
+export type SimulatorHandle = {
+    runSimulation: () => void;
+};
+
 /* ---------------------- 메인 컴포넌트 ---------------------- */
-export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, activeTab, onEquipmentUpdate,
-    onAccessoryUpdate, // 👈 여기서 꺼내줘야 내부에서 쓸 수 있습니다.
-    accessoryStates    // 👈 여기서 꺼내줘야 내부에서 쓸 수 있습니다.
-    }) => {
+export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
+    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates }, ref) => {
     const location = useLocation();
 
     /** ✅ 우선순위: props > location.state.character > null */
@@ -1373,49 +1384,36 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
         }
     };
 
-    // ===== ArkPassive 전송(디바운스) =====
-    const arkSendTimerRef = useRef<number | null>(null);
-    const arkSendAbortRef = useRef<AbortController | null>(null);
+        // ✅ 버튼 눌렀을 때만 전송
+        const arkSendAbortRef = useRef<AbortController | null>(null);
 
-    const sendArkPassiveToBackend = (nextArk: any) => {
-        if (!characterName) return;
+        const sendArkPassiveToBackend = (nextArk: any) => {
+            if (!characterName) return;
 
-        const payload = buildArkPassivePayload(characterName, nextArk);
+            const payload = buildArkPassivePayload(characterName, nextArk);
 
-        // (원하면) 디버그
-        // console.log("ARK PASSIVE PAYLOAD", payload);
+            // 이전 요청 취소
+            if (arkSendAbortRef.current) arkSendAbortRef.current.abort();
+            const ac = new AbortController();
+            arkSendAbortRef.current = ac;
 
-        // 이전 요청 취소
-        if (arkSendAbortRef.current) arkSendAbortRef.current.abort();
-        const ac = new AbortController();
-        arkSendAbortRef.current = ac;
-
-        fetch("/arkpassive/sim", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-            signal: ac.signal,
-        }).catch((err) => {
-            // Abort는 정상 플로우라 로그 안 찍어도 됨
-            if (err?.name !== "AbortError") console.error("arkpassive 전송 실패:", err);
-        });
-    };
-
-// simArkPassive가 변할 때마다 디바운스해서 전송
-    useEffect(() => {
-        if (!simArkPassive) return;
-
-        if (arkSendTimerRef.current) window.clearTimeout(arkSendTimerRef.current);
-
-        arkSendTimerRef.current = window.setTimeout(() => {
-            sendArkPassiveToBackend(simArkPassive);
-        }, 300); // 300ms 디바운스 (원하면 500/800 등으로)
-
-        return () => {
-            if (arkSendTimerRef.current) window.clearTimeout(arkSendTimerRef.current);
+            fetch("/arkpassive/sim", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+                signal: ac.signal,
+            }).catch((err) => {
+                if (err?.name !== "AbortError") console.error("arkpassive 전송 실패:", err);
+            });
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [simArkPassive, characterName]);
+
+// ✅ 외부(SimulatorNav 버튼)에서 호출 가능하게 노출
+        useImperativeHandle(ref, () => ({
+            runSimulation: () => {
+                if (!simArkPassive) return;
+                sendArkPassiveToBackend(simArkPassive);
+            },
+        }));
 
     if (loading)
         return (
@@ -1440,4 +1438,4 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
             </AnimatePresence>
         </div>
     );
-};
+})

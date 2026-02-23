@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { Simulator, SimulatorHandle } from "@/components/simulator/Simulator";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Loader2, Search } from "lucide-react";
-
-import { Simulator } from "@/components/simulator/Simulator";
 import { SimulatorCharacterHeader } from "@/components/simulator/SimulatorCharacterHeader";
 import { SimulatorNav, SimTab } from "@/components/simulator/SimulatorNav";
 
@@ -43,6 +42,7 @@ const getAdditionalDamage = (quality: number): number => {
 
 
 export const SimulatorPage: React.FC = () => {
+    const simRef = useRef<SimulatorHandle | null>(null);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -164,6 +164,8 @@ export const SimulatorPage: React.FC = () => {
     const handleRunSimulation = async () => {
         setTab("result");
         if (!nameParam) return;
+
+        simRef.current?.runSimulation();
 
         const weaponInfo = getCalculatedWeaponInfo(equipmentStates);
 
@@ -296,6 +298,7 @@ export const SimulatorPage: React.FC = () => {
             <main className="flex-1 min-w-0">
                 <div className="bg-zinc-900/40 rounded-[2.5rem] border border-zinc-800/30 p-1 min-h-[600px]">
                     <Simulator
+                        ref={simRef}
                         character={character}
                         activeTab={tab}
                         onEquipmentUpdate={handleEquipmentUpdate}
