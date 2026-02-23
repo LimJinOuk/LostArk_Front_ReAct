@@ -224,6 +224,74 @@ const T4_ATK_BONUS_BY_LEVEL: Record<number, number> = {
     10: 1.2,
 };
 
+// ===== ArkPassive 전송용 유틸 =====
+type ArkTab = "진화" | "깨달음" | "도약";
+type ArkPassiveLevelsPayload = {
+    characterName: string;
+    nodes: Record<ArkTab, Record<string, number>>; // 탭별 (노드명 -> 레벨)
+    points?: any; // 필요하면 같이 전송(선택)
+};
+
+const ARK_TABS: ArkTab[] = ["진화", "깨달음", "도약"];
+
+function parseArkTabFromEffect(effect: any): ArkTab | null {
+    const s = `${effect?.Name ?? ""} ${effect?.Description ?? ""}`;
+    if (s.includes("진화")) return "진화";
+    if (s.includes("깨달음")) return "깨달음";
+    if (s.includes("도약")) return "도약";
+    return null;
+}
+
+function parseLvFromDesc(desc: string): number {
+    const n = Number(String(desc ?? "").match(/Lv\.(\d+)/)?.[1] ?? 0);
+    return Number.isFinite(n) ? n : 0;
+}
+
+function parseNodeNameFromDesc(desc: string, tab: ArkTab): string {
+    // 예: "깨달음 어떤노드 Lv.3" / "도약 XXX Lv.5"
+    let s = String(desc ?? "");
+
+    // Lv 제거
+    s = s.replace(/Lv\.\d+/g, "").trim();
+
+    // 탭 이름 제거
+    s = s.replace(tab, "").trim();
+
+    // 중복 공백 정리
+    s = s.replace(/\s+/g, " ").trim();
+
+    return s;
+}
+
+function buildArkPassivePayload(characterName: string, arkData: any): ArkPassiveLevelsPayload {
+    const nodes: ArkPassiveLevelsPayload["nodes"] = {
+        진화: {},
+        깨달음: {},
+        도약: {},
+    };
+
+    const effects = Array.isArray(arkData?.Effects) ? arkData.Effects : [];
+    for (const eff of effects) {
+        const tab = parseArkTabFromEffect(eff);
+        if (!tab) continue;
+
+        const lv = parseLvFromDesc(String(eff?.Description ?? ""));
+        const nodeName = parseNodeNameFromDesc(String(eff?.Description ?? eff?.Name ?? ""), tab);
+
+        if (!nodeName) continue;
+        // 레벨 0은 보통 effects에서 제거되어 있을 텐데, 혹시 남아있어도 제외
+        if (lv <= 0) continue;
+
+        nodes[tab][nodeName] = lv;
+    }
+
+    return {
+        characterName,
+        nodes,
+        points: arkData?.Points, // 필요없으면 제거해도 됨
+    };
+}
+
 function inferGemKindFromEquippedGem(gem: any): GemKind | null {
     if (!gem) return null;
 
@@ -1293,6 +1361,50 @@ export const Simulator: React.FC<SimulatorProps> = ({character: propCharacter, a
                 return null;
         }
     };
+
+    // ===== ArkPassive 전송(디바운스) =====
+    const arkSendTimerRef = useRef<number | null>(null);
+    const arkSendAbortRef = useRef<AbortController | null>(null);
+
+    const sendArkPassiveToBackend = (nextArk: any) => {
+        if (!characterName) return;
+
+        const payload = buildArkPassivePayload(characterName, nextArk);
+
+        // (원하면) 디버그
+        // console.log("ARK PASSIVE PAYLOAD", payload);
+
+        // 이전 요청 취소
+        if (arkSendAbortRef.current) arkSendAbortRef.current.abort();
+        const ac = new AbortController();
+        arkSendAbortRef.current = ac;
+
+        fetch("/arkpassive/sim", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: ac.signal,
+        }).catch((err) => {
+            // Abort는 정상 플로우라 로그 안 찍어도 됨
+            if (err?.name !== "AbortError") console.error("arkpassive 전송 실패:", err);
+        });
+    };
+
+// simArkPassive가 변할 때마다 디바운스해서 전송
+    useEffect(() => {
+        if (!simArkPassive) return;
+
+        if (arkSendTimerRef.current) window.clearTimeout(arkSendTimerRef.current);
+
+        arkSendTimerRef.current = window.setTimeout(() => {
+            sendArkPassiveToBackend(simArkPassive);
+        }, 300); // 300ms 디바운스 (원하면 500/800 등으로)
+
+        return () => {
+            if (arkSendTimerRef.current) window.clearTimeout(arkSendTimerRef.current);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [simArkPassive, characterName]);
 
     if (loading)
         return (
