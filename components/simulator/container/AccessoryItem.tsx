@@ -198,7 +198,7 @@ export const AccessoryItem = ({
             {/* 아이콘 영역 */}
             <div className="relative shrink-0">
                 <div className={`p-0.5 rounded-lg border shadow-2xl bg-gradient-to-br ${theme.bg} ${theme.border}`}>
-                    <img src={item.Icon} className="w-11 h-11 rounded-md object-cover bg-black/40" alt="" />
+                    <img src={item.Icon} className="w-11 h-11 rounded-md object-cover" alt="" />
                 </div>
             </div>
 
