@@ -22,6 +22,8 @@ interface TooltipProps {
 const ArkGridItemTooltip: React.FC<TooltipProps> = ({ data, icon, point, theme, onMouseEnter, onMouseLeave }) => {
     if (!data) return null;
 
+    console.log(data);
+
     const detailEntries = Object.entries(data.details || {})
         .map(([p, desc]) => ({ p: parseInt(p), desc: desc as string }))
         .sort((a, b) => a.p - b.p);
