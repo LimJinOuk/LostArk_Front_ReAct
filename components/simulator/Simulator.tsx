@@ -23,6 +23,7 @@ interface SimulatorProps {
     onEquipmentUpdate: (partName: string, data: any) => void;
     onAccessoryUpdate: (partName: string, data: any) => void; // ✅ 추가
     accessoryStates: Record<string, any>; // ✅ 추가
+    onArkGridUpdate: (slots: any[]) => void;
 }
 
 interface EquipmentItemProps {
@@ -592,7 +593,7 @@ export type SimulatorHandle = {
 
 /* ---------------------- 메인 컴포넌트 ---------------------- */
 export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
-    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates }, ref) => {
+    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate}, ref) => {
     const location = useLocation();
 
     /** ✅ 우선순위: props > location.state.character > null */
@@ -1027,6 +1028,7 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                             arkGrid={arkGrid}
                                             setArkGrid={setArkGrid}
                                             characterJob={propCharacter.CharacterClassName}
+                                            onArkGridUpdate={onArkGridUpdate}
                                         />
                                     </div>
                                 </section>
