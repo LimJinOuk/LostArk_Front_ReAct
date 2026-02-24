@@ -220,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({ setIsMenuOpen, isExploding, setIsExplod
                                     ${isExpanded ? 'text-3xl' : 'text-2xl'} 
                                     ${isExploding ? 'text-[#FFC0CB]' : 'text-white'}`}
                                 >
-                                    {isExploding ? '로앙' : 'LOAPANG'}
+                                    {isExploding ? '로콩' : 'LOAKONG'}
                                 </h1>
                                 {isExploding && (
                                     <motion.div initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }}>
