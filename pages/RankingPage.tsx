@@ -4,7 +4,7 @@ import RankingSidebar from '@/components/rank/rankingSidebar';
 import RankingList from '@/components/rank/rankingList';
 
 const CLASS_LIST = [
-    "전체", "워로드", "버서커", "디스트로이어", "홀리나이트", "슬레이어", "배틀마스터", "인파이터", "기공사", "창술사",
+    "전체", "워로드", "버서커", "디스트로이어", "홀리나이트", "발키리", "슬레이어", "배틀마스터", "인파이터", "기공사", "창술사",
     "스트라이커", "브레이커", "데빌헌터", "블래스터", "호크아이", "스카우터", "건슬링어", "바드", "서머너", "아르카나",
     "소서리스", "블레이드", "데모닉", "리퍼", "소울이터", "도화가", "기상술사", "환수사", "가디언나이트"
 ];
@@ -14,6 +14,7 @@ const ARKPASSIVE_BY_CLASS: Record<string, string[]> = {
     "버서커": ["광기", "광전사의 비기"],
     "디스트로이어": ["분노의 망치", "중력 수련"],
     "홀리나이트": ["축복의 오라", "심판자"],
+    "발키리":["빛의 기사","해방자"],
     "슬레이어": ["포식자", "처단자"],
     "배틀마스터": ["초심", "오의 강화"],
     "인파이터": ["극의: 체술", "충격 단련"],
@@ -111,7 +112,7 @@ const RankingPage: React.FC = () => {
     return (
         <div className="w-full min-h-screen bg-[#0a0a0b] text-zinc-300 font-sans tracking-tight">
             {/* 컨테이너 구조 수정 */}
-            <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-6 lg:gap-10 px-4 lg:px-10 py-6 lg:py-10">
+            <div className="max-w-[1120px] mx-auto flex flex-col lg:flex-row gap-6 lg:gap-10 py-6 lg:py-10">
 
                 {/* 사이드바 영역: lg 이상에서 sticky 고정 */}
                 <div className="w-full lg:w-72 shrink-0 lg:sticky lg:top-24 h-fit z-30">
