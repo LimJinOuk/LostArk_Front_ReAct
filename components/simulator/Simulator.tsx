@@ -9,7 +9,6 @@ import engravingIconMap from "@/components/profile/tabs/engravingsIdTable.json";
 import JewelryTooltip from "@/components/profile/Tooltip/JewelryTooltip.tsx";
 import { CharacterInfo } from "@/types.ts";
 import { SimTab } from "./SimulatorNav";
-import ArkCoreTooltip from "@/components/profile/Tooltip/ArkCoreTooltip.tsx";
 import {AccessoryItem} from "@/components/simulator/container/accessory/AccessoryItem.tsx";
 import {EquipmentItem} from "@/components/simulator/container/equipment/EquipmentItem.tsx";
 import ArkGridItem from "@/components/simulator/container/arkGrid/ArkGridItem.tsx";
@@ -28,6 +27,7 @@ interface SimulatorProps {
         totalGemAtkBonus: number;
         gemSkillDamageMap: Record<string, number>; // 이 줄을 추가
     }) => void;
+    onGemEffectUpdate: (data: any) => void;
 }
 
 interface EquipmentItemProps {
@@ -608,7 +608,7 @@ export type SimulatorHandle = {
 
 /* ---------------------- 메인 컴포넌트 ---------------------- */
 export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
-    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate, onJewelsUpdate}, ref) => {
+    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate, onJewelsUpdate, onGemEffectUpdate}, ref) => {
     const location = useLocation();
 
     /** ✅ 우선순위: props > location.state.character > null */
@@ -870,6 +870,17 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
         add: 0,
         boss: 0,
     });
+
+    useEffect(() => {
+        if (onGemEffectUpdate) {
+            // 찾으신 계산 로직을 그대로 적용해서 '수치'로 전달
+            onGemEffectUpdate({
+                atk_pct: gemEffectLv.atk * (GEM_EFFECT_RATE['atk'] ?? 0.04),
+                add_pct: gemEffectLv.add * (GEM_EFFECT_RATE['add'] ?? 0.08),
+                boss_pct: gemEffectLv.boss * (GEM_EFFECT_RATE['boss'] ?? 0.08),
+            });
+        }
+    }, [gemEffectLv, onGemEffectUpdate]);
 
     // ✅ arkGrid 로딩/변경 시: 서버에서 내려오는 레벨을 초기값으로 세팅(있으면)
     useEffect(() => {
@@ -1479,9 +1490,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                 if (!simArkPassive) return;
                 sendArkPassiveToBackend(simArkPassive);
             },
-            getJewelData: () => ({
-                totalGemAtkBonus
-            })
         }));
 
     if (loading)
