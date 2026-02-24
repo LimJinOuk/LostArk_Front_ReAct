@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ArkGridItemTooltip from "@/components/simulator/container/ArkGrid/ArkGridItemTooltip.tsx";
+import ArkGridItemTooltip from "@/components/simulator/container/arkGrid/ArkGridItemTooltip.tsx";
 
 // 직업별 폴더 매핑
 export const JOB_FOLDER_MAP: Record<string, string> = {
