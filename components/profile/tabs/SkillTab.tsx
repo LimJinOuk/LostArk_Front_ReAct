@@ -20,7 +20,13 @@ const TRANSFORMATION_KEYWORDS: Record<string, string> = {
     '블래스터': '[포격 모드]', '데모닉': '[악마 스킬]', '스카우터': '[싱크 스킬]', '환수사': '[둔갑 스킬]', '가디언나이트': '[화신 스킬]'
 };
 
-const SKILL_GRID = "grid-cols-[1.2fr_80px_45px_0.8fr] sm:grid-cols-[1.5fr_50px_130px_50px_120px] lg:grid-cols-[1fr_80px_180px_80px_180px]";
+/* ================= 그리드 레이아웃 최적화 ================= */
+// 1. Mobile: 스킬명과 젬 위주로 배치 (간결하게)
+// 2. SM/MD: 트라이포드와 룬 영역 확장
+// 3. LG (PC): 각 요소의 폭을 고정값(px)과 비율(fr)로 적절히 혼합하여 가독성 극대화
+const SKILL_GRID = "grid-cols-[1.5fr_100px_40px_1fr] " +               // Mobile
+    "sm:grid-cols-[2fr_120px_100px_120px] " +         // Tablet
+    "lg:grid-cols-[minmax(200px,1.5fr)_240px_100px_minmax(120px,1fr)]"; // PC
 
 const getModalPosition = (anchorRect: DOMRect) => {
     const top = anchorRect.top + anchorRect.height + window.scrollY;
@@ -149,17 +155,13 @@ const IconWithModal = ({ children, modalData, active, onToggle, isTripodOrRune =
         </div>
     );
 };
-
-/* ================= 젬 아이템 컴포넌트 (Portal 적용) ================= */
+/* ================= 젬 아이템 컴포넌트 (스크롤 추적 방지) ================= */
 const GemItem = ({ gem }: { gem: any }) => {
     const [isHover, setIsHover] = useState(false);
     const [rect, setRect] = useState<DOMRect | null>(null);
 
-    // 클릭(터치) 시 툴팁 토글 및 위치 계산
     const handleInteraction = (e: React.MouseEvent | React.TouchEvent) => {
-        // 모바일 터치 시 hover 효과와 충돌 방지
-        const currentRect = e.currentTarget.getBoundingClientRect();
-        setRect(currentRect);
+        setRect(e.currentTarget.getBoundingClientRect());
         setIsHover(!isHover);
     };
 
@@ -180,21 +182,20 @@ const GemItem = ({ gem }: { gem: any }) => {
                 </div>
             </div>
 
-            {/* [수정] 부모의 overflow-hidden을 무시하도록 Portal로 렌더링 */}
             {isHover && gem.originalData && rect && createPortal(
                 <div
                     style={{
-                        position: 'fixed',
-                        top: rect.top + window.scrollY + rect.height + 8,
-                        // [수정] 아이콘의 오른쪽 끝(rect.right)을 기준으로 왼쪽으로 펼쳐지게 계산
-                        // 화면 왼쪽 끝을 벗어나지 않도록 Math.max로 안전장치 추가
-                        left: Math.max(16, rect.right + window.scrollX - 220),
+                        // 1. absolute로 변경하여 문서 흐름에 고정
+                        position: 'absolute',
+                        // 2. 현재 뷰포트 위치(rect.bottom)에 스크롤 양(window.scrollY)을 더함
+                        top: rect.bottom + window.scrollY + 8,
+                        // 3. 가로 위치도 스크롤 양(window.scrollX)을 고려하여 계산
+                        left: Math.max(16, Math.min(window.innerWidth - 296, rect.left + window.scrollX + (rect.width / 2) - 150)),
                         zIndex: 10000,
-                        pointerEvents: 'auto' // 모바일 터치 해제를 위해 auto 설정
+                        pointerEvents: 'none'
                     }}
-                    onClick={() => setIsHover(false)} // 툴팁 클릭 시 닫기
                 >
-                    <div className="animate-in fade-in zoom-in-95 duration-150 origin-top-right scale-[0.85] sm:scale-100">
+                    <div className="w-[280px] scale-[0.85] sm:scale-100 origin-top">
                         <JewelryTooltip gemData={gem.originalData} />
                     </div>
                 </div>,
@@ -271,10 +272,10 @@ const SkillRow = ({ skill, matchedGems, isTrans }: { skill: any, matchedGems: an
                 <div className="flex flex-col min-w-0">
                     <h4 className={`text-[12px] sm:text-[14px] font-bold truncate ${isTrans ? 'text-purple-200' : 'text-zinc-100'}`}>{skill.Name}</h4>
                     <span className="text-[9px] font-bold text-amber-500/80 sm:hidden">{skill.Level}레벨</span>
+                    <div className="hidden sm:block font-black text-[12px] sm:text-xs tracking-tighter text-amber-400">{skill.Level}레벨</div>
                 </div>
             </div>
 
-            <div className="hidden sm:block text-center font-black text-[12px] sm:text-xs tracking-tighter text-amber-400">{skill.Level}레벨</div>
 
             <div className="flex justify-center gap-1 sm:gap-2">
                 {skillDetail.tripods.map((tp, i) => (
@@ -392,7 +393,7 @@ export const SkillTab = ({ character }: { character: any }) => {
                 <div className="overflow-x-auto scrollbar-hide">
                     <div className="min-w-full sm:min-w-[600px] flex flex-col">
                         <div className={`grid ${SKILL_GRID} gap-1 sm:gap-4 px-4 sm:px-6 py-4 bg-[#111113] border-b border-white/5 text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase items-center`}>
-                            <div>스킬</div><div className="hidden sm:block text-center">레벨</div><div className="text-center">트라이포드</div><div className="text-center">룬</div><div className="text-right">젬</div>
+                            <div>스킬</div><div className="text-center">트라이포드</div><div className="text-center">룬</div><div className="text-right">젬</div>
                         </div>
                         {normalSkills.map(s => {
                             const matched = gems?.Effects?.Skills?.filter((gs: any) => gs.Name === s.Name) || [];

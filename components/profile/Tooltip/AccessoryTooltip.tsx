@@ -49,11 +49,13 @@ interface TooltipProps {
 }
 
 const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
-    const [isMobile, setIsMobile] = useState(false);
+    // [수정] 초기값을 즉시 판단하여 리렌더링 시 깜빡임 방지
+    const [isMobile, setIsMobile] = useState(() =>
+        typeof window !== 'undefined' ? window.innerWidth < 640 : false
+    );
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 640);
-        checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
@@ -116,9 +118,12 @@ const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
         return '#919191';
     };
 
+    // 공통 툴팁 바디 (pointer-events-none 조건부 추가)
     const TooltipBody = (
         <div
-            className={`relative flex flex-col border border-white/10 shadow-2xl overflow-hidden font-sans transition-all duration-200 bg-[#0d0d0f]/10 ${isMobile ? 'w-full rounded-t-xl' : 'w-[300px] rounded-md'} ${className}`}
+            className={`relative flex flex-col border border-white/10 shadow-2xl overflow-hidden font-sans transition-all duration-200 bg-[#0d0d0f]/10 
+            ${isMobile ? 'w-full rounded-t-xl pointer-events-auto' : 'w-[300px] rounded-md pointer-events-none'} 
+            ${className}`}
             style={!isMobile ? { maxHeight: '50vh' } : { maxHeight: '80vh' }}
         >
             <div className={`p-2 shrink-0 bg-[#111111] bg-gradient-to-br ${theme.bg} border-b border-white/10 z-10`}>
@@ -203,30 +208,41 @@ const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
         </div>
     );
 
-    if (isMobile) {
-        return (
-            <div className="fixed inset-0 z-[9999] flex items-end justify-center">
+    // [수정] 모바일과 데스크톱 렌더링을 완전히 분리하여 애니메이션 충돌 방지
+    return (
+        <>
+            {isMobile ? (
+                <div className="fixed inset-0 z-[9999] flex items-end justify-center">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    />
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="relative w-full"
+                    >
+                        {TooltipBody}
+                    </motion.div>
+                </div>
+            ) : (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={onClose}
-                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                />
-                <motion.div
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    className="relative w-full"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="contents"
                 >
                     {TooltipBody}
                 </motion.div>
-            </div>
-        );
-    }
-
-    return TooltipBody;
+            )}
+        </>
+    );
 };
 
 export default AccessoryTooltip;
