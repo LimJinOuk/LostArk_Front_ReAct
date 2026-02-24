@@ -12,7 +12,7 @@ interface RankingListProps {
 }
 
 // 고정 폭 레이아웃 정의
-const DESKTOP_GRID = "lg:grid-cols-[40px_170px_110px_90px_65px_65px_80px_1fr]";
+const DESKTOP_GRID = "lg:grid-cols-[40px_150px_110px_90px_65px_65px_80px_minmax(180px,1fr)]";
 const MOBILE_GRID = "grid-cols-[40px_1fr_110px]";
 
 const RankingList: React.FC<RankingListProps> = ({ rankings, loading, hasMore, rankingType, lastElementRef, navigate }) => {
@@ -62,13 +62,23 @@ const RankingList: React.FC<RankingListProps> = ({ rankings, loading, hasMore, r
 const RankerRow = ({ ranker, navigate }: any) => {
     return (
         <motion.div
-            layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            layout
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(`/profilePage?name=${encodeURIComponent(ranker.name)}`)}
-            className={`group grid ${MOBILE_GRID} ${DESKTOP_GRID} items-center bg-[#0d0d0f] hover:bg-white/[0.03] active:bg-white/[0.05] px-4 lg:px-6 py-3 lg:py-3 transition-all cursor-pointer relative border-b border-white/[0.03] lg:border-white/[0.02]`}
+            className={`
+                group grid ${MOBILE_GRID} ${DESKTOP_GRID} items-center 
+                bg-[#0d0d0f] hover:bg-white/[0.03] active:bg-white/[0.05] 
+                /* 모바일 패딩을 0으로 설정하여 좌우를 꽉 채웁니다 */
+                px-1 lg:px-6 
+                py-3 lg:py-3 
+                transition-all cursor-pointer relative 
+                border-b border-white/[0.03] lg:border-white/[0.02]
+            `}
         >
             {/* 0. Rank */}
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center pl-1 lg:pl-0">
                 <span className={`text-base lg:text-lg font-black italic tracking-tighter ${
                     ranker.rank <= 3 ? "text-amber-200/90" : "text-zinc-700 group-hover:text-zinc-500"
                 }`}>
@@ -86,7 +96,20 @@ const RankerRow = ({ ranker, navigate }: any) => {
                             {ranker.iconUrl ? (
                                 <img
                                     src={ranker.iconUrl}
-                                    className="w-full h-full object-cover scale-[1.8] lg:scale-150 -translate-x-6 lg:-translate-x-4 opacity-75 lg:opacity-80 group-hover:opacity-60 transition-all duration-700"
+                                    className="
+        w-full h-full object-cover
+        /* 1. 이미지의 초점을 위쪽(얼굴) 15% 지점에 고정 */
+        object-[center_15%]
+        /* 2. 이미지를 1.6배 키워 박스 경계에 여백이 생기지 않도록 함 */
+        scale-[1.2]
+        /* 3. 요청하신 '살짝 오른쪽/위쪽' 느낌을 위해 미세 조정 */
+        -translate-y-[-5%]
+        translate-x-[5%]
+
+        opacity-75 lg:opacity-80
+        group-hover:opacity-60
+        transition-all duration-700
+    "
                                     alt=""
                                 />
                             ) : (
@@ -97,10 +120,10 @@ const RankerRow = ({ ranker, navigate }: any) => {
                         </div>
 
                         <div className="relative z-10 flex flex-col pl-3">
-                            <span className="text-[13px] lg:text-[12px] font-bold text-zinc-100 group-hover:text-white truncate tracking-tight">
+                            <span className="text-[13px] lg:text-[13px] font-bold text-white group-hover:text-white truncate tracking-tight">
                                 {ranker.name}
                             </span>
-                            <span className="text-[9px] lg:text-[8px] font-bold text-zinc-500 uppercase leading-none lg:mt-0.5">
+                            <span className="text-[9px] lg:text-[10px] font-bold text-zinc-500 uppercase leading-none lg:mt-0.5">
                                 {ranker.characterClass}
                             </span>
                         </div>
@@ -108,9 +131,9 @@ const RankerRow = ({ ranker, navigate }: any) => {
 
                     {/* Mobile Sub Info (Svr | Guild) */}
                     <div className="flex lg:hidden items-center gap-2 mt-1 px-1">
-                        <span className="text-[9px] font-medium text-zinc-500">{ranker.server}</span>
+                        <span className="text-[10px] font-medium text-zinc-500">{ranker.server}</span>
                         <span className="w-[1px] h-2 bg-white/10" />
-                        <span className="text-[9px] font-medium text-zinc-600 truncate max-w-[100px]">
+                        <span className="text-[10px] font-medium text-zinc-600 truncate max-w-[100px]">
                             {ranker.guildName || "No Guild"}
                         </span>
                     </div>
@@ -120,43 +143,52 @@ const RankerRow = ({ ranker, navigate }: any) => {
             {/* 2. Gear & Power (Mobile Vertical Stack) */}
             <div className="flex flex-col items-end lg:items-center justify-center pr-2 lg:pr-0">
                 <div className="flex items-center gap-1.5 lg:gap-1">
-                    <span className="text-[13px] font-bold tabular-nums text-zinc-200">
+                    <span className="text-[15px] font-bold tabular-nums text-zinc-200">
                         {ranker.itemLevel.toFixed(2)}
                     </span>
-                    <span className="text-[9px] font-black text-[#2efbef] bg-[#2efbef]/10 px-1 rounded-sm tabular-nums">
+
+                    {/* 무기 강화 수치에 따른 조건부 색상 적용 */}
+                    <span
+                        className={`text-[9px] font-black px-1 rounded-sm tabular-nums ${
+                            ranker.weaponLevel > 10
+                                ? "text-[#ffbb00] bg-[#ffbb00]/10" // 10 초과: 고대 등급 색상 (Golden)
+                                : "text-[#2efbef] bg-[#2efbef]/10" // 10 이하: 기존 색상 (Cyan)
+                        }`}
+                    >
                         +{ranker.weaponLevel}
                     </span>
                 </div>
+
                 {/* Mobile Only Power Display */}
-                <span className="lg:hidden text-[11px] font-bold text-rose-500/80 tabular-nums mt-0.5">
+                <span className="lg:hidden text-[12px] font-bold text-rose-500/80 tabular-nums mt-0.5">
                     {ranker.combatPower.toLocaleString()}
                 </span>
             </div>
 
             {/* 3. Combat Power (Desktop Only) */}
-            <div className="hidden lg:block text-center text-[13px] font-bold text-rose-500/90 tabular-nums">
+            <div className="hidden lg:block text-center text-[15px] font-bold text-rose-500/90 tabular-nums">
                 {ranker.combatPower.toLocaleString()}
             </div>
 
             {/* 4. Stats (Desktop Only) */}
-            <div className="hidden lg:block text-center text-[11px] font-medium text-zinc-400">
+            <div className="hidden lg:block text-center text-[11.5px] font-medium text-zinc-400">
                 {ranker.stats}
             </div>
 
             {/* 5. Server (Desktop Only) */}
-            <div className="hidden lg:block text-center text-[11px] font-medium text-zinc-400">
+            <div className="hidden lg:block text-center text-[11.5px] font-medium text-zinc-400">
                 {ranker.server}
             </div>
 
             {/* 6. Guild Name (Desktop Only) */}
-            <div className="hidden lg:block text-center text-[11px] font-medium text-zinc-400 truncate px-1">
+            <div className="hidden lg:block text-center text-[11.5px] font-medium text-zinc-400 truncate px-1">
                 {ranker.guildName || "-"}
             </div>
 
             {/* 7. Ark Passive (Desktop Only) */}
-            <div className="hidden lg:flex items-center justify-start pl-10 overflow-hidden">
+            <div className="hidden lg:flex items-center justify-start pl-10 min-w-0">
                 {ranker.arkPassive ? (
-                    <div className="flex items-center gap-3 w-full">
+                    <div className="flex items-center gap-3 w-full min-w-0">
                         {ranker.arkpassiveIconUrl && (
                             <img
                                 src={ranker.arkpassiveIconUrl}
@@ -164,9 +196,9 @@ const RankerRow = ({ ranker, navigate }: any) => {
                                 alt=""
                             />
                         )}
-                        <span className="text-[10px] font-extrabold text-zinc-300 tracking-tight uppercase truncate group-hover:text-indigo-300 transition-colors">
-                            {ranker.arkPassive}
-                        </span>
+                        <span className="text-[12px] font-extrabold text-zinc-300 tracking-tight uppercase truncate group-hover:text-indigo-300 transition-colors">
+                {ranker.arkPassive}
+            </span>
                     </div>
                 ) : (
                     <span className="text-[10px] text-zinc-800 ml-2">—</span>
