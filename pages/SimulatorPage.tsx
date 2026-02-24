@@ -62,6 +62,8 @@ export const SimulatorPage: React.FC = () => {
 
     const [jewelsStates, setJewelsStates] = useState({ totalGemAtkBonus: 0, gemSkillDamageMap: {} as Record<string, number> });
 
+    const [gemEffectState, setGemEffectState] = useState({ atk: 0, add: 0, boss: 0 });
+
     // 장비 업데이트 핸들러
     const handleEquipmentUpdate = useCallback((partName: string, data: any) => {
         setEquipmentStates(prev => {
@@ -106,6 +108,10 @@ export const SimulatorPage: React.FC = () => {
             }
             return data;
         });
+    }, []);
+
+    const handleGemEffectUpdate = useCallback((data: { atk: number; add: number; boss: number }) => {
+        setGemEffectState(data);
     }, []);
 
     // ✅ [추가] 백엔드 콘솔 확인용 Bulk 요청 로직
@@ -290,6 +296,11 @@ export const SimulatorPage: React.FC = () => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(jewelsStates),
                 }),
+                fetch(`${BACKEND_API_URL}/simulatorGemEffect`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(gemEffectState),
+                }),
             ]);
             console.log("아크 그리드 최적화 데이터 전송 완료:", arkGridData);
             console.log("시뮬레이션 요청 완료");
@@ -413,6 +424,7 @@ export const SimulatorPage: React.FC = () => {
                         onJewelsUpdate={handleJewelsUpdate}
                         accessoryStates={accessoryStates}         // ✅ 현재 상태 전달 확인
                         onArkGridUpdate={handleArkGridUpdate} //
+                        onGemEffectUpdate={handleGemEffectUpdate}
                     />
                 </div>
             </main>
