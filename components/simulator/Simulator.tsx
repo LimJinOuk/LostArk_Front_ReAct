@@ -10,9 +10,9 @@ import JewelryTooltip from "@/components/profile/Tooltip/JewelryTooltip.tsx";
 import { CharacterInfo } from "@/types.ts";
 import { SimTab } from "./SimulatorNav";
 import ArkCoreTooltip from "@/components/profile/Tooltip/ArkCoreTooltip.tsx";
-import {AccessoryItem} from "@/components/simulator/container/AccessoryItem.tsx";
-import {EquipmentItem} from "@/components/simulator/container/EquipmentItem.tsx";
-import ArkGridItem from "@/components/simulator/container/ArkGrid/ArkGridItem.tsx";
+import {AccessoryItem} from "@/components/simulator/container/accessory/AccessoryItem.tsx";
+import {EquipmentItem} from "@/components/simulator/container/equipment/EquipmentItem.tsx";
+import ArkGridItem from "@/components/simulator/container/arkGrid/ArkGridItem.tsx";
 
 type CharacterInfoCompat = CharacterInfo & { CharacterName?: string };
 

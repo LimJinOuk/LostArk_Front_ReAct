@@ -78,15 +78,17 @@ export const SimulatorPage: React.FC = () => {
 
     // 악세사리 업데이트 핸들러
     const handleAccessoryUpdate = useCallback((partName: string, data: any) => {
-        setAccessoryStates(prev => ({
-            ...prev,
-            [partName]: {
-                ...(prev[partName] || {}),
-                ...data
+        setAccessoryStates(prev => {
+            // 데이터가 이전과 동일하면 리렌더링 방지
+            if (JSON.stringify(prev[partName]) === JSON.stringify(data)) {
+                return prev;
             }
-        }));
+            return {
+                ...prev,
+                [partName]: data
+            };
+        });
     }, []);
-
     // 아크 그리드 업데이트 핸들러
     const handleArkGridUpdate = useCallback((slots: any[]) => {
         setArkGridState(slots);
@@ -183,11 +185,6 @@ export const SimulatorPage: React.FC = () => {
         return { weaponAttack, additionalDamage, baseAttack };
     };
 
-    // SimulatorPage.tsx 내부
-
-    // SimulatorPage.tsx 내부의 mapToArkGridDto
-
-// SimulatorPage.tsx 내부의 mapToArkGridDto
 
     const mapToArkGridDto = (character: any, arkGridState: any[]) => {
         if (!character || !arkGridState) return null;
@@ -236,6 +233,26 @@ export const SimulatorPage: React.FC = () => {
         };
     };
 
+
+    const formatAccessoriesPayload = (accessoryStates: Record<string, any>) => {
+        const accessoriesOnly: Record<string, any> = {};
+        let braceletData: any = null;
+
+        Object.entries(accessoryStates).forEach(([name, data]) => {
+            // 데이터 구조에 baseStats가 있거나 이름에 '팔찌'가 포함된 경우 팔찌로 분류
+            if (name.includes("팔찌") || (data && 'baseStats' in data)) {
+                braceletData = data;
+            } else {
+                accessoriesOnly[name] = data;
+            }
+        });
+
+        return {
+            accessories: accessoriesOnly,
+            bracelet: braceletData
+        };
+    };
+
     const handleRunSimulation = async () => {
         setTab("result");
         if (!nameParam) return;
@@ -244,6 +261,7 @@ export const SimulatorPage: React.FC = () => {
 
         const weaponInfo = getCalculatedWeaponInfo(equipmentStates);
         const arkGridData = mapToArkGridDto(character, arkGridState);
+        const finalAccessoriesDto = formatAccessoriesPayload(accessoryStates);
         // 콘솔에서 수정된 값이 반영되었는지 확인해보세요
         console.log("전송될 무기 정보:", weaponInfo);
         try {
@@ -257,7 +275,7 @@ export const SimulatorPage: React.FC = () => {
                 fetch(`${BACKEND_API_URL}/simulatorAccessories`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(accessoryStates),
+                    body: JSON.stringify(finalAccessoriesDto),
                 }),
                 fetch(`${BACKEND_API_URL}/simulatorArkGrid`, {
                     method: "POST",
