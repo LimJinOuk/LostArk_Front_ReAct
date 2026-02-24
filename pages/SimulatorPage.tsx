@@ -59,7 +59,7 @@ export const SimulatorPage: React.FC = () => {
     const [accessoryStates, setAccessoryStates] = useState<Record<string, any>>({});
     //아크 그리드 Post 요청
     const [arkGridState, setArkGridState] = useState<any[]>([]);
-
+    //보석 아크 그리드 Post 요청
     const [jewelsStates, setJewelsStates] = useState({ totalGemAtkBonus: 0, gemSkillDamageMap: {} as Record<string, number> });
 
     const [gemEffectState, setGemEffectState] = useState({ atk: 0, add: 0, boss: 0 });
@@ -267,6 +267,7 @@ export const SimulatorPage: React.FC = () => {
 
         const weaponInfo = getCalculatedWeaponInfo(equipmentStates);
         const arkGridData = mapToArkGridDto(character, arkGridState);
+        console.log(arkGridData);
         const finalAccessoriesDto = formatAccessoriesPayload(accessoryStates);
         // 콘솔에서 수정된 값이 반영되었는지 확인해보세요
         console.log("전송될 무기 정보:", weaponInfo);

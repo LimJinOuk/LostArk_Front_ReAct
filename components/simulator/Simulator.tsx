@@ -12,6 +12,7 @@ import { SimTab } from "./SimulatorNav";
 import {AccessoryItem} from "@/components/simulator/container/accessory/AccessoryItem.tsx";
 import {EquipmentItem} from "@/components/simulator/container/equipment/EquipmentItem.tsx";
 import ArkGridItem from "@/components/simulator/container/arkGrid/ArkGridItem.tsx";
+import JewelryItem from "@/components/simulator/container/jewelry/JewerlyItem.tsx";
 
 type CharacterInfoCompat = CharacterInfo & { CharacterName?: string };
 
@@ -385,6 +386,9 @@ const GemSlot = ({
                      pick,
                      setPick,
                  }: GemSlotProps) => {
+
+
+
     const sizeClasses = isCenter ? "w-14 h-14" : "w-12 h-12";
 
     const [open, setOpen] = useState(false);
@@ -611,6 +615,7 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
     ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate, onJewelsUpdate, onGemEffectUpdate}, ref) => {
     const location = useLocation();
 
+
     /** ✅ 우선순위: props > location.state.character > null */
     const initialCharacter = useMemo(() => {
         const stateChar = (location.state as any)?.character ?? null;
@@ -726,10 +731,12 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
             const currentKind = pick ? pick.kind : (equipped ? inferGemKindFromEquippedGem(equipped) : null);
             const currentLevel = pick ? pick.level : (equipped ? Number(equipped.Level) : 0);
 
+            {/*}
             if (!currentKind || !currentLevel) {
                 console.log(`슬롯 ${idx}: 데이터 없음 (Pass)`);
                 continue;
             }
+            */}
 
             // [기본공 보너스 합산 로그]
             let addedAtk = 0;
@@ -764,6 +771,8 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
             totalGemAtkBonus,
             gemSkillDamageMap
         });
+        console.log("totalGemAtkBonus:",totalGemAtkBonus)
+        console.log("gemSkillDamageMap", gemSkillDamageMap)
     }, [totalGemAtkBonus, gemSkillDamageMap, onJewelsUpdate]);
 
     const formatPct = (n: number) => `${n.toFixed(2)}%`;
@@ -1201,6 +1210,8 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                             </section>
 
                             {/*보석*/}
+
+                            {/*
                             <section className="mt-10 w-full flex flex-col items-center px-4 select-none">
                                 <div className="w-full max-w-3xl flex items-center justify-between border-b border-zinc-800/50 pb-2 mb-4">
                                     <div className="flex items-center gap-2">
@@ -1212,8 +1223,8 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                         <div className="ml-2 flex items-center gap-2 pl-2 border-l border-white/10">
                                             <div className="w-1 h-3 bg-rose-400 rounded-full" />
                                             <span className="text-[12px] text-[#efeff0] font-semibold leading-none">
-                        기본 공격력 합: +{formatPct(totalGemAtkBonus)}
-                      </span>
+                                                기본 공격력 합: +{formatPct(totalGemAtkBonus)}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -1340,6 +1351,18 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                     </div>
                                 </div>
                             </section>
+*/}
+                            <section className="w-full">
+                                <JewelryItem
+                                    gems={gems}                        // Simulator에서 관리하는 gems 상태
+                                    onJewelsUpdate={onJewelsUpdate}    // 부모로부터 받은 업데이트 함수
+                                    hoverIdx={jewlryHoverIdx}
+                                    hoverData={jewlryHoverData}// Simulator에서 정의한 호버 인덱스
+                                    setHoverIdx={setJewlryHoverIdx}    // Simulator에서 정의한 호버 세터
+                                    setHoverData={setJewlryHoverData}  // Simulator에서 정의한 데이터 세터
+                                />
+                            </section>
+
 
                             {/*각인*/}
                             <div className="w-full max-w-[1200px] mx-auto bg-[#121213] sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl p-0 sm:p-4">

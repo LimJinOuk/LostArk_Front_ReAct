@@ -1,52 +1,61 @@
-//작열
 [
   {
     "level" : 1,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_106.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 6% 감소",
     "effect_2" : "기본 공격력 0.0% 증가"
   },
   {
     "level" : 2,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_107.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 8% 감소",
     "effect_2" : "기본 공격력 0.05% 증가"
   },
   {
     "level" : 3,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_108.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 10% 감소",
     "effect_2" : "기본 공격력 0.1% 증가"
   },
   {
     "level" : 4,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_109.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 12% 감소",
     "effect_2" : "기본 공격력 0.2% 증가"
   },
   {
     "level" : 5,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_110.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 14% 감소",
     "effect_2" : "기본 공격력 0.3% 증가"
   },
   {
     "level" : 6,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_111.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 16% 감소",
     "effect_2" : "기본 공격력 0.45% 증가"
   },
   {
     "level" : 7,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_112.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 18% 감소",
     "effect_2" : "기본 공격력 0.6% 증가"
   },
   {
     "level" : 8,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_113.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 20% 감소",
     "effect_2" : "기본 공격력 0.8% 증가"
   },
   {
     "level" : 9,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_114.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 22% 감소",
     "effect_2" : "기본 공격력 1.0% 증가"
   },
   {
     "level" : 10,
+    "iconUrl" : "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_115.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 24% 감소",
     "effect_2" : "기본 공격력 1.2% 증가"
   }

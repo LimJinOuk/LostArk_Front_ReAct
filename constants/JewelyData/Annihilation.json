@@ -1,44 +1,52 @@
-//멸화
-
 [
   {
   "level" : 1,
+  "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_46.png",
   "effect_1" : "특정 스킬의 피해 3% 증가"
   },
   {
     "level" : 2,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_47.png",
     "effect_1" : "특정 스킬의 피해 6% 증가"
   },
   {
     "level" : 3,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_48.png",
     "effect_1" : "특정 스킬의 피해 9% 증가"
   },
   {
     "level" : 4,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_49.png",
     "effect_1" : "특정 스킬의 피해 12% 증가"
   },
   {
     "level" : 5,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_50.png",
     "effect_1" : "특정 스킬의 피해 15% 증가"
   },
   {
     "level" : 6,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_51.png",
     "effect_1" : "특정 스킬의 피해 18% 증가"
   },
   {
     "level" : 7,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_52.png",
     "effect_1" : "특정 스킬의 피해 21% 증가"
   },
   {
     "level" : 8,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_53.png",
     "effect_1" : "특정 스킬의 피해 24% 증가"
   },
   {
     "level" : 9,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_54.png",
     "effect_1" : "특정 스킬의 피해 30% 증가"
   },
   {
     "level" : 10,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_55.png",
     "effect_1" : "특정 스킬의 피해 40% 증가"
   }
 ]
