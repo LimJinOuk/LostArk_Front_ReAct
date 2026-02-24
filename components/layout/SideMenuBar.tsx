@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             {/* 헤더: 모바일에서 높이를 줄여 컴팩트하게 구성 */}
                             <div className="flex items-center justify-between p-5 md:p-6 border-b border-slate-100 dark:border-white/5">
                                 <h2 className="text-xl md:text-2xl font-black text-midnight dark:text-white tracking-tighter">
-                                    LOAPANG
+                                    LOAKONG
                                 </h2>
                                 <button
                                     onClick={onClose}

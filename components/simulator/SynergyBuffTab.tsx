@@ -227,17 +227,6 @@ export const SynergyBuffTab: React.FC = () => {
                 ))}
             </div>
 
-            {/* 하단 안내 */}
-            <div className="bg-zinc-950/40 border border-white/5 rounded-3xl p-6">
-                <div className="text-sm text-zinc-400 leading-relaxed">
-                    ⚠️ 실제 로스트아크 시너지는 <span className="text-zinc-200 font-bold">중첩 규칙</span>,{" "}
-                    <span className="text-zinc-200 font-bold">적용 대상</span>,{" "}
-                    <span className="text-zinc-200 font-bold">유지 시간/가동률</span> 등에 따라 값이 달라질 수 있습니다.
-                    <div className="mt-2 text-zinc-500">
-                        여기서는 “UI 선택값”만 만들고, 계산 반영은 너가 시뮬레이터 로직에서 처리하면 됩니다.
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };

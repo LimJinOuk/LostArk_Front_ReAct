@@ -52,14 +52,13 @@ export default function App() {
                     onClose={() => setIsMenuOpen(false)}
                 />
 
-                <div className="pt-[70px] md:pt-24 pb-10 px-0 md:px-8 lg:px-16 mx-auto flex flex-col lg:flex-row gap-0 lg:gap-8 transition-all duration-500 max-w-[2000px]">
+                <div className="pt-[70px] md:pt-24 pb-10 px-0 md:px-8 lg:px-16 mx-auto flex flex-col lg:flex-row gap-0 lg:gap-8 transition-all duration-500 max-w-[1400px]">
 
-                    {/* [왼쪽 영역: 고정 사이드바]
-                        lg:sticky와 top 설정을 통해 스크롤 시 고정됨
-                    */}
+                    {/*
                     <aside className="hidden 2xl:block w-72 shrink-0 lg:sticky lg:top-24 h-fit">
                         <SidebarAds side="left" />
                     </aside>
+                    */}
 
                     {/* [오른쪽 영역: 메인 콘텐츠]
                         별도의 고정 없이 브라우저 기본 스크롤을 따라감
@@ -77,14 +76,16 @@ export default function App() {
                         </AnimatePresence>
                     </main>
 
-                    {/* [오른쪽 사이드바 광고: 필요시 고정] */}
+                    {/*}
                     <aside className="hidden 2xl:block w-72 shrink-0 lg:sticky lg:top-24 h-fit">
                         <SidebarAds side="right" />
                     </aside>
+                    */}
+
                 </div>
 
                 <Footer />
-                <FloatingBanner />
+                {/*<FloatingBanner />*/}
             </div>
         </BrowserRouter>
     );
