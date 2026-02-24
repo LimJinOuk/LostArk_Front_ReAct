@@ -7,7 +7,7 @@ import {
     RotateCcw,
     History,
     Book,
-    Box
+    Box,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,8 @@ import {
     YAxis,
     Tooltip,
     ResponsiveContainer,
-    CartesianGrid
+    CartesianGrid,
+    LabelList
 } from 'recharts'
 
 interface MarketItem {
@@ -327,23 +328,59 @@ const HomePage: React.FC = () => {
                                             { name: '최근 거래', price: selectedItem.RecentPrice },
                                             { name: '현재 최저', price: selectedItem.CurrentMinPrice }
                                         ]}
-                                        margin={{ top: 20, right: 5, left: 5, bottom: 0 }}
-                                        barCategoryGap={window.innerWidth < 1024 ? "75%" : "25%"}
+                                        margin={{ top: 35, right: 5, left: 5, bottom: 0 }}
+                                        barCategoryGap={window.innerWidth < 1024 ? "50%" : "25%"}
+                                        /* 하얀 박스 방지를 위한 설정 */
+                                        accessibilityLayer={false}
+                                        style={{ outline: 'none' }}
                                     >
                                         <CartesianGrid vertical={false} stroke="#ffffff08" strokeDasharray="0" />
                                         <XAxis
                                             dataKey="name"
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fill: '#71717a', fontSize: 9, fontWeight: 'bold' }}
+                                            tick={{ fill: '#71717a', fontSize: 10, fontWeight: 'bold' }}
                                             interval={0}
                                         />
-                                        {/* 보정값 핵심 로직 유지: 최소값 0.95배 ~ 최대값 1.05배 */}
                                         <YAxis hide domain={[(dataMin: number) => dataMin * 0.95, (dataMax: number) => dataMax * 1.05]} />
-                                        <Bar dataKey="price" radius={[6, 6, 0, 0]}>
-                                            <Cell fill="#3f3f46" />
-                                            <Cell fill="#818cf8" />
-                                            <Cell fill="#fbbf24" />
+
+                                        <Bar
+                                            dataKey="price"
+                                            radius={[6, 6, 0, 0]}
+                                            isAnimationActive={true}
+                                            /* 타입 에러가 났던 focusCaseless를 제거하고 style로 처리 */
+                                            style={{ outline: 'none' }}
+                                        >
+                                            {/* 각 Cell 클릭 시 발생하는 테두리 방지 */}
+                                            <Cell fill="#3f3f46" style={{ outline: 'none' }} />
+                                            <Cell fill="#818cf8" style={{ outline: 'none' }} />
+                                            <Cell fill="#fbbf24" style={{ outline: 'none' }} />
+
+                                            <LabelList
+                                                dataKey="price"
+                                                position="top"
+                                                offset={10}
+                                                content={(props: any) => {
+                                                    const { x, y, width, value, index } = props;
+                                                    const colors = ['#a1a1aa', '#818cf8', '#fbbf24'];
+                                                    return (
+                                                        <text
+                                                            x={x + width / 2}
+                                                            y={y - 10}
+                                                            fill={colors[index]}
+                                                            textAnchor="middle"
+                                                            style={{
+                                                                fontSize: window.innerWidth < 1024 ? '11px' : '14px',
+                                                                fontWeight: '900',
+                                                                filter: 'drop-shadow(0px 0px 2px rgba(0,0,0,0.5))',
+                                                                pointerEvents: 'none'
+                                                            }}
+                                                        >
+                                                            {value.toLocaleString()}G
+                                                        </text>
+                                                    );
+                                                }}
+                                            />
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>

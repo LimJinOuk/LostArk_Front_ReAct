@@ -360,6 +360,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     try { tooltip = JSON.parse(item.Tooltip); } catch (e) { return null; }
 
                                     const isStone = item.Type === '어빌리티 스톤';
+                                    const isEsther = item.Grade === "에스더";
                                     const quality = tooltip?.Element_001?.value?.qualityValue ?? -1;
                                     const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || '';
                                     const itemName = cleanText(item.Name).replace(/\+\d+\s/, '');
@@ -387,12 +388,25 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                     return (
                                         <div key={item.Name}
-                                            // PC: 마우스 호버 시 툴팁 표시
-                                             onMouseEnter={() => { setHoveredIndex(i); setHoveredData(tooltip); }}
-                                             onMouseLeave={() => { setHoveredIndex(null); setHoveredData(null); }}
-                                            // 모바일/클릭: 클릭 시 모달 툴팁 표시
-                                             onClick={() => setSelectedEquip(tooltip)}
-                                             className="relative group flex items-center gap-2 sm:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[60px] cursor-pointer sm:cursor-help"
+                                            // ✅ [수정] 데스크톱(sm 이상)에서만 호버 툴팁 작동
+                                             onMouseEnter={() => {
+                                                 if (window.innerWidth >= 640) {
+                                                     setHoveredIndex(i);
+                                                     setHoveredData(tooltip);
+                                                 }
+                                             }}
+                                             onMouseLeave={() => {
+                                                 setHoveredIndex(null);
+                                                 setHoveredData(null);
+                                             }}
+                                            // ✅ [수정] 모바일(sm 미만)에서만 클릭 모달 작동
+                                             onClick={() => {
+                                                 if (window.innerWidth < 640) {
+                                                     setSelectedEquip(tooltip);
+                                                 }
+                                             }}
+                                            // 커서 스타일 조정
+                                             className="relative group flex items-center gap-2 sm:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[60px] cursor-default sm:cursor-default"
                                         >
                                             <div className="relative shrink-0">
                                                 <div className={`p-0.5 rounded-lg border shadow-lg bg-gradient-to-br ${theme.bg} ${theme.border} ${theme.glow || ''}`}>
@@ -406,7 +420,7 @@ export const CombatTab = ({ character }: { character: any }) => {
 
                                                 {/* PC용 호버 툴팁 (숨김 처리 로직은 컴포넌트 내부 isMobile에 의존하거나 CSS로 제어) */}
                                                 {hoveredIndex === i && hoveredData && (
-                                                    <div className="absolute left-full top-0 z-[9999] pointer-events-auto hidden sm:flex" style={{ paddingLeft: '12px' }}>
+                                                    <div className="absolute left-full top-0 z-[9999] pointer-events-none hidden sm:flex" style={{ paddingLeft: '10px' }}>
                                                         <EquipmentTooltip data={hoveredData} />
                                                     </div>
                                                 )}
@@ -418,8 +432,15 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                         <span className="text-blue-400 text-[11px] font-bold">세공 {stoneStats}</span>
                                                     ) : (
                                                         <>
-                                                            <span className="text-white/50 text-[11px]">재련 {reinforceLevel}</span>
-                                                            {advancedReinforce !== "0" && <span className="text-sky-400 text-[11px] font-bold">상재 +{advancedReinforce}</span>}
+                                                            {/* ✅ 에스더일 경우 색상을 theme.text로 변경하고 '강화' 대신 단독 표시 가능 */}
+                                                            <span className={`text-[11px] font-bold ${isEsther ? theme.text : "text-white/50"}`}>
+                                                                {isEsther ? `진화 ${reinforceLevel}` : `재련 ${reinforceLevel}`}
+                                                            </span>
+
+                                                            {/* ✅ 에스더가 아닐 때만 상급 재련(상재) 표시 */}
+                                                            {!isEsther && advancedReinforce !== "0" && (
+                                                                <span className="text-sky-400 text-[11px] font-bold">상재 +{advancedReinforce}</span>
+                                                            )}
                                                         </>
                                                     )}
                                                 </div>
@@ -439,6 +460,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                         )}
                         </AnimatePresence>
                     </div>
+                    {/* [오른쪽: 액세서리 Section] */}
                     {/* [오른쪽: 액세서리 Section] */}
                     <div className="w-full lg:flex-1 flex flex-col min-w-0">
                         <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-1 mx-1">
@@ -473,20 +495,17 @@ export const CombatTab = ({ character }: { character: any }) => {
                                     const passive = cleanText(tooltip.Element_007?.value?.Element_001 || '').match(/\d+/)?.[0] || '0';
                                     const tier = (tooltip.Element_001?.value?.leftStr2 || "").replace(/[^0-9]/g, "").slice(-1) || "4";
 
-                                    // 효과 파싱 로직
                                     const rawContent = cleanText(
                                         isBracelet
                                             ? tooltip.Element_005?.value?.Element_001
                                             : (tooltip.Element_006?.value?.Element_001 || tooltip.Element_005?.value?.Element_001 || '')
                                     );
 
-                                    // 정규식 추출
                                     const allEffects = [...rawContent.matchAll(/([가-힣\s]+?)\s*\+([\d.]+%?)/g)].map(m => ({
                                         name: m[1].trim(),
                                         value: m[2]
                                     }));
 
-                                    // 팔찌일 경우 특화와 치명만 필터링, 일반 악세는 기존대로
                                     const displayEffects = isBracelet
                                         ? allEffects.filter(e => e.name === '특화' || e.name === '치명')
                                         : allEffects;
@@ -499,15 +518,30 @@ export const CombatTab = ({ character }: { character: any }) => {
                                         "아군 피해량 강화 효과": "아피강", "최대 생명력": "최생", "최대 마나": "최마",
                                         "전투 중 생명력 회복량": "전투회복", "상태이상 공격 지속시간": "상태이상", "세레나데, 신앙, 조화 게이지 획득량":"서포터 아덴 획득량"
                                     };
+
                                     return (
                                         <div key={i}
-                                             onMouseEnter={() => { setAccHoverIdx(i); setAccHoverData(tooltip); }}
-                                             onMouseLeave={() => { setAccHoverIdx(null); setAccHoverData(null); }}
-                                            // ✅ 모바일 클릭용 추가
-                                             onClick={() => setSelectedAcc(tooltip)}
+                                            // 1. 데스크톱 호버 제어 (sm 이상)
+                                             onMouseEnter={() => {
+                                                 if (window.innerWidth >= 640) {
+                                                     setAccHoverIdx(i);
+                                                     setAccHoverData(tooltip);
+                                                 }
+                                             }}
+                                             onMouseLeave={() => {
+                                                 setAccHoverIdx(null);
+                                                 setAccHoverData(null);
+                                             }}
 
-                                            // cursor-help를 sm:cursor-help로 바꾸고 모바일은 기본 포인터 권장
-                                             className="relative group flex items-center gap-2 sm:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[60px] cursor-help min-w-0"
+                                            // 2. 모바일 클릭 제어 (sm 미만에서만 모달 활성화)
+                                             onClick={() => {
+                                                 if (window.innerWidth < 640) {
+                                                     setSelectedAcc(tooltip);
+                                                 }
+                                             }}
+
+                                            // 커서 스타일: 데스크톱은 기본, 모바일은 포인터
+                                             className="relative group flex items-center gap-2 sm:gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors h-[60px] cursor-default sm:cursor-default min-w-0"
                                         >
                                             {/* 아이콘 영역 */}
                                             <div className="relative shrink-0">
@@ -519,9 +553,11 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                         {quality}
                                                     </div>
                                                 )}
+
+                                                {/* 데스크톱 전용 프리뷰 툴팁 (pointer-events-none으로 클릭 방지) */}
                                                 {accHoverIdx === i && accHoverData && (
-                                                    <div className="absolute left-full top-0 z-[9999] pointer-events-auto hidden sm:flex" style={{ paddingLeft: '12px' }}>
-                                                        <AccessoryTooltip data={accHoverData} className="!static !mt-0 !left-0" />
+                                                    <div className="absolute left-full top-0 z-[9999] pointer-events-none hidden sm:flex" style={{ paddingLeft: '10px' }}>
+                                                        <AccessoryTooltip data={accHoverData} className="!static !mt-0 !left-0 shadow-2xl" />
                                                     </div>
                                                 )}
                                             </div>
@@ -535,7 +571,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                 </div>
                                             </div>
 
-                                            {/* 오른쪽: 특화/치명만 노출 (빨간색) */}
+                                            {/* 오른쪽: 효과 노출 */}
                                             <div className="w-[85px] sm:w-[100px] flex flex-col justify-center items-end border-l border-white/5 pl-2 shrink-0 overflow-hidden">
                                                 {(isBracelet ? [0, 1] : [0, 1, 2]).map((idx) => {
                                                     const targetEffect = displayEffects[idx];
@@ -548,6 +584,7 @@ export const CombatTab = ({ character }: { character: any }) => {
                                                         if (isBracelet && (name === '특화' || name === '치명')) return 'text-white-500 font-black';
                                                         const num = parseFloat(valueStr.replace(/[^0-9.]/g, ''));
                                                         const isPercent = valueStr.includes('%');
+
                                                         const thresholds = {
                                                             '추가 피해': { 상: 2.6, 중: 1.6, 하: 0.6 },
                                                             '적에게 주는 피해': { 상: 2.0, 중: 1.2, 하: 0.55 },
@@ -597,6 +634,8 @@ export const CombatTab = ({ character }: { character: any }) => {
                             </div>
                         </div>
                     </div>
+
+                    {/* 모바일 전용 모달 (setSelectedAcc가 활성화될 때만 렌더링) */}
                     <AnimatePresence>
                         {selectedAcc && (
                             <AccessoryTooltip

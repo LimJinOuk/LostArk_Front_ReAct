@@ -21,12 +21,15 @@ interface TooltipProps {
 }
 
 const EquipmentTooltip = ({ data, className = "", onClose }: TooltipProps) => {
-    const [isMobile, setIsMobile] = useState(false);
+    const [isMobile, setIsMobile] = useState(() =>
+        typeof window !== 'undefined' ? window.innerWidth < 640 : false
+    );
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 640);
-        checkMobile();
         window.addEventListener('resize', checkMobile);
+
+        // 모바일 모달 열릴 때 스크롤 방지
         if (isMobile && data) document.body.style.overflow = 'hidden';
         else document.body.style.overflow = 'unset';
 
@@ -147,9 +150,14 @@ const EquipmentTooltip = ({ data, className = "", onClose }: TooltipProps) => {
                         )}
                         {engraveGroup && (
                             <div className="mt-2 space-y-0.5">
-                                <p className="text-[#A9D0F5]/40 text-[11px] font-bold uppercase">[{cleanText(engraveGroup.topStr)}]</p>
+                                <p className="text-[#2edbd3]/90 text-[11px] font-bold uppercase">[{cleanText(engraveGroup.topStr)}]</p>
                                 {Object.values(engraveGroup.contentStr).map((c: any, i: number) => {
+                                    console.log("!!!!!!!!!!!",c)
+                                    console.log("-----------",i)
+
                                     const t = cleanText(c.contentStr);
+
+                                    console.log("ttttttt",t);
                                     if(!t) return null;
                                     return <p key={i} className={`text-[11px] font-medium leading-snug ${t.includes('감소') ? 'text-[#fe2e2e]' : 'text-white/80'}`}>{t}</p>;
                                 })}
@@ -164,33 +172,39 @@ const EquipmentTooltip = ({ data, className = "", onClose }: TooltipProps) => {
         </div>
     );
 
-    if (isMobile) {
-        return (
-            <div className="fixed inset-0 z-[10000] flex items-end justify-center">
+    return (
+        <>
+            {isMobile ? (
+                <div className="fixed inset-0 z-[9999] flex items-end justify-center">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    />
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="relative w-full"
+                    >
+                        {TooltipBody}
+                    </motion.div>
+                </div>
+            ) : (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={onClose}
-                    className="absolute inset-0 bg-black/80 backdrop-blur-[2px]"
-                />
-                <motion.div
-                    className="relative w-full z-10"
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="contents"
                 >
                     {TooltipBody}
                 </motion.div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="absolute top-0 left-0 z-[9999]">
-            {TooltipBody}
-        </div>
+            )}
+        </>
     );
 };
 
