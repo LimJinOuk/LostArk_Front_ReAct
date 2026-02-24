@@ -1,43 +1,52 @@
-//홍염
 [
   {
     "level" : 1,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_56.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 2% 감소"
   },
   {
     "level" : 2,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_57.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 4% 감소"
   },
   {
     "level" : 3,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_58.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 6% 감소"
   },
   {
     "level" : 4,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_59.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 8% 감소"
   },
   {
     "level" : 5,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_60.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 10% 감소"
   },
   {
     "level" : 6,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_61.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 12% 감소"
   },
   {
     "level" : 7,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_62.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 14% 감소"
   },
   {
     "level" : 8,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_63.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 16% 감소"
   },
   {
     "level" : 9,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_64.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 18% 감소"
   },
   {
     "level" : 10,
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_65.png",
     "effect_1" : "특정 스킬의 재사용 대기시간 20% 감소"
   }
 ]
