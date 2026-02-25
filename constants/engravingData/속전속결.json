@@ -1,20 +1,29 @@
 {
     "engraveName": "속전속결",
     "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_236.png",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "홀딩 및 캐스팅 스킬의 홀딩 및 캐스팅 속도가 20.00% 증가하고, 피해량이 18.00% 증가한다."
+    "effects": {
+        "description": "홀딩 및 캐스팅 스킬의 홀딩 및 캐스팅 속도가 {speed}% 증가하고, 피해량이 {damage}% 증가한다.",
+        "base": {
+            "speed": 16.00,
+            "damage": 16.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "홀딩 및 캐스팅 스킬의 홀딩 및 캐스팅 속도가 20.00% 증가하고, 피해량이 21.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 홀딩 및 캐스팅 스킬의 홀딩 및 캐스팅 속도가 [ 16.00% ] 증가하고, 피해량이 [ 16.00% ] 증가한다.",
-        "legendary": "전설 - 홀딩 및 캐스팅 스킬의 속도가 추가로 [ 1.00% / 2.00% / 3.00% / 4.00% ] 증가하고, 피해량이 추가로 [ 0.50% / 1.00% / 1.50% / 2.00% ] 증가한다.",
-        "relic": "유물 - 홀딩 및 캐스팅 스킬의 피해량이 추가로 [ 0.75% / 1.50% / 2.25% / 3.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 홀딩 및 캐스팅 스킬의 피해량이 추가로 [ 3.00% / 3.75% / 5.25% / 6.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "speed": 17.00, "damage": 16.50 },
+            { "level": 2, "speed": 18.00, "damage": 17.00 },
+            { "level": 3, "speed": 19.00, "damage": 17.50 },
+            { "level": 4, "speed": 20.00, "damage": 18.00 }
+        ],
+        "relic": [
+            { "level": 1, "speed": 20.00, "damage": 18.75 },
+            { "level": 2, "speed": 20.00, "damage": 19.50 },
+            { "level": 3, "speed": 20.00, "damage": 20.25 },
+            { "level": 4, "speed": 20.00, "damage": 21.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addDamage": 3.00 },
+            { "level": 2, "addDamage": 3.75 },
+            { "level": 3, "addDamage": 5.25 },
+            { "level": 4, "addDamage": 6.00 }
+        ]
+    }
 }

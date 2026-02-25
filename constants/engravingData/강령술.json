@@ -1,20 +1,28 @@
 {
     "engraveName": "강령술",
     "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_29.png",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "적을 타격 시 적에게 피해를 주는 자폭병을 소환한다. (재사용 대기시간 17초)"
+    "effects": {
+        "description": "적을 타격 시 적에게 피해를 주는 자폭병을 소환한다. (재사용 대기시간 {cooldown}초)",
+        "base": {
+            "cooldown": 21
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "적을 타격 시 적에게 피해를 주는 자폭병을 소환한다. (재사용 대기시간 13초)"
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 적을 타격 시 적에게 피해를 주는 자폭병을 소환한다. (재사용 대기시간 [ 21초 ])",
-        "legendary": "전설 - 자폭병의 재소환 대기시간이 추가로 [ 1초 / 2초 / 3초 / 4초 ] 감소한다.",
-        "relic": "유물 - 자폭병의 재소환 대기시간이 추가로 [ 1초 / 2초 / 3초 / 4초 ] 감소한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 자폭병의 재소환 대기시간이 추가로 [ 4초 / 5초 / 7초 / 8초 ] 감소한다."
+        "legendary": [
+            { "level": 1, "cooldown": 20 },
+            { "level": 2, "cooldown": 19 },
+            { "level": 3, "cooldown": 18 },
+            { "level": 4, "cooldown": 17 }
+        ],
+        "relic": [
+            { "level": 1, "cooldown": 16 },
+            { "level": 2, "cooldown": 15 },
+            { "level": 3, "cooldown": 14 },
+            { "level": 4, "cooldown": 13 }
+        ],
+        "abilityStone": [
+            { "level": 1, "reduceCooldown": 4 },
+            { "level": 2, "reduceCooldown": 5 },
+            { "level": 3, "reduceCooldown": 7 },
+            { "level": 4, "reduceCooldown": 8 }
+        ]
+    }
 }

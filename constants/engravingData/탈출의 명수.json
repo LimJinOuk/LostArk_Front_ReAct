@@ -1,20 +1,28 @@
 {
     "engraveName": "탈출의 명수",
     "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_10.png",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "기상기의 재사용 대기시간이 23.00% 감소한다."
+    "effects": {
+        "description": "기상기의 재사용 대기시간이 {cooldown}% 감소한다.",
+        "base": {
+            "cooldown": 19.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "기상기의 재사용 대기시간이 27.00% 감소한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 기상기의 재사용 대기시간이 [ 19.00% ] 감소한다.",
-        "legendary": "전설 - 기상기의 재사용 대기시간이 추가로 [ 1.00% / 2.00% / 3.00% / 4.00% ] 감소한다.",
-        "relic": "유물 - 기상기의 재사용 대기시간이 추가로 [ 1.00% / 2.00% / 3.00% / 4.00% ] 감소한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 기상기의 재사용 대기시간이 추가로 [ 4.00% / 5.00% / 7.00% / 8.00% ] 감소한다."
+        "legendary": [
+            { "level": 1, "cooldown": 20.00 },
+            { "level": 2, "cooldown": 21.00 },
+            { "level": 3, "cooldown": 22.00 },
+            { "level": 4, "cooldown": 23.00 }
+        ],
+        "relic": [
+            { "level": 1, "cooldown": 24.00 },
+            { "level": 2, "cooldown": 25.00 },
+            { "level": 3, "cooldown": 26.00 },
+            { "level": 4, "cooldown": 27.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addCooldown": 4.00 },
+            { "level": 2, "addCooldown": 5.00 },
+            { "level": 3, "addCooldown": 7.00 },
+            { "level": 4, "addCooldown": 8.00 }
+        ]
+    }
 }

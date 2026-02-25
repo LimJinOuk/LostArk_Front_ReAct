@@ -1,20 +1,30 @@
 {
     "engraveName": "폭발물 전문가",
     "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_121.png",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "폭탄 및 수류탄 배틀아이템의 소지 제한 개수가 5개 증가하고, 추가로 폭탄 및 수류탄 배틀아이템의 피해량이 80.00% 증가한다."
+    "effects": {
+        "description": "폭탄 및 수류탄 배틀아이템의 소지 제한 개수가 {count}개 증가하고, 폭탄 및 수류탄 배틀아이템 사용 시 {chance}% 확률로 아이템을 소모하지 않는다. 추가로 폭탄 및 수류탄 배틀아이템의 피해량이 {damage}% 증가한다.",
+        "base": {
+            "count": 1,
+            "chance": 0.00,
+            "damage": 80.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "폭탄 및 수류탄 배틀아이템의 소지 제한 개수가 5개 증가하고, 폭탄 및 수류탄 배틀아이템 사용 시 20.00% 확률로 아이템을 소모하지 않는다. 추가로 폭탄 및 수류탄 배틀아이템의 피해량이 80.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 폭탄 및 수류탄 배틀아이템의 소지 제한 개수가 [ 1개 ] 증가하고, 추가로 폭탄 및 수류탄 배틀아이템의 피해량이 [ 80.00% ] 증가한다.",
-        "legendary": "전설 - 폭탄 및 수류탄 배틀아이템의 소지 제한 개수가 추가로 [ 1개 / 2개 / 3개 / 4개 ] 증가한다.",
-        "relic": "유물 - 폭탄 및 수류탄 배틀아이템 사용 시 [ 5.00% / 10.00% / 15.00% / 20.00% ] 확률로 아이템을 소모하지 않는다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 폭탄 및 수류탄 배틀아이템의 피해량이 추가로 [ 40.00% / 50.00% / 70.00% / 80.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "count": 2, "chance": 0.00, "damage": 80.00 },
+            { "level": 2, "count": 3, "chance": 0.00, "damage": 80.00 },
+            { "level": 3, "count": 4, "chance": 0.00, "damage": 80.00 },
+            { "level": 4, "count": 5, "chance": 0.00, "damage": 80.00 }
+        ],
+        "relic": [
+            { "level": 1, "count": 5, "chance": 5.00, "damage": 80.00 },
+            { "level": 2, "count": 5, "chance": 10.00, "damage": 80.00 },
+            { "level": 3, "count": 5, "chance": 15.00, "damage": 80.00 },
+            { "level": 4, "count": 5, "chance": 20.00, "damage": 80.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addDamage": 40.00 },
+            { "level": 2, "addDamage": 50.00 },
+            { "level": 3, "addDamage": 70.00 },
+            { "level": 4, "addDamage": 80.00 }
+        ]
+    }
 }

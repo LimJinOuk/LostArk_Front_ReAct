@@ -1,20 +1,28 @@
 {
     "engraveName": "정기 흡수",
     "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_65.png",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "공격 및 이동속도가 13.00% 증가한다."
+    "effects": {
+        "description": "공격 및 이동속도가 {speed}% 증가한다.",
+        "base": {
+            "speed": 10.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "공격 및 이동속도가 16.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 공격 및 이동속도가 [ 10.00% ] 증가한다.",
-        "legendary": "전설 - 공격 및 이동속도가 추가로 [ 0.75% / 1.50% / 2.25% / 3.00% ] 증가한다.",
-        "relic": "유물 - 공격 및 이동속도가 추가로 [ 0.75% / 1.50% / 2.25% / 3.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 공격 및 이동속도가 추가로 [ 3.00% / 3.75% / 5.25% / 6.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "speed": 10.75 },
+            { "level": 2, "speed": 11.50 },
+            { "level": 3, "speed": 12.25 },
+            { "level": 4, "speed": 13.00 }
+        ],
+        "relic": [
+            { "level": 1, "speed": 13.75 },
+            { "level": 2, "speed": 14.50 },
+            { "level": 3, "speed": 15.25 },
+            { "level": 4, "speed": 16.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addSpeed": 3.00 },
+            { "level": 2, "addSpeed": 3.75 },
+            { "level": 3, "addSpeed": 5.25 },
+            { "level": 4, "addSpeed": 6.00 }
+        ]
+    }
 }

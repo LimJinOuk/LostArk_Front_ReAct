@@ -1,20 +1,28 @@
 {
     "engraveName": "최대 마나 증가",
     "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_122.png",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "최대 마나가 28.00% 증가한다."
+    "effects": {
+        "description": "최대 마나가 {maxMana}% 증가한다.",
+        "base": {
+            "maxMana": 24.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "최대 마나가 32.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 최대 마나가 [ 24.00% ] 증가한다.",
-        "legendary": "전설 - 최대 마나가 추가로 [ 1.00% / 2.00% / 3.00% / 4.00% ] 증가한다.",
-        "relic": "유물 - 최대 마나가 추가로 [ 1.00% / 2.00% / 3.00% / 4.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 최대 마나가 추가로 [ 4.00% / 5.00% / 7.00% / 8.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "maxMana": 25.00 },
+            { "level": 2, "maxMana": 26.00 },
+            { "level": 3, "maxMana": 27.00 },
+            { "level": 4, "maxMana": 28.00 }
+        ],
+        "relic": [
+            { "level": 1, "maxMana": 29.00 },
+            { "level": 2, "maxMana": 30.00 },
+            { "level": 3, "maxMana": 31.00 },
+            { "level": 4, "maxMana": 32.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addMaxMana": 4.00 },
+            { "level": 2, "addMaxMana": 5.00 },
+            { "level": 3, "addMaxMana": 7.00 },
+            { "level": 4, "addMaxMana": 8.00 }
+        ]
+    }
 }

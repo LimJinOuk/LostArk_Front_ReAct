@@ -1,20 +1,29 @@
 {
     "engraveName": "승부사",
     "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_136.png",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "적을 처치할 때 마다 40초 동안, 공격력이 2.10% 증가한다. (최대 8중첩)"
+    "effects": {
+        "description": "적을 처치할 때 마다 40초 동안, 공격력이 {atkPower}% 증가한다. (최대 {maxStack}중첩)",
+        "base": {
+            "atkPower": 1.70,
+            "maxStack": 8
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "적을 처치할 때 마다 40초 동안, 공격력이 2.10% 증가한다. (최대 12중첩)"
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 적을 처치할 때 마다 40초 동안, 공격력이 [ 1.70% ] 증가한다. (최대 [ 8회 ] 중첩)",
-        "legendary": "전설 - 효과 중첩당 공격력이 추가로 [ 0.10% / 0.20% / 0.30% / 0.40% ] 증가한다.",
-        "relic": "유물 - 효과의 최대 중첩수가 추가로 [ 1회 / 2회 / 3회 / 4회 ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 효과 중첩당 공격력이 추가로 [ 0.30% / 0.38% / 0.53% / 0.60% ] 증가한다."
+        "legendary": [
+            { "level": 1, "atkPower": 1.80, "maxStack": 8 },
+            { "level": 2, "atkPower": 1.90, "maxStack": 8 },
+            { "level": 3, "atkPower": 20.0, "maxStack": 8 },
+            { "level": 4, "atkPower": 2.10, "maxStack": 8 }
+        ],
+        "relic": [
+            { "level": 1, "atkPower": 2.10, "maxStack": 9 },
+            { "level": 2, "atkPower": 2.10, "maxStack": 10 },
+            { "level": 3, "atkPower": 2.10, "maxStack": 11 },
+            { "level": 4, "atkPower": 2.10, "maxStack": 12 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addAtkPower": 0.30 },
+            { "level": 2, "addAtkPower": 0.38 },
+            { "level": 3, "addAtkPower": 0.53 },
+            { "level": 4, "addAtkPower": 0.60 }
+        ]
+    }
 }
