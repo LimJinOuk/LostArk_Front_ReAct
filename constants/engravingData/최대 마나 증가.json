@@ -1,6 +1,6 @@
 {
     "engraveName": "최대 마나 증가",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1167",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_122.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

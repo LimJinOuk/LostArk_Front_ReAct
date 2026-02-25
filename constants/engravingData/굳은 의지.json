@@ -1,6 +1,6 @@
 {
     "engraveName": "굳은 의지",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1123",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_44.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

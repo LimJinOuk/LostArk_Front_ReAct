@@ -1,6 +1,6 @@
 {
     "engraveName": "분쇄의 주먹",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1236",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_83.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

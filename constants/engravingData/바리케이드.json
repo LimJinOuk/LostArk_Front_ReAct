@@ -1,6 +1,6 @@
 {
     "engraveName": "바리케이드",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1253",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_170.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

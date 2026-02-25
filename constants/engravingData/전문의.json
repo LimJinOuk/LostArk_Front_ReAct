@@ -1,6 +1,6 @@
 {
     "engraveName": "전문의",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1301",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_237.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

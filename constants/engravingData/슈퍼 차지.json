@@ -1,6 +1,6 @@
 {
     "engraveName": "슈퍼 차지",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1121",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Achieve/achieve_06_14.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

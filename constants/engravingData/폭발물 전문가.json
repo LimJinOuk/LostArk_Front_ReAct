@@ -1,6 +1,6 @@
 {
     "engraveName": "폭발물 전문가",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1241",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_121.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

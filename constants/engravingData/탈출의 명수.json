@@ -1,6 +1,6 @@
 {
     "engraveName": "탈출의 명수",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1202",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_10.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",

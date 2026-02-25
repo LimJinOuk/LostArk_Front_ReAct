@@ -1,6 +1,6 @@
 {
     "engraveName": "시선 집중",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1298",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/ability/ability_234.png",
     "finalEffects": [
         {
             "grade": "전설 4단계 기준 최종 적용 효과",
