@@ -6,7 +6,6 @@ import { SynergyBuffTab } from "./SynergyBuffTab";
 import { ResultTab } from "./Result";
 import { ArkPassiveBoard } from "./ArkPassiveBoard.tsx";
 import engravingIconMap from "@/components/profile/tabs/engravingsIdTable.json";
-import JewelryTooltip from "@/components/profile/Tooltip/JewelryTooltip.tsx";
 import { CharacterInfo } from "@/types.ts";
 import { SimTab } from "./SimulatorNav";
 import {AccessoryItem} from "@/components/simulator/container/accessory/AccessoryItem.tsx";
@@ -377,237 +376,6 @@ type GemSlotProps = {
     setPick: (index: number, pick: GemPick | null) => void;
 };
 
-const GemSlot = ({
-                     gem,
-                     index,
-                     hoverIdx,
-                     hoverData,
-                     setHoverIdx,
-                     setHoverData,
-                     isCenter = false,
-                     pick,
-                     setPick,
-                 }: GemSlotProps) => {
-
-
-
-    const sizeClasses = isCenter ? "w-14 h-14" : "w-12 h-12";
-
-    const [open, setOpen] = useState(false);
-    const wrapRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        if (!open) return;
-        const onDown = (e: MouseEvent) => {
-            if (!wrapRef.current) return;
-            if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
-        };
-        window.addEventListener("mousedown", onDown);
-        return () => window.removeEventListener("mousedown", onDown);
-    }, [open]);
-
-    let skillIcon = gem?.Icon;
-    let gradeColor = "#1f2937";
-
-    // ✅ 기존 gem tooltip에서 아이콘/등급색 추출 유지
-    try {
-        if (gem?.Tooltip) {
-            const tooltip =
-                typeof gem.Tooltip === "string" ? JSON.parse(gem.Tooltip) : gem.Tooltip;
-            skillIcon = tooltip.Element_001?.value?.slotData?.iconPath || gem.Icon;
-            const gradeName = tooltip.Element_001?.value?.leftStr0 || gem.Grade || "";
-
-            if (gradeName.includes("고대")) gradeColor = "#2a4d4f";
-            else if (gradeName.includes("유물")) gradeColor = "#4d2b14";
-            else if (gradeName.includes("전설")) gradeColor = "#45381a";
-        }
-    } catch {
-        skillIcon = gem?.Icon;
-    }
-
-    // ✅ 핵심: pick이 있으면 그 아이콘으로 덮어쓰기
-    if (pick) {
-        const pickedIcon = GEM_ICON_URL[pick.kind]?.[pick.level];
-        if (pickedIcon) skillIcon = pickedIcon;
-    }
-
-    const label = pick ? `Lv.${pick.level} ${pick.kind}` : gem ? `Lv.${gem.Level}` : "선택";
-
-    const selectPick = (kind: GemKind, level: number) => {
-        setPick(index, { kind, level });
-        setOpen(false);
-    };
-
-    const clearPick = () => {
-        setPick(index, null);
-        setOpen(false);
-    };
-
-    return (
-        <div
-            ref={wrapRef}
-            className="relative group flex flex-col items-center"
-            onMouseEnter={() => {
-                setHoverIdx(index);
-                setHoverData(gem);
-            }}
-            onMouseLeave={() => {
-                setHoverIdx(null);
-                setHoverData(null);
-            }}
-        >
-            <button
-                type="button"
-                className="flex flex-col items-center cursor-pointer select-none"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    setOpen((v) => !v);
-                }}
-            >
-                {gem || pick ? (
-                    <div
-                        className={`${sizeClasses} rounded-full transition-all duration-300 group-hover:scale-105 flex items-center justify-center overflow-hidden border border-zinc-700/50 shadow-lg`}
-                        style={{
-                            background: `radial-gradient(circle at center, ${gradeColor} 0%, #07090c 100%)`,
-                        }}
-                    >
-                        <img
-                            src={skillIcon}
-                            alt=""
-                            className="w-full h-full object-cover scale-110 drop-shadow-[0_0_5px_rgba(0,0,0,0.8)]"
-                            draggable={false}
-                        />
-                    </div>
-                ) : (
-                    <div className={`${sizeClasses} rounded-full bg-white/5 opacity-10 border border-zinc-800`} />
-                )}
-
-                <span className="mt-1 text-zinc-500 text-[11px] font-bold group-hover:text-zinc-300 transition-colors whitespace-nowrap">
-          {label}
-        </span>
-            </button>
-
-            {/* ✅ 기존 툴팁 유지 */}
-            {hoverIdx === index && hoverData && (
-                <div
-                    className="absolute left-[80%] top-0 z-[9999] pl-4 pt-2 pointer-events-auto"
-                    style={{ width: "max-content" }}
-                >
-                    <div className="animate-in fade-in zoom-in-95 duration-150">
-                        <JewelryTooltip gemData={hoverData} />
-                    </div>
-                </div>
-            )}
-
-            {/* ✅ 드롭다운 */}
-            {open && (
-                <div
-                    className="absolute z-[99999] mt-2 left-1/2 -translate-x-1/2 w-[210px] rounded-2xl border border-white/10 bg-[#0b0f14]/95 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,0.65)] overflow-hidden"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
-                        <div className="text-[12px] font-semibold text-zinc-200">보석 선택</div>
-                        <button
-                            type="button"
-                            onClick={clearPick}
-                            className="text-[11px] text-zinc-300/80 hover:text-zinc-200 underline underline-offset-2"
-                        >
-                            해제
-                        </button>
-                    </div>
-
-                    <div className="max-h-[240px] overflow-auto">
-                        {GEM_KINDS.map((kind) => (
-                            <div key={kind} className="px-3 py-2 border-b border-white/5">
-                                <div className="text-[12px] text-zinc-200/90 mb-2">{kind}</div>
-                                <div className="grid grid-cols-5 gap-1.5 pb-1">
-                                    {GEM_LEVELS.map((lv) => {
-                                        const active = pick?.kind === kind && pick?.level === lv;
-                                        return (
-                                            <button
-                                                key={`${kind}-${lv}`}
-                                                type="button"
-                                                onClick={() => selectPick(kind, lv)}
-                                                className={[
-                                                    "h-7 rounded-xl text-[11px] font-semibold",
-                                                    "border border-white/10",
-                                                    active ? "bg-white/15 text-white" : "bg-black/20 text-zinc-200/90 hover:bg-white/10",
-                                                ].join(" ")}
-                                            >
-                                                {lv}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                {(kind === "겁화" || kind === "작열") && (
-                                    <div className="text-[10px] text-zinc-400 mt-1">(4티어: 공격력 증가 합산 대상)</div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-/* ---------------------- Empty State Search UI ---------------------- */
-const NoCharacterView = ({
-                             onSearch,
-                             searching,
-                             error,
-                         }: {
-    onSearch: (name: string) => void;
-    searching: boolean;
-    error: string | null;
-}) => {
-    const [name, setName] = useState("");
-
-    return (
-        <div className="min-h-[70vh] flex items-center justify-center px-6">
-            <div className="w-full max-w-xl bg-[#121213] border border-white/5 rounded-3xl p-8 shadow-2xl">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                        <ShieldAlert className="text-red-400" />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-black text-white">캐릭터 정보가 없습니다.</h2>
-                        <p className="text-sm text-zinc-400 mt-1">시뮬레이터를 사용하려면 캐릭터를 먼저 검색해 주세요.</p>
-                    </div>
-                </div>
-
-                <div className="mt-6 flex gap-2">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={18}/>
-                        <input
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="캐릭터 이름 입력"
-                            className="w-full pl-10 pr-3 h-12 rounded-xl bg-zinc-950/40 border border-zinc-800 text-zinc-200 outline-none focus:border-indigo-500/40"
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") onSearch(name.trim());
-                            }}
-                        />
-                    </div>
-
-                    <button
-                        onClick={() => onSearch(name.trim())}
-                        disabled={searching || !name.trim()}
-                        className="h-12 px-5 rounded-xl bg-indigo-600 text-white font-black text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-500 transition"
-                    >
-                        {searching ? "검색중..." : "검색"}
-                    </button>
-                </div>
-
-                {error && (
-                    <div className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl p-3">{error}</div>
-                )}
-            </div>
-        </div>
-    );
-};
-
 export type SimulatorHandle = {
     runSimulation: () => void;
 };
@@ -824,19 +592,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
         });
     };
 
-    const engravingDescToHtml = (desc: string) => {
-        if (!desc) return "";
-
-        let html = desc
-            .replace(
-                /<FONT\s+COLOR=['"](#?[0-9a-fA-F]{6})['"]>/g,
-                `<span style="color:$1">`
-            )
-            .replace(/<\/FONT>/g, `</span>`);
-
-        html = html.replace(/\n/g, "<br />");
-        return html;
-    };
 
     // ✅ [추가] 젬 효과(추가피해/보스피해/공격력) 레벨을 사용자 입력으로만 변경 가능하게
     type EditableGemEffectKey = "atk" | "add" | "boss";
@@ -987,9 +742,26 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
         return (engravingIconMap as Record<string, string>)[key] || "";
     };
 
+    const handleEngravingUpdate = (index: number, updatedEng: any) => {
+        setEngravings((prev: any) => {
+                if (!prev) return prev;
+                // 새로운 리스트 생성 (불변성 유지)
+            const nextList = [...(prev.ArkPassiveEffects ?? [])];
+            nextList[index] = updatedEng;
+
+                // 2. 툴팁 데이터 실시간 동기화
+                // 현재 수정 중인 항목이 호버된 상태라면 툴팁 정보도 함께 업데이트합니다.
+            if (engrHoverIdx === index) {
+                setEngrHoverName(updatedEng.Name);
+                setEngrHoverDesc(updatedEng.Description);
+            }
+            return { ...prev, ArkPassiveEffects: nextList };
+        });
+    };
 
     // 4. 탭별 렌더링 함수 (CharacterCard 방식)
     const renderContent = () => {
+
         switch (activeTab) {
             case "info":
                 return (
@@ -1212,147 +984,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
 
                             {/*보석*/}
 
-                            {/*
-                            <section className="mt-10 w-full flex flex-col items-center px-4 select-none">
-                                <div className="w-full max-w-3xl flex items-center justify-between border-b border-zinc-800/50 pb-2 mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1 h-4 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-                                        <h1 className="text-base font-extrabold text-zinc-200 tracking-tight uppercase">보석</h1>
-                                    </div>
-
-                                    <div className="flex items-center gap-2.5 px-3 py-1.5 backdrop-blur-sm">
-                                        <div className="ml-2 flex items-center gap-2 pl-2 border-l border-white/10">
-                                            <div className="w-1 h-3 bg-rose-400 rounded-full" />
-                                            <span className="text-[12px] text-[#efeff0] font-semibold leading-none">
-                                                기본 공격력 합: +{formatPct(totalGemAtkBonus)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    className="relative w-full max-w-2xl rounded-[40px] border border-white/5 flex items-center justify-center min-h-[280px] md:min-h-[280px] overflow-visible shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
-                                    style={{
-                                        background: "radial-gradient(circle at center, #1a202c 0%, #0d1117 40%, #05070a 100%)",
-                                    }}
-                                >
-                                    <div className="absolute inset-0 z-0 pointer-events-none rounded-[40px] overflow-hidden">
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.15)_0%,_transparent_70%)] animate-pulse" />
-                                        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg_at_50%_50%,_transparent_0%,_rgba(139,92,246,0.08)_15%,_transparent_30%,_rgba(56,189,248,0.08)_60%,_transparent_100%)]" />
-                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.4)_100%)]" />
-                                    </div>
-
-                                    <div className="relative z-10 flex flex-col items-center gap-2 transform scale-[0.85] sm:scale-100 transition-all duration-500">
-                                        <div className="flex items-center gap-12 md:gap-20 mb-1">
-                                            <div className="flex gap-3">
-                                                {[0, 1].map((idx) => (
-                                                    <GemSlot
-                                                        key={idx}
-                                                        gem={gems?.Gems?.[idx]}
-                                                        index={idx}
-                                                        hoverIdx={jewlryHoverIdx}
-                                                        hoverData={jewlryHoverData}
-                                                        setHoverIdx={setJewlryHoverIdx}
-                                                        setHoverData={setJewlryHoverData}
-                                                        pick={gemPicks[idx]}
-                                                        setPick={setPickAt}
-                                                    />
-                                                ))}
-                                            </div>
-
-                                            <div className="flex gap-3">
-                                                {[2, 3].map((idx) => (
-                                                    <GemSlot
-                                                        key={idx}
-                                                        gem={gems?.Gems?.[idx]}
-                                                        index={idx}
-                                                        hoverIdx={jewlryHoverIdx}
-                                                        hoverData={jewlryHoverData}
-                                                        setHoverIdx={setJewlryHoverIdx}
-                                                        setHoverData={setJewlryHoverData}
-                                                        pick={gemPicks[idx]}
-                                                        setPick={setPickAt}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-center gap-4 md:gap-6 -mt-1 relative">
-                                            <GemSlot
-                                                gem={gems?.Gems?.[4]}
-                                                index={4}
-                                                hoverIdx={jewlryHoverIdx}
-                                                hoverData={jewlryHoverData}
-                                                setHoverIdx={setJewlryHoverIdx}
-                                                setHoverData={setJewlryHoverData}
-                                                pick={gemPicks[4]}
-                                                setPick={setPickAt}
-                                            />
-
-                                            <div className="relative">
-                                                <div className="absolute inset-0 bg-blue-500/20 blur-[40px] rounded-full scale-150 animate-pulse" />
-                                                <GemSlot
-                                                    gem={gems?.Gems?.[5]}
-                                                    index={5}
-                                                    hoverIdx={jewlryHoverIdx}
-                                                    hoverData={jewlryHoverData}
-                                                    setHoverIdx={setJewlryHoverIdx}
-                                                    setHoverData={setJewlryHoverData}
-                                                    pick={gemPicks[5]}
-                                                    setPick={setPickAt}
-                                                    isCenter={true}
-                                                />
-                                            </div>
-
-                                            <GemSlot
-                                                gem={gems?.Gems?.[6]}
-                                                index={6}
-                                                hoverIdx={jewlryHoverIdx}
-                                                hoverData={jewlryHoverData}
-                                                setHoverIdx={setJewlryHoverIdx}
-                                                setHoverData={setJewlryHoverData}
-                                                pick={gemPicks[6]}
-                                                setPick={setPickAt}
-                                            />
-                                        </div>
-
-                                        <div className="flex items-center gap-12 md:gap-20 -mt-1">
-                                            <div className="flex gap-3">
-                                                {[7, 8].map((idx) => (
-                                                    <GemSlot
-                                                        key={idx}
-                                                        gem={gems?.Gems?.[idx]}
-                                                        index={idx}
-                                                        hoverIdx={jewlryHoverIdx}
-                                                        hoverData={jewlryHoverData}
-                                                        setHoverIdx={setJewlryHoverIdx}
-                                                        setHoverData={setJewlryHoverData}
-                                                        pick={gemPicks[idx]}
-                                                        setPick={setPickAt}
-                                                    />
-                                                ))}
-                                            </div>
-
-                                            <div className="flex gap-3">
-                                                {[9, 10].map((idx) => (
-                                                    <GemSlot
-                                                        key={idx}
-                                                        gem={gems?.Gems?.[idx]}
-                                                        index={idx}
-                                                        hoverIdx={jewlryHoverIdx}
-                                                        hoverData={jewlryHoverData}
-                                                        setHoverIdx={setJewlryHoverIdx}
-                                                        setHoverData={setJewlryHoverData}
-                                                        pick={gemPicks[idx]}
-                                                        setPick={setPickAt}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>*/}
-
                             <section className="w-full">
                                 <JewelryItem
                                     gems={gems}                        // Simulator에서 관리하는 gems 상태
@@ -1366,6 +997,8 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
 
 
                             {/*각인*/}
+
+
                             <div className="w-full max-w-[1200px] mx-auto bg-[#121213] sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl p-0 sm:p-4">
                                 <div
                                     className="flex flex-col lg:flex-row gap-0 sm:gap-4 h-full w-full"
@@ -1394,6 +1027,7 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                                         setEngrHoverName(name);
                                                         setEngrHoverDesc(desc);
                                                     }}
+                                                    onUpdate={handleEngravingUpdate}
                                                     getIconUrl={getEngravingIconUrl}
                                                     fallbackStoneIcon={FALLBACK_ABILITY_STONE_ICON}
                                                 />
@@ -1406,7 +1040,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                         hoverName={engrHoverName}
                                         hoverDesc={engrHoverDesc}
                                         getIconUrl={getEngravingIconUrl}
-                                        engravingDescToHtml={engravingDescToHtml}
                                     />
                                 </div>
                             </div>

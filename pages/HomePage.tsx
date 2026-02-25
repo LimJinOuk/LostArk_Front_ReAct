@@ -211,7 +211,7 @@ const HomePage: React.FC = () => {
                 <motion.img
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    src={loakong3}
+                    src={loakong6}
                     alt="LOAKONG"
                     /* h-120을 유지하되, -mb(음수 마진)로 아래 요소가 올라오게 함 */
                     className="h-120 object-contain -mb-8 lg:-mb-40 select-none pointer-events-none "

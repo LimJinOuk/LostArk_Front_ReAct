@@ -113,7 +113,7 @@ const GemSlot = ({
                      setPick,
                  }: GemSlotProps) => {
 
-    const sizeClasses = isCenter ? "w-16 h-16" : "w-14 h-14";
+    const sizeClasses = isCenter ? "w-14 h-14" : "w-12 h-12";
 
     const [open, setOpen] = useState(false);
     const wrapRef = useRef<HTMLDivElement | null>(null);
