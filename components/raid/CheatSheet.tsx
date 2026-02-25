@@ -29,7 +29,7 @@ const CheatSheet = () => {
         <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
 
             {/* [모바일] 상단 레이드/관문 선택 메뉴 - RaidPage의 탭 아래에 고정 */}
-            <div className="lg:hidden sticky top-[72px] z-30 -mx-4 px-4 py-3 bg-slate-50/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800 space-y-3">
+            <div className="lg:hidden sticky top-[72px] z-30 -mx-4 px-4 py-3 bg-zinc-950 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800 space-y-3">
                 {/* 레이드 선택 (가로 스크롤) */}
                 <div className="flex overflow-x-auto no-scrollbar gap-2">
                     {raidList.map((raid) => (
@@ -127,6 +127,7 @@ const CheatSheet = () => {
                 </div>
 
                 <div className="p-4 lg:p-8 space-y-3 lg:space-y-4">
+                    {/*}
                     {mockData.map((item, idx) => (
                         <div key={idx} className={`flex items-start lg:items-center gap-4 lg:gap-6 p-4 lg:p-5 rounded-2xl lg:rounded-3xl border-2 transition-all ${
                             item.type === 'danger'
@@ -148,6 +149,8 @@ const CheatSheet = () => {
                             </div>
                         </div>
                     ))}
+                    */}
+                    점검 중....
                 </div>
             </main>
         </div>

@@ -771,8 +771,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
             totalGemAtkBonus,
             gemSkillDamageMap
         });
-        console.log("totalGemAtkBonus:",totalGemAtkBonus)
-        console.log("gemSkillDamageMap", gemSkillDamageMap)
     }, [totalGemAtkBonus, gemSkillDamageMap, onJewelsUpdate]);
 
     const formatPct = (n: number) => `${n.toFixed(2)}%`;
@@ -1113,6 +1111,7 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                             arkGrid={arkGrid}
                                             setArkGrid={setArkGrid}
                                             characterJob={propCharacter.CharacterClassName}
+                                            onArkGridUpdate={onArkGridUpdate}
                                         />
                                     </div>
                                 </section>
@@ -1350,8 +1349,8 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                         </div>
                                     </div>
                                 </div>
-                            </section>
-*/}
+                            </section>*/}
+
                             <section className="w-full">
                                 <JewelryItem
                                     gems={gems}                        // Simulator에서 관리하는 gems 상태

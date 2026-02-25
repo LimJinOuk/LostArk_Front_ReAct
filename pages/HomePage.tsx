@@ -201,7 +201,7 @@ const HomePage: React.FC = () => {
         >
             {/* 로고 영역 */}
             <div className="text-center mb-6 lg:mb-12">
-                <h1 className="text-[42px] lg:text-[80px] font-black tracking-tighter text-white mb-1 lg:mb-2 leading-none">LOKONG</h1>
+                <h1 className="text-[42px] lg:text-[80px] font-black tracking-tighter text-white mb-1 lg:mb-2 leading-none">LOAKONG</h1>
                 <p className="text-zinc-500 lg:text-zinc-400 text-[12px] lg:text-lg font-medium tracking-tight">로스트아크 전적 검색 및 시뮬레이션</p>
             </div>
 
