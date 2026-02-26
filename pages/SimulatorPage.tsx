@@ -195,6 +195,8 @@ export const SimulatorPage: React.FC = () => {
     const mapToArkGridDto = (character: any, arkGridState: any[]) => {
         if (!character || !arkGridState) return null;
 
+
+        console.log(arkGridState)
         const ariGridItems = arkGridState.map(slot => {
             // "질서의 해 코어 : 옵션명" 형태에서 분리
             const nameParts = slot.Name.split(":");
@@ -295,7 +297,10 @@ export const SimulatorPage: React.FC = () => {
                 fetch(`${BACKEND_API_URL}/simulatorJewels`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(jewelsStates),
+                    body: JSON.stringify({
+                        totalGemAtkBonus: jewelsStates.totalGemAtkBonus,
+                        gemSkillDamageMap: jewelsStates.gemSkillDamageMap
+                    }),
                 }),
                 fetch(`${BACKEND_API_URL}/simulatorGemEffect`, {
                     method: "POST",

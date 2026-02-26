@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Home, Shield, Calculator, Gavel, Search, X, Clock, Sparkles, Heart,Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import mokoko from "../../assets/모코코.png";
+import loakong from "../../assets/로콩글자.png";
 import axios from 'axios';
 
 interface HeaderProps {
@@ -216,6 +217,16 @@ const Header: React.FC<HeaderProps> = ({ setIsMenuOpen, isExploding, setIsExplod
                             </button>
 
                             <div onClick={() => navigate('/')} className="flex items-center gap-2 cursor-pointer select-none group">
+                                <motion.img
+                                    src={loakong}
+                                    alt="loakong"
+                                    animate={{ rotate: clickCount * 360 }}
+                                    transition={{
+                                        duration: 0.25, // 회전 속도를 0.4초에서 0.25초로 더 빠르게 수정
+                                        ease: "circOut" // 끝이 더 절도 있게 멈추는 효과
+                                    }}
+                                    className={`w-8 h-8 object-contain transition-all duration-500 ${isExploding ? 'scale-110' : ''}`}
+                                />
                                 <h1 className={`font-black tracking-tighter transition-all duration-500 
                                     ${isExpanded ? 'text-3xl' : 'text-2xl'} 
                                     ${isExploding ? 'text-[#FFC0CB]' : 'text-white'}`}

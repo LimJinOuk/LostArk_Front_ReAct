@@ -348,7 +348,12 @@ const JewelryItem = ({ gems, onJewelsUpdate, hoverIdx, hoverData, setHoverIdx,se
 
     // 값 변경 시 부모 Simulator로 보고
     useEffect(() => {
-        onJewelsUpdate({ totalGemAtkBonus, gemSkillDamageMap });
+        // totalGemAtkBonus: double (예: 1.25)
+        // gemSkillDamageMap: Map<String, Integer> (예: {"앱소버": 40})
+        onJewelsUpdate({
+            totalGemAtkBonus: Number(totalGemAtkBonus.toFixed(2)), // 소수점 정리
+            gemSkillDamageMap
+        });
     }, [totalGemAtkBonus, gemSkillDamageMap, onJewelsUpdate]);
 
     const renderSlot = (idx: number, isCenter = false) => (
