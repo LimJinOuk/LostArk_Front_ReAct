@@ -1,20 +1,29 @@
 {
     "engraveName": "분쇄의 주먹",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1236",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "카운터 성공 시, 3초 동안 자신의 공격력이 18.00% 증가하고, 카운터 중인 대상이 자신 및 파티원에게 받는 피해가 3초 동안 8.00% 증가한다."
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_83.png",
+    "effects": {
+        "description": "카운터 성공 시, 3초 동안 자신의 공격력이 {atkPower}% 증가하고, 카운터 중인 대상이 자신 및 파티원에게 받는 피해가 3초 동안 {damageRed}% 증가한다.",
+        "base": {
+            "atkPower": 12.00,
+            "damageRed": 8.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "카운터 성공 시, 3초 동안 자신의 공격력이 24.00% 증가하고, 카운터 중인 대상이 자신 및 파티원에게 받는 피해가 3초 동안 8.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 카운터 성공 시 3초 동안, 자신의 공격력이 [ 12.00% ] 증가하고, 카운터 중인 대상이 자신 및 파티원에게 받는 피해가 [ 8.00% ] 증가한다.",
-        "legendary": "전설 - 자신의 공격력이 추가로 [ 1.50% / 3.00% / 4.50% / 6.00% ] 증가한다.",
-        "relic": "유물 - 자신의 공격력이 추가로 [ 1.50% / 3.00% / 4.50% / 6.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 카운터 중인 대상이 자신 및 파티원에게 받는 피해가 추가로 [ 3.00% / 3.75% / 5.25% / 6.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "atkPower": 13.50, "damageRed": 8.00 },
+            { "level": 2, "atkPower": 15.00, "damageRed": 8.00 },
+            { "level": 3, "atkPower": 16.50, "damageRed": 8.00 },
+            { "level": 4, "atkPower": 18.00, "damageRed": 8.00 }
+        ],
+        "relic": [
+            { "level": 1, "atkPower": 19.50, "damageRed": 8.00 },
+            { "level": 2, "atkPower": 21.00, "damageRed": 8.00 },
+            { "level": 3, "atkPower": 22.50, "damageRed": 8.00 },
+            { "level": 4, "atkPower": 24.00, "damageRed": 8.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addDamageRed": 3.00 },
+            { "level": 2, "addDamageRed": 3.75 },
+            { "level": 3, "addDamageRed": 5.25 },
+            { "level": 4, "addDamageRed": 6.00 }
+        ]
+    }
 }

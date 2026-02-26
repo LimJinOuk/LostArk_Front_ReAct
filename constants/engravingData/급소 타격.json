@@ -1,20 +1,28 @@
 {
     "engraveName": "급소 타격",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1142",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "무력화 공격 시 주는 무력화 수치가 32.00% 증가한다."
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_168.png",
+    "effects": {
+        "description": "무력화 공격 시 주는 무력화 수치가 {stagger}% 증가한다.",
+        "base": {
+            "stagger": 27.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "무력화 공격 시 주는 무력화 수치가 37.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 무력화 공격 시 주는 무력화 수치가 [ 27.00% ] 증가한다.",
-        "legendary": "전설 - 무력화 공격 시 주는 무력화 수치가 추가로 [ 1.25% / 2.50% / 3.75% / 5.00% ] 증가한다.",
-        "relic": "유물 - 무력화 공격 시 주는 무력화 수치가 추가로 [ 1.25% / 2.50% / 3.75% / 5.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 무력화 공격 시 주는 무력화 수치가 추가로 [ 4.00% / 5.00% / 7.00% / 8.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "stagger": 28.25 },
+            { "level": 2, "stagger": 29.50 },
+            { "level": 3, "stagger": 30.75 },
+            { "level": 4, "stagger": 32.00 }
+        ],
+        "relic": [
+            { "level": 1, "stagger": 33.25 },
+            { "level": 2, "stagger": 34.50 },
+            { "level": 3, "stagger": 35.75 },
+            { "level": 4, "stagger": 37.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addStagger": 4.00 },
+            { "level": 2, "addStagger": 5.00 },
+            { "level": 3, "addStagger": 7.00 },
+            { "level": 4, "addStagger": 8.00 }
+        ]
+    }
 }

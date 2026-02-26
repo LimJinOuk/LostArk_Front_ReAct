@@ -1,20 +1,28 @@
 {
     "engraveName": "불굴",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1235",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "잃은 생명력에 비례하여 받는 피해가 감소한다. (최대 28.00%)"
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_66.png",
+    "effects": {
+        "description": "잃은 생명력에 비례하여 받는 피해가 감소한다. (최대 {maxReduction}%)",
+        "base": {
+            "maxReduction": 24.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "잃은 생명력에 비례하여 받는 피해가 감소한다. (최대 32.00%)"
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 잃은 생명력에 비례하여 받는 피해가 감소한다. (최대 [ 24.00% ])",
-        "legendary": "전설 - 받는 피해 감소량의 최대값이 추가로 [ 1.00% / 2.00% / 3.00% / 4.00% ] 증가한다.",
-        "relic": "유물 - 받는 피해 감소량의 최대값이 추가로 [ 1.00% / 2.00% / 3.00% / 4.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 받는 피해 감소량의 최대값이 추가로 [ 4.00% / 5.00% / 7.00% / 8.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "maxReduction": 25.00 },
+            { "level": 2, "maxReduction": 26.00 },
+            { "level": 3, "maxReduction": 27.00 },
+            { "level": 4, "maxReduction": 28.00 }
+        ],
+        "relic": [
+            { "level": 1, "maxReduction": 29.00 },
+            { "level": 2, "maxReduction": 30.00 },
+            { "level": 3, "maxReduction": 31.00 },
+            { "level": 4, "maxReduction": 32.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addMaxReduction": 4.00 },
+            { "level": 2, "addMaxReduction": 5.00 },
+            { "level": 3, "addMaxReduction": 7.00 },
+            { "level": 4, "addMaxReduction": 8.00 }
+        ]
+    }
 }

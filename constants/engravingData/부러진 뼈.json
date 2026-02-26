@@ -1,20 +1,28 @@
 {
     "engraveName": "부러진 뼈",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1245",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "무력화 중인 대상에게 주는 피해가 37.00% 증가한다."
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_94.png",
+    "effects": {
+        "description": "무력화 중인 대상에게 주는 피해가 {damage}% 증가한다.",
+        "base": {
+            "damage": 32.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "무력화 중인 대상에게 주는 피해가 42.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 무력화 중인 대상에게 주는 피해가 [ 32.00% ] 증가한다.",
-        "legendary": "전설 - 무력화 중인 대상에게 주는 피해가 추가로 [ 1.25% / 2.50% / 3.75% / 5.00% ] 증가한다.",
-        "relic": "유물 - 무력화 중인 대상에게 주는 피해가 추가로 [ 1.25% / 2.50% / 3.75% / 5.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 무력화 중인 대상에게 주는 피해가 추가로 [ 4.00% / 5.00% / 7.00% / 8.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "damage": 33.25 },
+            { "level": 2, "damage": 34.50 },
+            { "level": 3, "damage": 35.75 },
+            { "level": 4, "damage": 37.00 }
+        ],
+        "relic": [
+            { "level": 1, "damage": 38.25 },
+            { "level": 2, "damage": 39.50 },
+            { "level": 3, "damage": 40.75 },
+            { "level": 4, "damage": 42.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addDamage": 4.00 },
+            { "level": 2, "addDamage": 5.00 },
+            { "level": 3, "addDamage": 7.00 },
+            { "level": 4, "addDamage": 8.00 }
+        ]
+    }
 }

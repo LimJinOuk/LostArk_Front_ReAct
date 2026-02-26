@@ -1,20 +1,28 @@
 {
     "engraveName": "질량 증가",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1295",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "공격속도가 10.00% 감소하지만, 적에게 주는 피해가 16.00% 증가한다."
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_231.png",
+    "effects": {
+        "description": "공격속도가 10.00% 감소하지만, 적에게 주는 피해가 {damage}% 증가한다.",
+        "base": {
+            "damage": 13.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "공격속도가 10.00% 감소하지만, 적에게 주는 피해가 19.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 공격속도가 10.00% 감소하지만 적에게 주는 피해가 [ 13.00% ] 증가한다.",
-        "legendary": "전설 - 적에게 주는 피해가 추가로 [ 0.75% / 1.50% / 2.25% / 3.00% ] 증가한다.",
-        "relic": "유물 - 적에게 주는 피해가 추가로 [ 0.75% / 1.50% / 2.25% / 3.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 적에게 주는 피해가 추가로 [ 3.00% / 3.75% / 5.25% / 6.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "damage": 13.75 },
+            { "level": 2, "damage": 14.50 },
+            { "level": 3, "damage": 15.25 },
+            { "level": 4, "damage": 16.00 }
+        ],
+        "relic": [
+            { "level": 1, "damage": 16.75 },
+            { "level": 2, "damage": 17.50 },
+            { "level": 3, "damage": 18.25 },
+            { "level": 4, "damage": 19.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addDamage": 3.00 },
+            { "level": 2, "addDamage": 3.75 },
+            { "level": 3, "addDamage": 5.25 },
+            { "level": 4, "addDamage": 6.00 }
+        ]
+    }
 }

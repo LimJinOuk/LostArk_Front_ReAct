@@ -1,20 +1,28 @@
 {
     "engraveName": "중갑 착용",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1240",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "모든 방어력이 90.00% 증가한다. 중갑 착용으로 인해 증가된 방어력은 방어력 감소 효과에 영향받지 않는다."
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_46.png",
+    "effects": {
+        "description": "모든 방어력이 {def}% 증가한다. 중갑 착용으로 인해 증가된 방어력은 방어력 감소 효과에 영향받지 않는다.",
+        "base": {
+            "def": 74.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "모든 방어력이 106.00% 증가한다. 중갑 착용으로 인해 증가된 방어력은 방어력 감소 효과에 영향받지 않는다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 모든 방어력이 [ 74.00% ] 증가한다. 중갑 착용으로 인해 증가된 방어력은 방어력 감소 효과에 영향받지 않는다.",
-        "legendary": "전설 - 모든 방어력이 추가로 [ 4.00% / 8.00% / 12.00% / 16.00% ] 증가한다.",
-        "relic": "유물 - 모든 방어력이 추가로 [ 4.00% / 8.00% / 12.00% / 16.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 모든 방어력이 추가로 [ 12.00% / 15.00% / 21.00% / 24.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "def": 78.00 },
+            { "level": 2, "def": 82.00 },
+            { "level": 3, "def": 86.00 },
+            { "level": 4, "def": 90.00 }
+        ],
+        "relic": [
+            { "level": 1, "def": 94.00 },
+            { "level": 2, "def": 98.00 },
+            { "level": 3, "def": 102.00 },
+            { "level": 4, "def": 106.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addDef": 12.00 },
+            { "level": 2, "addDef": 15.00 },
+            { "level": 3, "addDef": 21.00 },
+            { "level": 4, "addDef": 24.00 }
+        ]
+    }
 }

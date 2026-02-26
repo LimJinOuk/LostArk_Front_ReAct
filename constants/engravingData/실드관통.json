@@ -1,20 +1,28 @@
 {
     "engraveName": "실드관통",
-    "sourceUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1237",
-    "finalEffects": [
-        {
-            "grade": "전설 4단계 기준 최종 적용 효과",
-            "desc": "실드에 주는 피해가 92.00% 증가한다."
+    "iconUrl": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_89.png",
+    "effects": {
+        "description": "실드에 주는 피해가 {shieldDamage}% 증가한다.",
+        "base": {
+            "shieldDamage": 76.00
         },
-        {
-            "grade": "유물 4단계 기준 최종 적용 효과",
-            "desc": "실드에 주는 피해가 108.00% 증가한다."
-        }
-    ],
-    "gradeEffects": {
-        "base": "기본 - 실드에 주는 피해가 [ 76.00% ] 증가한다.",
-        "legendary": "전설 - 실드에 주는 피해가 추가로 [ 4.00% / 8.00% / 12.00% / 16.00% ] 증가한다.",
-        "relic": "유물 - 실드에 주는 피해가 추가로 [ 4.00% / 8.00% / 12.00% / 16.00% ] 증가한다."
-    },
-    "stoneEffect": "어빌리티 스톤 장착 효과 실드에 주는 피해가 추가로 [ 16.00% / 20.00% / 28.00% / 32.00% ] 증가한다."
+        "legendary": [
+            { "level": 1, "shieldDamage": 80.00 },
+            { "level": 2, "shieldDamage": 84.00 },
+            { "level": 3, "shieldDamage": 88.00 },
+            { "level": 4, "shieldDamage": 92.00 }
+        ],
+        "relic": [
+            { "level": 1, "shieldDamage": 96.00 },
+            { "level": 2, "shieldDamage": 100.00 },
+            { "level": 3, "shieldDamage": 104.00 },
+            { "level": 4, "shieldDamage": 108.00 }
+        ],
+        "abilityStone": [
+            { "level": 1, "addShieldDamage": 16.00 },
+            { "level": 2, "addShieldDamage": 20.00 },
+            { "level": 3, "addShieldDamage": 28.00 },
+            { "level": 4, "addShieldDamage": 32.00 }
+        ]
+    }
 }

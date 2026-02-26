@@ -23,6 +23,12 @@ import {
     CartesianGrid,
     LabelList
 } from 'recharts'
+import loakong1 from "@/assets/로콩1.png";
+import loakong2 from "@/assets/로콩2.png";
+import loakong3 from "@/assets/로콩3.png";
+import loakong4 from "@/assets/로콩4.png";
+import loakong5 from "@/assets/로콩5.png";
+import loakong6 from "@/assets/로콩6.png";
 
 interface MarketItem {
     Id: number;
@@ -197,14 +203,24 @@ const HomePage: React.FC = () => {
         <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center min-h-screen pt-6 lg:pt-10 mx-auto max-w-7xl px-4 lg:px-6 pb-20"
+            className="flex flex-col items-center min-h-screen pt-6 lg:-mt-40 mx-auto max-w-7xl px-4 lg:px-6 pb-20"
         >
             {/* 로고 영역 */}
-            <div className="text-center mb-6 lg:mb-12">
-                <h1 className="text-[42px] lg:text-[80px] font-black tracking-tighter text-white mb-1 lg:mb-2 leading-none">LOAKONG</h1>
-                <p className="text-zinc-500 lg:text-zinc-400 text-[12px] lg:text-lg font-medium tracking-tight">로스트아크 전적 검색 및 시뮬레이션</p>
-            </div>
+            {/* 로고 영역 */}
+            <div className="flex flex-col items-center text-center mb-6 lg:mb-10">
+                <motion.img
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    src={loakong6}
+                    alt="LOAKONG"
+                    /* h-120을 유지하되, -mb(음수 마진)로 아래 요소가 올라오게 함 */
+                    className="h-120 object-contain -mb-8 lg:-mb-40 select-none pointer-events-none "
+                />
 
+                <p className="text-zinc-500 lg:text-zinc-400 text-[12px] lg:text-lg font-medium tracking-tight">
+                    로스트아크 전적 검색 및 시뮬레이션
+                </p>
+            </div>
             {/* 메인 검색창 */}
             <div className="w-full max-w-2xl relative group mb-8 lg:mb-16" ref={historyRef}>
                 <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-900 rounded-[1.5rem] lg:rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
