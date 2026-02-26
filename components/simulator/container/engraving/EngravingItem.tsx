@@ -11,7 +11,7 @@ const ALL_ENGRAVINGS = [
     "추진력", "타격의 대가", "탈출의 명수", "폭발물 전문가"
 ];
 
-const ALL_GRADES = ["유물", "전설", "영웅", "희귀", "고급", "일반"];
+const ALL_GRADES = ["유물", "전설"];
 
 const getGradeColor = (grade: string) => {
     switch (grade) {

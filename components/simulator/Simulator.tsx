@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState , forwardRef, useImperativeHandle} from "react";
 import { useLocation } from "react-router-dom";
-import { Loader2, Search, ShieldAlert, Diamond } from "lucide-react";
+import { Loader2, Search, ShieldAlert, Diamond,RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SynergyBuffTab } from "./SynergyBuffTab";
 import { ResultTab } from "./Result";
@@ -30,6 +30,7 @@ interface SimulatorProps {
         gemSkillDamageMap: Record<string, number>; // 이 줄을 추가
     }) => void;
     onGemEffectUpdate: (data: any) => void;
+    onEngravingUpdate: (engravings: any[]) => void;
 }
 
 interface EquipmentItemProps {
@@ -382,7 +383,7 @@ export type SimulatorHandle = {
 
 /* ---------------------- 메인 컴포넌트 ---------------------- */
 export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
-    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate, onJewelsUpdate, onGemEffectUpdate}, ref) => {
+    ({ character: propCharacter, activeTab, onEquipmentUpdate, onAccessoryUpdate, accessoryStates, onArkGridUpdate, onJewelsUpdate, onGemEffectUpdate, onEngravingUpdate}, ref) => {
     const location = useLocation();
 
 
@@ -444,6 +445,7 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
     const [engrHoverIdx, setEngrHoverIdx] = useState<number | null>(null);
     const [engrHoverName, setEngrHoverName] = useState<string | null>(null);
     const [engrHoverDesc, setEngrHoverDesc] = useState<string>("");
+    const originalEngravingsRef = useRef<any>(null);
 
     const extractGemEffect = (tooltipStr: string) => {
         try {
@@ -554,6 +556,13 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
             setArkData(JSON.parse(JSON.stringify(originalArkPassive)));
         }
     }, [originalArkPassive]);
+
+        useEffect(() => {
+            if (engravings?.ArkPassiveEffects) {
+                // 부모(SimulatorPage)의 setEngravingState를 실행시키는 구문
+                onEngravingUpdate(engravings.ArkPassiveEffects);
+            }
+        }, [engravings, onEngravingUpdate]);
 
     const updateLevel = (nodeName: string, delta: number, maxLv: number) => {
         if (!arkData) return;
@@ -711,7 +720,11 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                 setEquipments(Array.isArray(eqData) ? eqData : []);
                 setArkGrid(arkData2 ?? null);
                 setGems(gemData ?? null);
+
                 setEngravings(engData ?? null);
+                if (engData) {
+                    originalEngravingsRef.current = safeClone(engData);
+                }
 
                 setOriginalArkPassive(passiveData ?? null);
                 setSimArkPassive(passiveData ? safeClone(passiveData) : null);
@@ -759,6 +772,21 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
         });
     };
 
+    //각인 초기화 핸들러
+    const handleResetEngravings = () => {
+        if (!originalEngravingsRef.current) {
+            alert("초기 데이터가 존재하지 않습니다.");
+            return;
+        }
+        // 저장해둔 원본 데이터를 다시 적용 (깊은 복사로 참조 끊기)
+        const originalData = safeClone(originalEngravingsRef.current);
+        setEngravings(originalData);
+
+        // 툴팁/헤더 상태도 초기화 (선택된 게 없는 상태로)
+        setEngrHoverIdx(null);
+        setEngrHoverName(null);
+        setEngrHoverDesc("");
+    };
     // 4. 탭별 렌더링 함수 (CharacterCard 방식)
     const renderContent = () => {
 
@@ -997,8 +1025,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
 
 
                             {/*각인*/}
-
-
                             <div className="w-full max-w-[1200px] mx-auto bg-[#121213] sm:rounded-2xl border-y sm:border border-white/5 shadow-2xl p-0 sm:p-4">
                                 <div
                                     className="flex flex-col lg:flex-row gap-0 sm:gap-4 h-full w-full"
@@ -1010,10 +1036,25 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                 >
                                     {/* [왼쪽 리스트 섹션] */}
                                     <section className="w-full lg:basis-1/2 flex-1 bg-[#1c1c1e]/50 sm:rounded-xl border-b sm:border border-white/5 p-4 shadow-inner min-w-0">
-                                        <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4 mb-4">
-                                            <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
-                                            <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">활성 각인</h1>
+                                        <div className="flex items-center justify-between border-b border-zinc-800/50 pb-4 mb-4">
+                                            {/* 타이틀 영역 (왼쪽) */}
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1.5 h-5 bg-blue-950 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div>
+                                                <h1 className="text-[14px] sm:text-[15px] font-extrabold text-white tracking-tight uppercase">
+                                                    활성 각인
+                                                </h1>
+                                            </div>
+
+                                            {/* 초기화 버튼 (오른쪽 끝) */}
+                                            <button
+                                                onClick={handleResetEngravings}
+                                                className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/5 hover:bg-red-500/10 hover:border-red-500/20 transition-all active:scale-95"
+                                            >
+                                                <RotateCcw size={12} className="text-zinc-500 group-hover:text-red-400 transition-transform group-hover:-rotate-45" />
+                                                <span className="text-[11px] font-bold text-zinc-500 group-hover:text-red-400">초기화</span>
+                                            </button>
                                         </div>
+
 
                                         <div className="flex flex-col gap-1.5">
                                             {(engravings?.ArkPassiveEffects ?? []).map((eng, i) => (
