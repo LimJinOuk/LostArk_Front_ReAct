@@ -59,59 +59,44 @@ export const SimulatorPage: React.FC = () => {
     const [accessoryStates, setAccessoryStates] = useState<Record<string, any>>({});
     //아크 그리드 Post 요청
     const [arkGridState, setArkGridState] = useState<any[]>([]);
-    //보석 아크 그리드 Post 요청
+    //보석 Post 요청
     const [jewelsStates, setJewelsStates] = useState({ totalGemAtkBonus: 0, gemSkillDamageMap: {} as Record<string, number> });
 
     const [gemEffectState, setGemEffectState] = useState({ atk: 0, add: 0, boss: 0 });
-
+    //각인 POST 요청
+    const [engravingState, setEngravingState] = useState<any[]>([]);
     // 장비 업데이트 핸들러
     const handleEquipmentUpdate = useCallback((partName: string, data: any) => {
-        setEquipmentStates(prev => {
-            // 현재 값과 새로운 값이 완전히 같으면 상태를 업데이트하지 않음 (무한 루프 방지)
-            if (JSON.stringify(prev[partName]) === JSON.stringify(data)) {
-                return prev;
-            }
-            return {
-                ...prev,
-                [partName]: data
-            };
-        });
-    }, []); // 의존성 배열을 비워둡니다.
+        setEquipmentStates(prev => ({
+            ...prev,
+            [partName]: data,
+        }));
+    }, []);
 
     // 악세사리 업데이트 핸들러
     const handleAccessoryUpdate = useCallback((partName: string, data: any) => {
-        setAccessoryStates(prev => {
-            // 데이터가 이전과 동일하면 리렌더링 방지
-            if (JSON.stringify(prev[partName]) === JSON.stringify(data)) {
-                return prev;
-            }
-            return {
-                ...prev,
-                [partName]: data
-            };
-        });
+        setAccessoryStates(prev => ({
+            ...prev,
+            [partName]: data,
+        }));
     }, []);
     // 아크 그리드 업데이트 핸들러
     const handleArkGridUpdate = useCallback((slots: any[]) => {
         setArkGridState(slots);
     }, []);
 
-    // 2. 보석 업데이트 핸들러 (장비 방식과 동일하게 표준화)
+    // 2. 보석 업데이트 핸들러
     const handleJewelsUpdate = useCallback((data: { totalGemAtkBonus: number; gemSkillDamageMap: Record<string, number> }) => {
-        setJewelsStates(prev => {
-            // 값 비교 로직 (최적화)
-            const isSameBonus = prev.totalGemAtkBonus === data.totalGemAtkBonus;
-            const isSameMap = JSON.stringify(prev.gemSkillDamageMap) === JSON.stringify(data.gemSkillDamageMap);
-
-            if (isSameBonus && isSameMap) {
-                return prev;
-            }
-            return data;
-        });
+        setJewelsStates(data);
     }, []);
 
     const handleGemEffectUpdate = useCallback((data: { atk: number; add: number; boss: number }) => {
         setGemEffectState(data);
+    }, []);
+
+    // 각인 업데이트 핸들러
+    const handleEngravingUpdate = useCallback((engravings: any[]) => {
+        setEngravingState(engravings);
     }, []);
 
     // ✅ [추가] 백엔드 콘솔 확인용 Bulk 요청 로직
@@ -196,7 +181,6 @@ export const SimulatorPage: React.FC = () => {
         if (!character || !arkGridState) return null;
 
 
-        console.log(arkGridState)
         const ariGridItems = arkGridState.map(slot => {
             // "질서의 해 코어 : 옵션명" 형태에서 분리
             const nameParts = slot.Name.split(":");
@@ -261,6 +245,21 @@ export const SimulatorPage: React.FC = () => {
         };
     };
 
+    const mapToEngravingDto = (characterName: string, engravingState: any[]) => {
+        if (!engravingState || engravingState.length === 0) return null;
+
+        return {
+            characterName: characterName,
+            engravings: engravingState.map(eng => ({
+                name: eng.Name || "각인 선택",
+                level: Number(eng.Level) || 0,
+                grade: eng.Grade || "일반",
+                abilityStoneLevel: Number(eng.AbilityStoneLevel) || 0,
+                //description: eng.Description || ""
+            }))
+        };
+    };
+
     const handleRunSimulation = async () => {
         setTab("result");
         if (!nameParam) return;
@@ -269,10 +268,9 @@ export const SimulatorPage: React.FC = () => {
 
         const weaponInfo = getCalculatedWeaponInfo(equipmentStates);
         const arkGridData = mapToArkGridDto(character, arkGridState);
-        console.log(arkGridData);
         const finalAccessoriesDto = formatAccessoriesPayload(accessoryStates);
-        // 콘솔에서 수정된 값이 반영되었는지 확인해보세요
-        console.log("전송될 무기 정보:", weaponInfo);
+        const engravingData = mapToEngravingDto(nameParam, engravingState);
+
         try {
             // 장비 정보와 악세사리 정보를 각각의 엔드포인트로 전송
             await Promise.all([
@@ -307,11 +305,13 @@ export const SimulatorPage: React.FC = () => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(gemEffectState),
                 }),
+                fetch(`${BACKEND_API_URL}/simulatorEngravings`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(engravingData),
+                }),
             ]);
-            console.log("아크 그리드 최적화 데이터 전송 완료:", arkGridData);
-            console.log("시뮬레이션 요청 완료");
-            console.log(accessoryStates);
-            console.log(weaponInfo);
+            // Intentionally no console logs in production path.
         } catch (e) {
             console.error("Simulation request failed", e);
         }
@@ -431,6 +431,7 @@ export const SimulatorPage: React.FC = () => {
                         accessoryStates={accessoryStates}         // ✅ 현재 상태 전달 확인
                         onArkGridUpdate={handleArkGridUpdate} //
                         onGemEffectUpdate={handleGemEffectUpdate}
+                        onEngravingUpdate={handleEngravingUpdate}
                     />
                 </div>
             </main>

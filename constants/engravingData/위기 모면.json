@@ -1,6 +1,6 @@
 {
     "engraveName": "위기 모면",
-    "iconUrl": "https://lostark.inven.co.kr/dataninfo/engrave?code=1140",
+    "iconUrl": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_162.png",
     "effects": {
         "description": "죽음에 이르는 피해를 입으면 3초 간 무적이 되며, 효과 적용 중 받은 피해의 {recovery}%를 회복한다. (재사용 대기시간 {cooldown}초)",
         "base": {

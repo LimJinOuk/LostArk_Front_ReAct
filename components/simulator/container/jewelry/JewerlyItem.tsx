@@ -3,7 +3,8 @@ import JewelryItemTooltip from "@/components/simulator/container/jewelry/Jewelry
 import Annihilation from "@/constants/JewelyData/Annihilation.json"; // 멸화
 import Searing from "@/constants/JewelyData/Searing.json";           // 작열
 import Engulfing from "@/constants/JewelyData/Engulfing.json";       // 겁화
-import Prominence from "@/constants/JewelyData/Prominence.json";      // 홍염
+import Prominence from "@/constants/JewelyData/Prominence.json";
+import {RotateCcw} from "lucide-react";      // 홍염
 
 type GemSlotProps = {
     gem: any;
@@ -386,20 +387,10 @@ const JewelryItem = ({ gems, onJewelsUpdate, hoverIdx, hoverData, setHoverIdx,se
                     {/* 초기화 버튼 (공격력 합 왼쪽 옆) */}
                     <button
                         onClick={handleReset}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all text-[11px] font-medium group"
+                        className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/5 border border-white/5 hover:bg-red-500/10 hover:border-red-500/20 transition-all active:scale-95"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="12" height="12"
-                            viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" strokeWidth="2.5"
-                            strokeLinecap="round" strokeLinejoin="round"
-                            className="group-hover:rotate-[-180deg] transition-transform duration-500"
-                        >
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                            <path d="M3 3v5h5"/>
-                        </svg>
-                        초기화
+                        <RotateCcw size={12} className="text-zinc-500 group-hover:text-red-400 transition-transform group-hover:-rotate-45" />
+                        <span className="text-[11px] font-bold text-zinc-500 group-hover:text-red-400">초기화</span>
                     </button>
 
                     {/* 공격력 정보 */}
