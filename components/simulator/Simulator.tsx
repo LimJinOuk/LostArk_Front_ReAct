@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SynergyBuffTab } from "./SynergyBuffTab";
 import { ResultTab } from "./Result";
 import { ArkPassiveBoard } from "./ArkPassiveBoard.tsx";
-import engravingIconMap from "@/components/profile/tabs/engravingsIdTable.json";
+import engravingIconMap from "@/constants/engravingData/engravingsIdTable.json";
 import { CharacterInfo } from "@/types.ts";
 import { SimTab } from "./SimulatorNav";
 import {AccessoryItem} from "@/components/simulator/container/accessory/AccessoryItem.tsx";
@@ -14,6 +14,18 @@ import ArkGridItem from "@/components/simulator/container/arkGrid/ArkGridItem.ts
 import JewelryItem from "@/components/simulator/container/jewelry/JewerlyItem.tsx";
 import EngravingItem from "@/components/simulator/container/engraving/EngravingItem.tsx";
 import EngravingTooltip from "@/components/simulator/container/engraving/EngravingItemTooltip.tsx";
+import { safeClone, safeJsonParse } from "@/components/simulator/utils/clone";
+import { buildArkPassivePayload } from "@/components/simulator/utils/arkPassivePayload";
+import {
+    GEM_DAMAGE_TABLE,
+    GEM_ICON_URL,
+    GEM_KINDS,
+    GEM_LEVELS,
+    T4_ATK_BONUS_BY_LEVEL,
+    type GemKind,
+    type GemPick,
+} from "@/components/simulator/gems/constants";
+import { extractGemEffect, inferGemKindFromEquippedGem } from "@/components/simulator/gems/parsing";
 
 type CharacterInfoCompat = CharacterInfo & { CharacterName?: string };
 
@@ -149,216 +161,26 @@ const getQualityColor = (q: number) => {
 const FALLBACK_ABILITY_STONE_ICON =
     "https://cdn-lostark.game.onstove.com/2018/obt/assets/images/common/game/ico_ability_stone_symbol.png";
 
-function safeClone<T>(v: T): T {
-    try {
-        return JSON.parse(JSON.stringify(v));
-    } catch {
-        return v;
-    }
-}
+// 재련 옵션은 매 렌더마다 새로 만들 필요가 없으므로
+// 모듈 레벨 상수로 한 번만 생성해서 재사용합니다.
+const REINFORCE_OPTIONS: Array<{ label: string; value: number; tier: number }> = [
+    // 4티어
+    ...Array.from({ length: 20 }, (_, i) => ({
+        label: `4티어 +${25 - i}`,
+        value: 25 - i,
+        tier: 4,
+    })),
+    // 일리아칸
+    ...Array.from({ length: 17 }, (_, i) => ({
+        label: `일리아칸 +${25 - i}`,
+        value: 25 - i,
+        tier: 3,
+    })),
+].filter(opt => opt.value >= 9);
 
 /* =======================
    ✅ GEM TYPES / CONSTANTS (파일 전역 - 단 한번만 선언)
    ======================= */
-type GemKind = "홍염" | "멸화" | "겁화" | "작열" | "광휘";
-type GemPick = { kind: GemKind; level: number };
-
-const GEM_KINDS: GemKind[] = ["홍염", "멸화", "겁화", "작열"];
-const GEM_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
-
-// ✅ 선택 시 아이콘 바뀌는 맵
-const GEM_ICON_URL: Record<GemKind, Record<number, string>> = {
-    홍염: {
-        1: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_56.png",
-        2: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_57.png",
-        3: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_58.png",
-        4: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_59.png",
-        5: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_60.png",
-        6: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_61.png",
-        7: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_62.png",
-        8: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_63.png",
-        9: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_64.png",
-        10: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_65.png",
-    },
-    멸화: {
-        1: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_46.png",
-        2: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_47.png",
-        3: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_48.png",
-        4: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_49.png",
-        5: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_50.png",
-        6: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_51.png",
-        7: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_52.png",
-        8: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_53.png",
-        9: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_54.png",
-        10: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_9_55.png",
-    },
-    겁화: {
-        1: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_96.png",
-        2: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_97.png",
-        3: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_98.png",
-        4: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_99.png",
-        5: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_100.png",
-        6: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_101.png",
-        7: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_102.png",
-        8: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_103.png",
-        9: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_104.png",
-        10: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_105.png",
-    },
-    작열: {
-        1: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_106.png",
-        2: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_107.png",
-        3: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_108.png",
-        4: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_109.png",
-        5: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_110.png",
-        6: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_111.png",
-        7: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_112.png",
-        8: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_113.png",
-        9: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_114.png",
-        10: "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_115.png",
-    },
-};
-
-// ✅ 4티어 겁화/작열만 공격력 증가(합산용)
-const T4_ATK_BONUS_BY_LEVEL: Record<number, number> = {
-    1: 0.0,
-    2: 0.05,
-    3: 0.1,
-    4: 0.2,
-    5: 0.3,
-    6: 0.45,
-    7: 0.6,
-    8: 0.8,
-    9: 1.0,
-    10: 1.2,
-};
-
-// 보석 종류 및 레벨별 스킬 데미지 증가 수치 (표준 데이터)
-const GEM_DAMAGE_TABLE: Record<string, Record<number, number>> = {
-    //스킬 데미지 증가 %
-    "멸화": { 1: 3, 2: 6, 3: 9, 4: 12, 5: 15, 6: 18, 7: 21, 8: 24, 9: 30, 10: 40 },
-    "겁화": { 1: 8, 2: 12, 3: 16, 4: 20, 5: 24, 6: 28, 7: 32, 8: 36, 9: 40, 10: 44 },
-    "광휘": { 1: 8, 2: 12, 3: 16, 4: 20, 5: 24, 6: 28, 7: 32, 8: 36, 9: 40, 10: 44 }, // 초기값 대응용
-    //스킬 쿨타임 감소 %
-    "홍염": { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10, 6: 12, 7: 14, 8: 16, 9: 18, 10: 20 },
-    "작열": { 1: 6, 2: 8, 3: 10, 4: 12, 5: 14, 6: 16, 7: 18, 8: 20, 9: 22, 10: 24 }
-};
-
-// ===== ArkPassive 전송용 유틸 =====
-type ArkTab = "진화" | "깨달음" | "도약";
-type ArkPassiveLevelsPayload = {
-    characterName: string;
-    title?: string; // ✅ 추가
-    nodes: Record<ArkTab, Record<string, number>>;
-    points?: any;
-};
-
-function parseArkTabFromEffect(effect: any): ArkTab | null {
-    const s = stripHtml(`${effect?.Name ?? ""} ${effect?.Description ?? ""}`);
-    if (s.includes("진화")) return "진화";
-    if (s.includes("깨달음")) return "깨달음";
-    if (s.includes("도약")) return "도약";
-    return null;
-}
-
-function stripHtml(s: any): string {
-    return String(s ?? "")
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<[^>]*>/g, "")          // 모든 태그 제거 (FONT 포함)
-        .replace(/&nbsp;/gi, " ")
-        .replace(/&amp;/gi, "&")
-        .replace(/&lt;/gi, "<")
-        .replace(/&gt;/gi, ">")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function parseLvFromDesc(desc: string): number {
-    const clean = stripHtml(desc);
-    const n = Number(clean.match(/Lv\.(\d+)/)?.[1] ?? 0);
-    return Number.isFinite(n) ? n : 0;
-}
-
-function parseNodeNameFromDesc(desc: string, tab: ArkTab): string {
-    let s = stripHtml(desc);
-
-    // Lv 제거
-    s = s.replace(/Lv\.\d+/g, "").trim();
-
-    // 탭 제거
-    s = s.replace(tab, "").trim();
-
-    // ✅ "n티어" 제거 (예: "1티어 버스트 강화" -> "버스트 강화")
-    s = s.replace(/^\s*\d+\s*티어\s*/g, "").trim();
-
-    // 공백 정리
-    s = s.replace(/\s+/g, " ").trim();
-
-    return s;
-}
-
-function buildArkPassivePayload(characterName: string, arkData: any): ArkPassiveLevelsPayload {
-    const nodes: Record<ArkTab, Record<string, number>> = {
-        진화: {},
-        깨달음: {},
-        도약: {},
-    };
-
-    const effects = Array.isArray(arkData?.Effects) ? arkData.Effects : [];
-    for (const eff of effects) {
-        const tab = parseArkTabFromEffect(eff);
-        if (!tab) continue;
-
-        const lv = parseLvFromDesc(String(eff?.Description ?? ""));
-        if (lv <= 0) continue;
-
-        const nodeName = parseNodeNameFromDesc(
-            String(eff?.Description ?? eff?.Name ?? ""),
-            tab
-        );
-        if (!nodeName) continue;
-
-        nodes[tab][nodeName] = lv;
-    }
-
-    // ✅ Title 추출 (없으면 undefined)
-    const title = typeof arkData?.Title === "string" ? arkData.Title : undefined;
-
-    return {
-        characterName,
-        title,                 // ✅ 여기 추가
-        nodes,
-        points: arkData?.Points,
-    };
-}
-
-function inferGemKindFromEquippedGem(gem: any): GemKind | null {
-    if (!gem) return null;
-
-    // 1) 가장 우선: gem.Name 같은 필드가 있으면 거기서 찾기
-    const directText = String(gem?.Name || "");
-
-    // 2) Tooltip이 있으면 JSON을 문자열로 만들어서 통째로 검색 (필드명이 달라도 잡힘)
-    let tooltipText = "";
-    try {
-        const t =
-            typeof gem?.Tooltip === "string" ? JSON.parse(gem.Tooltip) : gem?.Tooltip;
-        tooltipText = typeof t === "string" ? t : JSON.stringify(t);
-    } catch {
-        tooltipText = String(gem?.Tooltip || "");
-    }
-
-    const hay = (directText + " " + tooltipText).toLowerCase();
-
-    // ✅ 키워드 기반 판별 (순서 중요: 광휘 먼저)
-    if (hay.includes("광휘")) return "광휘";
-    if (hay.includes("겁화")) return "겁화";
-    if (hay.includes("작열")) return "작열";
-    if (hay.includes("멸화")) return "멸화";
-    if (hay.includes("홍염")) return "홍염";
-
-    return null;
-}
-
 /* =======================
    ✅ GemSlot (드롭다운 + 아이콘 변경 + 툴팁 유지)
    ======================= */
@@ -428,8 +250,16 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
     const [jewlryHoverIdx, setJewlryHoverIdx] = useState<any>(null);
     const [jewlryHoverData, setJewlryHoverData] = useState<any>(null);
 
+    // Parse equipment tooltips once per equipments change (avoid JSON.parse in render loops)
+    const equipmentsWithTooltip = useMemo(() => {
+        return equipments.map((item) => ({
+            ...item,
+            parsedTooltip: safeJsonParse<any>(item.Tooltip),
+        }));
+    }, [equipments]);
+
     const getItemsByType = (types: string[]) =>
-        equipments.filter((item) => types.includes(item.Type));
+        equipmentsWithTooltip.filter((item) => types.includes(item.Type));
 
     // Simulator 컴포넌트 내부 상단에 추가
     const TABS = ["진화", "깨달음", "도약"] as const;
@@ -446,33 +276,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
     const [engrHoverName, setEngrHoverName] = useState<string | null>(null);
     const [engrHoverDesc, setEngrHoverDesc] = useState<string>("");
     const originalEngravingsRef = useRef<any>(null);
-
-    const extractGemEffect = (tooltipStr: string) => {
-        try {
-            const tooltipData = JSON.parse(tooltipStr);
-            const elements = Object.values(tooltipData) as any[];
-            const effectSection = elements.find(el =>
-                el?.type === "ItemPartBox" &&
-                (el?.value?.Element_000?.includes("효과") || el?.value?.Element_000?.includes("보석 효과"))
-            );
-
-            if (!effectSection) return { name: "", type: "" };
-
-            const rawEffect = effectSection?.value?.Element_001 || "";
-            const cleanText = rawEffect.replace(/<[^>]*>?/gm, '').replace(/<BR>/gi, ' ').trim();
-
-            // 스킬명 추출
-            const skillMatch = cleanText.match(/\]\s*(.*?)\s*(피해|재사용)/);
-            const name = skillMatch ? skillMatch[1].trim() : "";
-
-            // 효과 타입 추출 (피해 증가면 'damage', 재사용 감소면 'cdr')
-            const type = cleanText.includes("피해") ? "damage" : "cdr";
-
-            return { name, type };
-        } catch (e) {
-            return { name: "", type: "" };
-        }
-    };
 
     // ✅ 보석 선택 상태 (슬롯 0~10, 총 11개)
     const [gemPicks, setGemPicks] = useState<Record<number, GemPick | null>>(
@@ -812,9 +615,10 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                         {getItemsByType(["무기", "투구", "상의", "하의", "장갑", "어깨"])
                                             .sort((a, b) => a.Type === "무기" ? 1 : b.Type === "무기" ? -1 : 0)
                                             .map((item, i) => {
-                                                try {
-                                                    const tooltip = JSON.parse(item.Tooltip);
-                                                    const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
+                                                const tooltip = (item as any).parsedTooltip;
+                                                if (!tooltip) return null;
+
+                                                const quality = tooltip?.Element_001?.value?.qualityValue ?? 0;
                                                     const reinforceLevel = item.Name.match(/\+(\d+)/)?.[0] || "";
 
                                                     // 부위명 단순화
@@ -834,12 +638,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                                     const advMatch = cleanText(tooltip?.Element_005?.value || "").match(/\[상급\s*재련\]\s*(\d+)단계/);
                                                     const advancedReinforce = advMatch ? advMatch[1] : "0";
 
-                                                    // 재련 옵션 생성
-                                                    const REINFORCE_OPTIONS = [
-                                                        ...Array.from({ length: 20 }, (_, i) => ({ label: `4티어 +${25 - i}`, value: 25 - i, tier: 4 })),
-                                                        ...Array.from({ length: 17 }, (_, i) => ({ label: `일리아칸 +${25 - i}`, value: 25 - i, tier: 3 })),
-                                                    ].filter(opt => opt.value >= 9);
-
                                                     return (
                                                         <EquipmentItem
                                                             key={item.Name}
@@ -857,7 +655,6 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                                             onUpdate={onEquipmentUpdate} // 부모의 핸들러 전달
                                                         />
                                                     );
-                                                } catch (e) { return null; }
                                             })}
                                     </div>
                                 </div>
@@ -872,14 +669,14 @@ export const Simulator = forwardRef<SimulatorHandle, SimulatorProps>(
                                     <div className="flex flex-col">
                                         {getItemsByType(["목걸이", "귀걸이", "반지", "팔찌"])
                                             .filter((item) => {
-                                                try {
-                                                    const tooltip = JSON.parse(item.Tooltip);
-                                                    // 팔찌거나 품질 정보가 있는 아이템만 표시
-                                                    return item.Name?.includes('팔찌') || tooltip.Element_001?.value?.qualityValue !== undefined;
-                                                } catch { return false; }
+                                                const tooltip = (item as any).parsedTooltip;
+                                                if (!tooltip) return false;
+                                                // 팔찌거나 품질 정보가 있는 아이템만 표시
+                                                return item.Name?.includes('팔찌') || tooltip.Element_001?.value?.qualityValue !== undefined;
                                             })
                                             .map((item, i) => {
-                                                const tooltip = JSON.parse(item.Tooltip);
+                                                const tooltip = (item as any).parsedTooltip;
+                                                if (!tooltip) return null;
                                                 const partName = ["목걸이", "귀걸이", "반지", "팔찌"].find(p => (item.Name || "").includes(p)) || "장신구";
                                                 const theme = gradeStyles[(item.Grade || "").trim()] || gradeStyles["일반"];
 

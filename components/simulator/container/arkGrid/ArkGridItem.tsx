@@ -111,7 +111,11 @@ const ArkGridItem: React.FC<ArkGridProps> = ({ arkGrid, setArkGrid, characterJob
                     }));
                 // 이전 데이터와 비교하여 변경 사항 확인
                 const newTooltip = JSON.stringify(selectedData);
-                const hasEffectChanged = JSON.stringify(slot.arkGridEffect) !== JSON.stringify(activeEffects);
+                // Avoid JSON.stringify deep compare in render/updates; compare by length + content
+                const prevEffects = Array.isArray((slot as any).arkGridEffect) ? (slot as any).arkGridEffect : [];
+                const hasEffectChanged =
+                    prevEffects.length !== activeEffects.length ||
+                    prevEffects.some((e: any, idx: number) => e?.arkGridEffects !== activeEffects[idx]?.arkGridEffects);
                 const hasTooltipChanged = slot.Tooltip !== newTooltip;
 
                 if (hasEffectChanged || hasTooltipChanged) {
@@ -134,12 +138,6 @@ const ArkGridItem: React.FC<ArkGridProps> = ({ arkGrid, setArkGrid, characterJob
         }
     }, [coreOptions, arkGrid?.Slots, onArkGridUpdate]);
 
-    // 데이터가 변경될 때마다 부모에게 알림
-    useEffect(() => {
-        if (arkGrid?.Slots && onArkGridUpdate) {
-            onArkGridUpdate(arkGrid.Slots);
-        }
-    }, [arkGrid?.Slots, onArkGridUpdate]);
 
     const handleMouseEnter = (idx: number) => {
         if (leaveTimer.current) clearTimeout(leaveTimer.current);

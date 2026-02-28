@@ -49,7 +49,6 @@ interface TooltipProps {
 }
 
 const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
-    // [수정] 초기값을 즉시 판단하여 리렌더링 시 깜빡임 방지
     const [isMobile, setIsMobile] = useState(() =>
         typeof window !== 'undefined' ? window.innerWidth < 640 : false
     );
@@ -72,19 +71,37 @@ const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
     const itemIcon = titleInfo.slotData?.iconPath;
     const tradeInfo = cleanText(data.Element_003?.value || "").replace('|', '');
 
+    const isBracelet = itemName.includes("팔찌");
+
     const baseEffectObj = elements.find((el: any) => el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000) === '기본 효과');
     const specialEffectObj = elements.find((el: any) => el?.type === 'ItemPartBox' && ["연마 효과", "팔찌 효과", "특수 효과", "추가 효과"].includes(cleanText(el?.value?.Element_000)));
     const arcPassiveObj = elements.find((el: any) => el?.type === 'ItemPartBox' && cleanText(el?.value?.Element_000).includes('아크 패시브'));
 
+    // 팔찌 텍스트 하이라이트 함수 (숫자: 초록, 따옴표: 민트)
+    const renderBraceletHighlight = (text: string) => {
+        return text.split('\n').map((line, i) => {
+            const parts = line.split(/('.*?'|\d+[\d.,%+~-]*(?:초|m|%|\+)?)/g);
+            return (
+                <div key={i} className="text-[11px] font-medium leading-snug text-white/80 mb-0.5">
+                    {parts.map((part, index) => {
+                        if (part.startsWith("'") && part.endsWith("'")) return <span key={index} className="text-[#45f3ec]">{part}</span>;
+                        if (/^\d/.test(part)) return <span key={index} className="text-[#48c948] font-bold">{part}</span>;
+                        return part;
+                    })}
+                </div>
+            );
+        });
+    };
+
     const themes: any = {
-        '일반': { bg: 'from-[#222]/40', border: 'border-white/20', text: 'text-[#ffffff]' },
-        '고급': { bg: 'from-[#1a2e1a]/40', border: 'border-[#48c948]/30', text: 'text-[#48c948]' },
-        '희귀': { bg: 'from-[#1a2a3e]/40', border: 'border-[#00b0fa]/30', text: 'text-[#00b0fa]' },
-        '영웅': { bg: 'from-[#2e1a3e]/40', border: 'border-[#ce43fb]/30', text: 'text-[#ce43fb]' },
-        '고대': { bg: 'from-[#3d3325] to-transparent', text: 'text-[#d6aa71]', border: 'border-[#d6aa71]/50' },
-        '유물': { bg: 'from-[#2a1a12]/60 to-transparent', text: 'text-[#e7a15d]', border: 'border-[#a6632d]/40' },
-        '전설': { bg: 'from-[#362e15]/60 to-transparent', text: 'text-[#f9ae00]', border: 'border-[#f9ae00]/30' },
-        '에스더': { bg: 'from-[#0d2e2e]/40', border: 'border-[#2edbd3]/60', text: 'text-[#2edbd3]', glow: 'shadow-[#2edbd3]/30' }
+        '일반': { bg: 'bg-[linear-gradient(135deg,#232323_0%,#3a3a3a_100%)]', border: 'border-white/10', text: 'text-zinc-400' },
+        '고급': { bg: 'bg-[linear-gradient(135deg,#18220b_0%,#33411a_100%)]', border: 'border-[#48c948]/30', text: 'text-[#4edb4e]' },
+        '희귀': { bg: 'bg-[linear-gradient(135deg,#111d2d_0%,#243d5c_100%)]', border: 'border-[#00b0fa]/30', text: 'text-[#33c2ff]' },
+        '영웅': { bg: 'bg-[linear-gradient(135deg,#201334_0%,#462b6d_100%)]', border: 'border-[#ce43fb]/30', text: 'text-[#d966ff]' },
+        '전설': { bg: 'bg-[linear-gradient(135deg,#362003_0%,#9e5f04_100%)]', border: 'border-[#f99200]/40', text: 'text-[#ffaa33]' },
+        '유물': { bg: 'bg-[linear-gradient(135deg,#341a09_0%,#a24407_100%)]', border: 'border-[#fa5d00]/50', text: 'text-[#ff7526]' },
+        '고대': { bg: 'bg-[linear-gradient(135deg,#2b241a_0%,#b8a37c_100%)]', border: 'border-[#e9d2a6]/40', text: 'text-[#e9d2a6]' },
+        '에스더': { bg: 'bg-[linear-gradient(135deg,#0c2e2c_0%,#2faba8_100%)]', border: 'border-[#2edbd3]/60', text: 'text-[#45f3ec]' }
     };
     const theme = themes[itemGradeName] || themes['고대'];
 
@@ -118,99 +135,128 @@ const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
         return '#919191';
     };
 
-    // 공통 툴팁 바디 (pointer-events-none 조건부 추가)
     const TooltipBody = (
         <div
             className={`relative flex flex-col border border-white/10 shadow-2xl overflow-hidden font-sans transition-all duration-200 bg-[#0d0d0f]/10 
-            ${isMobile ? 'w-full rounded-t-xl pointer-events-auto' : 'w-[300px] rounded-md pointer-events-none'} 
+            ${isMobile ? 'w-full rounded-t-xl pointer-events-auto' : 'w-[280px] rounded-md pointer-events-none'} 
             ${className}`}
             style={!isMobile ? { maxHeight: '50vh' } : { maxHeight: '80vh' }}
         >
-            <div className={`p-2 shrink-0 bg-[#111111] bg-gradient-to-br ${theme.bg} border-b border-white/10 z-10`}>
+            <div className={`p-2 shrink-0 bg-[#111111] ${theme.bg} border-b border-white/10 z-10`}>
                 <div className="flex gap-3 items-center">
                     <div className="relative shrink-0 w-[50px] h-[50px]">
-                        <div className={`w-full h-full overflow-hidden rounded-md border-[1.5px] ${theme.border} bg-black bg-gradient-to-br ${theme.bg}`}>
+                        <div className={`w-full h-full overflow-hidden rounded-md border-[1.5px] ${theme.border} bg-black ${theme.bg}`}>
                             <img src={itemIcon} className="w-full h-full object-cover" alt="" />
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
                         <h4 className={`text-[14px] font-bold leading-tight drop-shadow-md truncate ${theme.text}`}>{itemName}</h4>
-                        <div className="mt-1 flex items-center gap-2">
-                            <span className="text-[12px] font-bold text-white/60">{cleanText(itemGradeFull)}</span>
-                            <span className="w-[2px] h-2.5 bg-white/30" />
-                            <span className="text-[12px] font-bold text-white/60">{itemLevelAndTier.replace('아이템 ', '')}</span>
-                            <span className="w-[2px] h-2.5 bg-white/30" />
-                            {arcPassiveObj && (
-                                <div className="text-[11.5px] font-bold text-[#ffcf4d]">{cleanText(arcPassiveObj.value.Element_001)}</div>
-                            )}
+                        <div className="mt-1 flex items-center gap-2 text-white/60 text-[12px] font-bold">
+                            <span>{cleanText(itemGradeFull)}</span>
+                            <span className="w-[1px] h-2.5 bg-white/30" />
+                            <span>{itemLevelAndTier.replace('아이템 ', '')}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#111111]/10 backdrop-blur-md">
+            <div className="flex-1 overflow-y-auto bg-[#111111]/10 backdrop-blur-md">
                 <div className="p-3 grid grid-cols-2 gap-x-4 bg-[#111111]/40">
-                    <div className="space-y-1 col-span-1 border-r border-white/5 pr-4">
-                        {specialEffectObj?.value?.Element_001 && (
-                            <div className="pt-1 border-t border-white/5">
-                                <div className="text-[11.5px] font-bold whitespace-pre-line leading-relaxed">
-                                    {renderGrindEffect(cleanText(specialEffectObj.value.Element_001))}
+                    {/* [좌측 섹션] */}
+                    <div className="space-y-4 col-span-1 border-r border-white/5 pr-4">
+                        {isBracelet ? (
+                            <>
+                                {arcPassiveObj && (
+                                    <div className="space-y-1">
+                                        <p className="text-[#ffcf4d] text-[10px] font-bold uppercase">[아크 패시브]</p>
+                                        <p className="text-white text-[11px] font-bold leading-tight">{cleanText(arcPassiveObj.value.Element_001)}</p>
+                                    </div>
+                                )}
+                                <div className="space-y-1">
+                                    <p className="text-white/30 text-[10px] font-bold uppercase">[기본 옵션]</p>
+                                    {specialEffectObj && cleanText(specialEffectObj.value.Element_001).split('\n').map((line, idx) => {
+                                        // 스탯 관련 옵션만 필터링하여 좌측에 배치
+                                        if (/치명|특화|신속|제압|인내|숙련|힘|민첩|지능/.test(line)) {
+                                            return <div key={idx}>{renderBraceletHighlight(line)}</div>;
+                                        }
+                                        return null;
+                                    })}
                                 </div>
-                            </div>
+                            </>
+                        ) : (
+                            specialEffectObj?.value?.Element_001 && (
+                                <div className="pt-1 border-t border-white/5">
+                                    <div className="text-[11.5px] font-bold whitespace-pre-line leading-relaxed">
+                                        {renderGrindEffect(cleanText(specialEffectObj.value.Element_001))}
+                                    </div>
+                                </div>
+                            )
                         )}
-                        <div className={`pt-4 text-[12px] font-bold ${tradeInfo.includes('불가') ? 'text-red-500' : 'text-cyan-500'}`}>
+                        <div className={`text-[12px] font-bold ${tradeInfo.includes('불가') ? 'text-red-500' : 'text-cyan-500'}`}>
                             [{tradeInfo}]
                         </div>
                     </div>
 
+                    {/* [우측 섹션] */}
                     <div className="space-y-4">
-                        {quality !== -1 && (
-                            <div className="space-y-0.5 w-28">
-                                <div className="flex justify-between items-end">
-                                    <span className="text-white/40 text-[11px]">품질</span>
-                                    <span className="text-[12px] font-bold" style={{ color: getQualityColorHex(quality) }}>{quality}</span>
-                                </div>
-                                <div className="h-1.5 w-full bg-white/40 rounded-full overflow-hidden border border-white/5">
-                                    <div className="h-full transition-all duration-700" style={{ width: `${quality}%`, backgroundColor: getQualityColorHex(quality) }} />
-                                </div>
+                        {isBracelet ? (
+                            <div className="space-y-1">
+                                <p className="text-[#A9D0F5] text-[10px] font-bold uppercase">[팔찌 효과]</p>
+                                {specialEffectObj && cleanText(specialEffectObj.value.Element_001).split('\n').map((line, idx) => {
+                                    // 특수 효과들만 필터링하여 우측에 배치
+                                    if (!/치명|특화|신속|제압|인내|숙련|힘|민첩|지능/.test(line)) {
+                                        return <div key={idx}>{renderBraceletHighlight(line)}</div>;
+                                    }
+                                    return null;
+                                })}
                             </div>
-                        )}
-
-                        <div className="space-y-4">
-                            {baseEffectObj?.value?.Element_001 && (() => {
-                                const part = ["목걸이", "귀걸이", "반지"].find(p => itemName.includes(p)) || "목걸이";
-                                const rawPolishHtml = data.Element_006?.value?.Element_001 || "";
-                                const polishLevel = (rawPolishHtml.match(/img src/g) || []).length;
-                                const currentStatMatch = baseEffectObj.value.Element_001.match(/\+(\d+)/);
-                                const currentStat = currentStatMatch ? parseInt(currentStatMatch[1]) : 0;
-                                const maxValue = MAX_STATS[part][polishLevel];
-                                const percentage = maxValue ? (currentStat / maxValue) * 100 : 0;
-
-                                return (
+                        ) : (
+                            <>
+                                {quality !== -1 && (
                                     <div className="space-y-0.5 w-28">
-                                        <div className="flex justify-between items-center text-[#FFD200] text-[11.5px] font-bold py-0.5">
-                                            힘민지: {percentage.toFixed(1)}%
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-white/40 text-[11px]">품질</span>
+                                            <span className="text-[12px] font-bold" style={{ color: getQualityColorHex(quality) }}>{quality}</span>
                                         </div>
-                                        <div className="h-1.5 w-full bg-white/40 rounded-full overflow-hidden">
-                                            <div className="h-full bg-[#FFD200]/60 transition-all duration-500" style={{ width: `${Math.min(100, percentage)}%` }} />
-                                        </div>
-                                        <div className="text-white/90 text-[12px] leading-relaxed whitespace-pre-line font-medium pt-1">
-                                            {cleanText(baseEffectObj.value.Element_001)}
+                                        <div className="h-1.5 w-full bg-white/40 rounded-full overflow-hidden border border-white/5">
+                                            <div className="h-full transition-all duration-700" style={{ width: `${quality}%`, backgroundColor: getQualityColorHex(quality) }} />
                                         </div>
                                     </div>
-                                );
-                            })()}
-                        </div>
+                                )}
+                                {baseEffectObj?.value?.Element_001 && (() => {
+                                    const part = ["목걸이", "귀걸이", "반지"].find(p => itemName.includes(p)) || "목걸이";
+                                    const rawPolishHtml = data.Element_006?.value?.Element_001 || "";
+                                    const polishLevel = (rawPolishHtml.match(/img src/g) || []).length;
+                                    const currentStatMatch = baseEffectObj.value.Element_001.match(/\+(\d+)/);
+                                    const currentStat = currentStatMatch ? parseInt(currentStatMatch[1]) : 0;
+                                    const maxValue = MAX_STATS[part][polishLevel];
+                                    const percentage = maxValue ? (currentStat / maxValue) * 100 : 0;
+
+                                    return (
+                                        <div className="space-y-0.5 w-28">
+                                            <div className="flex justify-between items-center text-[#FFD200] text-[11.5px] font-bold py-0.5">
+                                                힘민지: {percentage.toFixed(1)}%
+                                            </div>
+                                            <div className="h-1.5 w-full bg-white/40 rounded-full overflow-hidden">
+                                                <div className="h-full bg-[#FFD200]/60 transition-all duration-500" style={{ width: `${Math.min(100, percentage)}%` }} />
+                                            </div>
+                                            <div className="text-white/90 text-[12px] leading-relaxed whitespace-pre-line font-medium pt-1">
+                                                {cleanText(baseEffectObj.value.Element_001)}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
-            <div className="h-[1px] shrink-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <div className="h-[1px] shrink-0 from-transparent via-white/10 to-transparent" />
         </div>
     );
 
-    // [수정] 모바일과 데스크톱 렌더링을 완전히 분리하여 애니메이션 충돌 방지
     return (
-        <>
+        <AnimatePresence>
             {isMobile ? (
                 <div className="fixed inset-0 z-[9999] flex items-end justify-center">
                     <motion.div
@@ -241,7 +287,7 @@ const AccessoryTooltip = ({ data, className = "", onClose }: TooltipProps) => {
                     {TooltipBody}
                 </motion.div>
             )}
-        </>
+        </AnimatePresence>
     );
 };
 
